@@ -122,7 +122,7 @@ This embedded console allows you to watch the real-time output of PowerShell com
 ### 🚀 Installation & Usage
 This tool is portable; no installation is required.
 
-1. Download the latest release (`v2.0.zip`) from the **Releases** section.
+1. Download the latest release (`Vdowns_2.0.zip`) from the **Releases** section.
 2. Extract the folder to your desktop.
 3. **⚠️ IMPORTANT:** Ensure `VDOWNS_PRIME.exe` and `apps.json` are located in the **same folder**.
 4. Right-click `VDOWNS_PRIME.exe` and select **Run as Administrator**.

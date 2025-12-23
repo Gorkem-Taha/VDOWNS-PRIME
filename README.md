@@ -77,8 +77,9 @@ This module directly manipulates the Windows Registry and System Services to opt
 | `Ultimate Performance` | Unlocks and adds the "Ultimate Performance" power plan (requires manual selection in Control Panel). |
 | `Disable SysMain` | Disables the SysMain (Superfetch) service to reduce high disk usage on SSDs.| 
 | `Disable Game DVR` | Disables Xbox Game DVR background recording to improve FPS in games.| 
-<br>
+
 ### 3. 🔧 Features & Configuration
+
 Manage optional Windows components and perform deep maintenance.
 
 - **Hyper-V Platform:** Enables hardware virtualization (Required for Docker/VMs).

@@ -44,7 +44,7 @@ You can add your own favorite programs or remove existing ones by editing the `a
 ### 2. ⚡ System Tweaks (Do & Undo)
 This module directly manipulates the Windows Registry and System Services to optimize the OS. Every tweak includes a Revert (Undo) capability.
 <br>
-###🛡️ Essential Privacy
+### 🛡️ Essential Privacy
 
 | Name | Description | 
 | --- | --- |
@@ -54,7 +54,7 @@ This module directly manipulates the Windows Registry and System Services to opt
 | `Disable Ad ID` | Prevents Windows from creating a unique advertising ID for tracking your usage. |
 
 <br>
-###🎨 Interface Explorer
+### 🎨 Interface Explorer
 <br>
 
 | Name | Description | 

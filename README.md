@@ -132,11 +132,11 @@ This tool is portable; no installation is required.
 <br>
 
 > [!NOTE]
-> If running as a .ps1 script, you may need to allow script execution: Set-ExecutionPolicy Bypass -Scope Process
+> If running as a .ps1 script, you may need to allow script execution: `Set-ExecutionPolicy Bypass -Scope Process`
 <br>
 
 > [!WARNING]
-> This software makes changes to the Windows Registry and system services. The "Create Restore Point" feature is available within the program; it is highly recommended to use this before applying any changes. The user is responsible for any system errors that may occur.
+> This software makes changes to the Windows Registry and system services. The `Create Restore Point` feature is available within the program; it is highly recommended to use this before applying any changes. The user is responsible for any system errors that may occur.
 
 <br>
 <br>

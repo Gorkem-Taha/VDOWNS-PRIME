@@ -44,7 +44,7 @@ You can add your own favorite programs or remove existing ones by editing the `a
 ### 2. ⚡ System Tweaks (Do & Undo)
 This module directly manipulates the Windows Registry and System Services to optimize the OS. Every tweak includes a Revert (Undo) capability.
 <br>
-🛡️ Essential Privacy
+###🛡️ Essential Privacy
 
 | Name | Description | 
 | --- | --- |
@@ -54,7 +54,7 @@ This module directly manipulates the Windows Registry and System Services to opt
 | `Disable Ad ID` | Prevents Windows from creating a unique advertising ID for tracking your usage. |
 
 <br>
-🎨 Interface Explorer
+###🎨 Interface Explorer
 <br>
 
 | Name | Description | 
@@ -70,7 +70,7 @@ This module directly manipulates the Windows Registry and System Services to opt
 | `Clipboard History` | Enables the `Win+V` clipboard history feature. |
 
 <br>
-🚀 Performance Power
+###🚀 Performance Power
 <br>
 
 | Name | Description | 
@@ -90,7 +90,7 @@ Manage optional Windows components and perform deep maintenance.
 - **Windows Sandbox:** Enables a lightweight desktop environment to safely run applications in isolation.
 - **Net Framework 3.5:** Installs older .NET libraries required by many legacy games and apps.
 
-##🧹 Deep System Clean
+###🧹 Deep System Clean
 This is not a standard disk cleanup. It:
 
 1.Configures the registry to select all cleanup categories (Update Cleanup, Temp Files, Logs, etc.).
@@ -109,20 +109,20 @@ Remove pre-installed bloatware that consumes RAM and CPU.
 ### 4. 🔄 Update & Repair Center
 This embedded console allows you to watch the real-time output of PowerShell commands directly inside the GUI, ensuring you know exactly when a task is finished.
 
-## 📥 Update Modules
+### 📥 Update Modules
 - **UPDATE ALL APPS (Winget):** Checks every installed program on your PC against the Winget database and updates them to the latest version. Includes apps not originally installed by Winget.
 - **UPDATE WINDOWS (OS Only):** Uses the `PSWindowsUpdate` module to download and install cumulative updates, security patches, and feature updates directly from Microsoft Update servers.
 - **UPDATE DRIVERS ONLY:** Scans specifically for hardware driver updates (GPU, Chipset, Audio) and installs them.
 - **FORCE MS STORE UPDATES:** Forces the Microsoft Store itself and all Store apps (UWP) to update.
 <br>
-## 🛠️ System Repair Tools
+### 🛠️ System Repair Tools
 - **RUN SFC /SCANNOW:** Runs the System File Checker to repair corrupted Windows system files.
 - **RUN DISM REPAIR:** Runs the Deployment Image Servicing and Management tool to repair the Windows System Image using Windows Update as the source.
 - **RESET NETWORK STACK:** Flushes DNS, resets Winsock, and resets the IP stack. Useful if you have internet connection issues.
 - **EMERGENCY: FIX STUCK UPDATES:** A powerful script that forcibly stops Windows Update services, deletes the `SoftwareDistribution` cache folder (where corrupt update files often live), and restarts the services. Use this if Windows Update is stuck at 0%.
 ---
 
-## 🚀 Installation & Usage
+### 🚀 Installation & Usage
 This tool is portable; no installation is required.
 
 1. Download the latest release (`v2.0.zip`) from the **Releases** section.
@@ -132,20 +132,6 @@ This tool is portable; no installation is required.
 
 > [!NOTE]
 > If running as a .ps1 script, you may need to allow script execution: Set-ExecutionPolicy Bypass -Scope Process
-
-### 📂 Create Your Own App List
-The `apps.json` file is fully customizable! To add your own favorite apps, open the file with any text editor and use the following format:
-
-```json
-{
-  "My Category": [
-    { 
-      "Name": "App Name", 
-      "Id": "Winget.ID", 
-      "Desc": "Description" 
-    }
-  ]
-}
 ```
 > [!WARNING]
 > This software makes changes to the Windows Registry and system services. The "Create Restore Point" feature is available within the program; it is highly recommended to use this before applying any changes. The user is responsible for any system errors that may occur.

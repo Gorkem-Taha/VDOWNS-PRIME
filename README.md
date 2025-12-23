@@ -140,6 +140,7 @@ This tool is portable; no installation is required.
 
 <br>
 <br>
+
 ## 📜 License
 This project is licensed under the [MIT License](LICENSE).  
 Developed by **[Görkem Taha Çanakcı](https://github.com/Gorkem-Taha)**

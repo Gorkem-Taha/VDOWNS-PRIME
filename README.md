@@ -107,6 +107,7 @@ Remove pre-installed bloatware that consumes RAM and CPU.
 This embedded console allows you to watch the real-time output of PowerShell commands directly inside the GUI, ensuring you know exactly when a task is finished.
 
 ### 📥 Update Modules
+
 - **UPDATE ALL APPS (Winget):** Checks every installed program on your PC against the Winget database and updates them to the latest version. Includes apps not originally installed by Winget.
 - **UPDATE WINDOWS (OS Only):** Uses the `PSWindowsUpdate` module to download and install cumulative updates, security patches, and feature updates directly from Microsoft Update servers.
 - **UPDATE DRIVERS ONLY:** Scans specifically for hardware driver updates (GPU, Chipset, Audio) and installs them.
@@ -132,8 +133,8 @@ This tool is portable; no installation is required.
 ```
 > [!WARNING]
 > This software makes changes to the Windows Registry and system services. The "Create Restore Point" feature is available within the program; it is highly recommended to use this before applying any changes. The user is responsible for any system errors that may occur.
-<br>
-## 📜 License
 
+
+## 📜 License
 This project is licensed under the [MIT License](LICENSE).  
 Developed by **[Görkem Taha Çanakcı](https://github.com/Gorkem-Taha)**

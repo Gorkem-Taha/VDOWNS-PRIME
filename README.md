@@ -40,7 +40,7 @@ You can add your own favorite programs or remove existing ones by editing the `a
     { "Name": "VS Code", "Id": "Microsoft.VisualStudioCode" }
   ]
 }
-
+```
 ### 2. ⚡ System Tweaks (Do & Undo)
 This module directly manipulates the Windows Registry and System Services to optimize the OS. Every tweak includes a Revert (Undo) capability.
 <br>

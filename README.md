@@ -7,8 +7,6 @@
 
 **VDOWNS PRIME v2.0** is the ultimate system configuration tool designed for power users, gamers, and system administrators. It combines a sleek "Elite Dark" GUI with powerful backend scripting to architect your Windows experience.
 
-Unlike v1.0, the **Prime v2.0** update introduces a **Live Process Monitor**, allowing you to see exactly what is happening in the background during updates and repairs, integrated directly into the interface.
-
 ---
 
 ## 📸 Screenshots

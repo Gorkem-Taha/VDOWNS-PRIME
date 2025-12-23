@@ -53,9 +53,7 @@ This module directly manipulates the Windows Registry and System Services to opt
 | `Disable Telemetry` | Disables the "Connected User Experiences and Telemetry" (DiagTrack) service to stop data collection. | 
 | `Disable Ad ID` | Prevents Windows from creating a unique advertising ID for tracking your usage. |
 
-<br>
-### 🎨 Interface Explorer
-<br>
+ ### 🎨 Interface Explorer
 
 | Name | Description | 
 | --- | --- |
@@ -69,9 +67,7 @@ This module directly manipulates the Windows Registry and System Services to opt
 | `Hide Search Icon` | Removes the Search icon/bar from the taskbar to save space. |
 | `Clipboard History` | Enables the `Win+V` clipboard history feature. |
 
-<br>
-###🚀 Performance Power
-<br>
+ ### 🚀 Performance Power
 
 | Name | Description | 
 | --- | --- |
@@ -90,7 +86,7 @@ Manage optional Windows components and perform deep maintenance.
 - **Windows Sandbox:** Enables a lightweight desktop environment to safely run applications in isolation.
 - **Net Framework 3.5:** Installs older .NET libraries required by many legacy games and apps.
 
-###🧹 Deep System Clean
+### 🧹 Deep System Clean
 This is not a standard disk cleanup. It:
 
 1.Configures the registry to select all cleanup categories (Update Cleanup, Temp Files, Logs, etc.).

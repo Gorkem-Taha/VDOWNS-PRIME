@@ -102,7 +102,7 @@ Remove pre-installed bloatware that consumes RAM and CPU.
 - **Bloatware Categories:** Targets specific groups like "News & Weather", "Solitaire", "Cortana", "Xbox Overlay", "People App", and "Get Help".
 - **Safety First:** Critical system components are not targeted, but items like "Calculator" or "Photos" are optional choices if you use 3rd party alternatives.
 - **Mechanism:** Uses `Remove-AppxPackage` commands to wipe the apps from the current user profile.
-<br>
+
 ### 4. 🔄 Update & Repair Center
 This embedded console allows you to watch the real-time output of PowerShell commands directly inside the GUI, ensuring you know exactly when a task is finished.
 
@@ -128,13 +128,15 @@ This tool is portable; no installation is required.
 2. Extract the folder to your desktop.
 3. **⚠️ IMPORTANT:** Ensure `VDOWNS_PRIME.exe` and `apps.json` are located in the **same folder**.
 4. Right-click `VDOWNS_PRIME.exe` and select **Run as Administrator**.
-
+---
+<br>
 > [!NOTE]
 > If running as a .ps1 script, you may need to allow script execution: Set-ExecutionPolicy Bypass -Scope Process
-
+<br>
 > [!WARNING]
 > This software makes changes to the Windows Registry and system services. The "Create Restore Point" feature is available within the program; it is highly recommended to use this before applying any changes. The user is responsible for any system errors that may occur.
-
+<br>
+<br>
 ## 📜 License
 This project is licensed under the [MIT License](LICENSE).  
 Developed by **[Görkem Taha Çanakcı](https://github.com/Gorkem-Taha)**

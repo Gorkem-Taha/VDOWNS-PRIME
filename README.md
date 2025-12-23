@@ -89,7 +89,7 @@ Manage optional Windows components and perform deep maintenance.
 This is not a standard disk cleanup. It:
 
 1.Configures the registry to select all cleanup categories (Update Cleanup, Temp Files, Logs, etc.).
-2.Runs the Windows Disk Cleanup utility `(cleanmgr.exe)` in extended mode.
+2.Runs the Windows Disk Cleanup utility `cleanmgr.exe` in extended mode.
 <br>
 
 ### 4. 🛡️ Advanced Debloater

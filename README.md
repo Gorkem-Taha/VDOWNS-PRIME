@@ -139,4 +139,4 @@ This tool is portable; no installation is required.
 
 ## 📜 License
 This project is licensed under the [MIT License](LICENSE).  
-Developed by **[Görkem Taha Çanakcı](https://github.com/Gorkem-Taha)**
+Developed by **[Görkem Taha](https://github.com/Gorkem-Taha)**

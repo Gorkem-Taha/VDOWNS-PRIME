@@ -1,12 +1,12 @@
-# ⚡ VDOWNS PRIME v3.0.0 | Windows System Architect
+# ⚡ VDOWNS PRIME v3.1.0 | Windows System Architect
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-00A8FF?style=for-the-badge&logo=windows)](https://github.com/Gorkem-Taha/VDOWNS-PRIME)
 [![Language](https://img.shields.io/badge/Language-PowerShell%207%20%2F%205.1%20%2B%20WPF%20XAML-5391FE?style=for-the-badge&logo=powershell)](https://github.com/Gorkem-Taha/VDOWNS-PRIME)
 [![Architecture](https://img.shields.io/badge/Engine-Async%20ThreadPool%20Runspaces-FF5722?style=for-the-badge)](https://github.com/Gorkem-Taha/VDOWNS-PRIME)
-[![Version](https://img.shields.io/badge/Version-v3.0.0%20(SemVer)-2ECC71?style=for-the-badge)](https://github.com/Gorkem-Taha/VDOWNS-PRIME/releases)
+[![Version](https://img.shields.io/badge/Version-v3.1.0%20(SemVer)-2ECC71?style=for-the-badge)](https://github.com/Gorkem-Taha/VDOWNS-PRIME/releases)
 [![License](https://img.shields.io/badge/License-MIT-F39C12?style=for-the-badge)](LICENSE)
 
-**VDOWNS PRIME v3.0.0** is an enterprise-grade Windows 10/11 optimization, debloating, package management, and system maintenance suite. Engineered with hardware-accelerated WPF (Windows Presentation Foundation) and an asynchronous PowerShell Runspace engine, it ensures a responsive, non-blocking 60 FPS user interface while executing deep registry modifications, DISM repairs, and batch winget operations.
+**VDOWNS PRIME v3.1.0** is an enterprise-grade Windows 10/11 optimization, debloating, package management, developer profile backup, and automated unattended deployment suite. Engineered with hardware-accelerated WPF (Windows Presentation Foundation) and an asynchronous PowerShell Runspace engine, it ensures a responsive, non-blocking 60 FPS user interface while executing deep registry modifications, DISM repairs, and batch winget operations.
 
 ---
 
@@ -16,16 +16,17 @@
 
 ---
 
-## 🚀 Key Modernizations in v3.0.0
+## 🚀 Key Modernizations in v3.1.0
 
-| Feature | v2.0 (Legacy WinForms) | v3.0.0 (Prime WPF Edition) |
-| :--- | :--- | :--- |
-| **UI Framework** | Synchronous Windows Forms | Hardware-accelerated WPF XAML |
-| **Threading Model** | Single UI thread (prone to freezing) | Multi-Threaded PowerShell Runspaces + Dispatcher Marshalling |
-| **Package Management** | Fixed static buttons | Dynamic Winget Search & Batch Catalog (`apps.json`) |
-| **Debloater Safety** | Basic script execution | Granular Package Audit + Restore Point Protection |
-| **Log Streaming** | Delayed textbox appends | Real-time Thread-Safe Log Console with colored status |
-| **Compilation Pipeline** | Manual bundling | Automated `build.ps1` with AST syntax checks & `ps2exe` |
+| Feature | v2.0 (Legacy WinForms) | v3.0.0 (WPF Base) | v3.1.0 (Enterprise Suite) |
+| :--- | :--- | :--- | :--- |
+| **UI Framework** | Synchronous Windows Forms | Hardware-accelerated WPF XAML | Hardware-accelerated WPF XAML |
+| **Threading Model** | Single UI thread (freezing) | Async Runspaces (Tweaks/Debloat) | Full Async Runspaces across all modules + Backup Engine |
+| **Catalog Resilience** | Hardcoded | External `apps.json` | Resilient embedded catalog fallback + disk persistence |
+| **Package Management** | Fixed static buttons | Dynamic Winget Search & Catalog | Card actions, batch queue, and native bundle import/export |
+| **Developer Backup** | Not available | Experimental UI | Non-blocking async `.zip` (VS Code, Git, Terminal, SSH, Notepad++) |
+| **Unattended Setup** | Not available | Not available | One-click standalone `.ps1` deployment generator |
+| **Compilation Pipeline**| Manual bundling | Automated `build.ps1` | Production AST validation + PS2EXE standalone binary |
 
 ---
 
@@ -54,7 +55,17 @@ Embedded live console running background system maintenance without blocking the
 - **SFC /scannow:** Verify system file integrity and automatically replace damaged files from cached image.
 - **DISM Component Cleanup & Repair:** Execute deep image repair utilizing Microsoft Update servers (`DISM /Online /Cleanup-Image /RestoreHealth`).
 - **Network Stack Reset:** Flush DNS cache, reset Winsock catalog, and reset TCP/IP stack in an automated sequence.
-- **Emergency Windows Update Cache Purge:** Stop update services, clear corrupted `%windir%\SoftwareDistribution\Download` cache, and re-register BITS/WUAENG services.
+### 5. 💾 Developer Backup & Unattended Setup Engine
+- **Asynchronous Runspace Snapshotting:** Archive developer tools and environments into a `.zip` file without freezing the UI. Backs up:
+  - VS Code User settings + complete extension manifest (`code --list-extensions`)
+  - Cursor User settings & configuration
+  - Git identity (`.gitconfig`)
+  - PowerShell profiles (`Microsoft.PowerShell_profile.ps1`)
+  - Windows Terminal settings (`settings.json`)
+  - Notepad++ preferences
+  - SSH client host configs (`.ssh\config`)
+- **Automated Restore Engine:** One-click restoration of all configs and unattended batch reinstallation of VS Code extensions (`code --install-extension`).
+- **Standalone Unattended Script Generator (.ps1):** Export selected apps, tweaks, and debloat lists into an autonomous, self-elevating PowerShell script (`VDOWNS_Unattended_Setup.ps1`) that provisions bare-metal Windows installations from a USB flash drive with zero human interaction.
 
 ---
 
@@ -66,7 +77,7 @@ Vdowns_2.0/
 ├── build.ps1               # Automated build & compilation script
 ├── LICENSE                 # MIT License
 ├── README.md               # Architecture documentation & guide
-├── VDOWNS_PRIME.exe        # Standalone compiled portable binary (v3.0.0)
+├── VDOWNS_PRIME.exe        # Standalone compiled portable binary (v3.1.0)
 ├── VDOWNS_PRIME.ps1        # Canonical modern WPF + Async Runspace engine
 ├── vdowns.ps1              # Backward-compatibility launcher forwarder
 ├── Picture/                # Interface assets and screenshots

@@ -83,7 +83,15 @@ if (-not $SkipCompile) {
 
     if (Test-Path $outputExe) {
         $fileInfo = Get-Item $outputExe
-        $hash = (Get-FileHash -Path $outputExe -Algorithm SHA256).Hash
+        $hash = $null
+        try {
+            $hash = (Get-FileHash -Path $outputExe -Algorithm SHA256).Hash
+        } catch {
+            $stream = [System.IO.File]::OpenRead($outputExe)
+            $sha = [System.Security.Cryptography.SHA256]::Create()
+            $hash = [System.BitConverter]::ToString($sha.ComputeHash($stream)).Replace("-", "")
+            $stream.Close()
+        }
         Write-Host "`n==========================================================" -ForegroundColor Green
         Write-Host "BUILD SUCCESSFUL!" -ForegroundColor Green
         Write-Host "Binary: $($fileInfo.FullName)" -ForegroundColor Green

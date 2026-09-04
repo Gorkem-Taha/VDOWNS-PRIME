@@ -784,9 +784,26 @@ $xaml.SelectNodes('//*[@x:Name]', $nsmgr) | ForEach-Object {
     $elName = $_.GetAttribute('Name', 'http://schemas.microsoft.com/winfx/2006/xaml')
     if ($elName) {
         $el = $window.FindName($elName)
-        if ($el) { Set-Variable -Name $elName -Value $el -Scope Script }
+        if ($el) { 
+            Set-Variable -Name $elName -Value $el -Scope Script
+            Set-Variable -Name $elName -Value $el
+        }
     }
 }
+
+# Explicit aliases for XAML to script element compatibility
+$script:tweaksContainer = $script:tweakContainer; $tweaksContainer = $tweakContainer
+$script:configContainer = $script:featureContainer; $configContainer = $featureContainer
+$script:wingetItemsContainer = $script:wingetResultsContainer; $wingetItemsContainer = $wingetResultsContainer
+$script:btnDebloat = $script:btnRemoveBloat; $btnDebloat = $btnRemoveBloat
+$script:btnSelectAll = $script:btnDebloatSelectAll; $btnSelectAll = $btnDebloatSelectAll
+$script:btnDeselectAll = $script:btnDebloatSelectAll; $btnDeselectAll = $btnDebloatSelectAll
+$script:btnEnableFeatures = $script:btnInstallFeatures; $btnEnableFeatures = $btnInstallFeatures
+$script:btnSfc = $script:btnRepairSfc; $btnSfc = $btnRepairSfc
+$script:btnDism = $script:btnRepairDism; $btnDism = $btnRepairDism
+$script:btnNetReset = $script:btnResetNetwork; $btnNetReset = $btnResetNetwork
+$script:btnFixWU = $script:btnFixUpdates; $btnFixWU = $btnFixUpdates
+$script:btnSearchWingetRepo = $script:btnWingetSearch; $btnSearchWingetRepo = $btnWingetSearch
 
 # Brush references
 $converter = New-Object System.Windows.Media.BrushConverter
@@ -1688,7 +1705,8 @@ function Add-TweakGroup {
     }
     
     $group.Child = $innerStack
-    [void]$tweaksContainer.Children.Add($group)
+        $targetTweakBox = if ($script:tweakContainer) { $script:tweakContainer } elseif ($tweaksContainer) { $tweaksContainer } else { $script:tweaksContainer }
+    if ($targetTweakBox) { [void]$targetTweakBox.Children.Add($group) }
 }
 
 $essentialTweaks = @(
@@ -1762,9 +1780,9 @@ Add-TweakGroup "Interface Explorer" $uiTweaks "#58A6FF"
 Add-TweakGroup "Performance Power" $perfTweaks "#3FB950"
 
 # Profile buttons
-$btnProfileDesktop.Add_Click({ foreach ($t in $script:TweakList) { if ($t.Tag -eq "Essential" -or $t.Tag -eq "UI") { $t.Check.IsChecked = $true } } })
-$btnProfileLaptop.Add_Click({ foreach ($t in $script:TweakList) { if ($t.Tag -eq "Power") { $t.Check.IsChecked = $true } } })
-$btnResetTweaks.Add_Click({ foreach ($t in $script:TweakList) { $t.Check.IsChecked = $false } })
+if ($btnProfileDesktop) { $btnProfileDesktop.Add_Click({ foreach ($t in $script:TweakList) { if ($t.Tag -eq "Essential" -or $t.Tag -eq "UI") { $t.Check.IsChecked = $true } } }) }
+if ($btnProfileLaptop) { $btnProfileLaptop.Add_Click({ foreach ($t in $script:TweakList) { if ($t.Tag -eq "Power") { $t.Check.IsChecked = $true } } }) }
+if ($btnResetTweaks) { $btnResetTweaks.Add_Click({ foreach ($t in $script:TweakList) { $t.Check.IsChecked = $false } }) }
 
 # Apply Tweaks (Async Runspace to prevent UI freezing)
 $btnApplyTweaks.Add_Click({
@@ -1970,7 +1988,8 @@ function Add-FeatureCard {
     [void]$dockPanel.Children.Add($info)
     $card.Child = $dockPanel
     
-    [void]$configContainer.Children.Add($card)
+        $targetConfigBox = if ($script:featureContainer) { $script:featureContainer } elseif ($configContainer) { $configContainer } else { $script:configContainer }
+    if ($targetConfigBox) { [void]$targetConfigBox.Children.Add($card) }
     [void]$script:FeatureList.Add(@{Check=$cb; WinName=$WinName; Name=$Name})
 }
 
@@ -1980,7 +1999,7 @@ $featHeader.FontSize = 18
 $featHeader.FontWeight = "SemiBold"
 $featHeader.Foreground = $accentBrush
 $featHeader.Margin = [System.Windows.Thickness]::new(0, 5, 0, 15)
-[void]$configContainer.Children.Add($featHeader)
+if ($targetConfigBox) { [void]$targetConfigBox.Children.Add($featHeader) }
 
 Add-FeatureCard "Hyper-V Platform" "Microsoft-Hyper-V-All" "Hardware virtualization for VMs and Docker"
 Add-FeatureCard "WSL 2 (Linux)" "Microsoft-Windows-Subsystem-Linux" "Windows Subsystem for Linux"
@@ -1994,7 +2013,7 @@ $maintHeader.FontSize = 18
 $maintHeader.FontWeight = "SemiBold"
 $maintHeader.Foreground = $dangerBrush
 $maintHeader.Margin = [System.Windows.Thickness]::new(0, 25, 0, 10)
-[void]$configContainer.Children.Add($maintHeader)
+if ($targetConfigBox) { [void]$targetConfigBox.Children.Add($maintHeader) }
 
 $maintDesc = New-Object System.Windows.Controls.TextBlock
 $maintDesc.Text = "Deep System Clean configures all cleanup categories and runs the extended Disk Cleanup utility in the background."
@@ -2002,7 +2021,7 @@ $maintDesc.Foreground = $textDimBrush
 $maintDesc.FontSize = 13
 $maintDesc.TextWrapping = "Wrap"
 $maintDesc.Margin = [System.Windows.Thickness]::new(0, 0, 0, 5)
-[void]$configContainer.Children.Add($maintDesc)
+if ($targetConfigBox) { [void]$targetConfigBox.Children.Add($maintDesc) }
 
 $btnEnableFeatures.Add_Click({
     Write-AppLog "Enabling features..." "ACTION"
@@ -2020,7 +2039,7 @@ $btnEnableFeatures.Add_Click({
     Write-AppLog "Feature changes may require a RESTART." "WARN"
 })
 
-$btnDisableFeatures.Add_Click({
+if ($btnDisableFeatures) { $btnDisableFeatures.Add_Click({
     Write-AppLog "Disabling features..." "WARN"
     $window.Cursor = [System.Windows.Input.Cursors]::Wait
     foreach ($f in $script:FeatureList) {
@@ -2033,7 +2052,7 @@ $btnDisableFeatures.Add_Click({
         }
     }
     $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-})
+}) }
 
 $btnDeepClean.Add_Click({
     $result = [System.Windows.MessageBox]::Show("This will run a deep system cleanup.`nContinue?", "Confirm", "YesNo", "Warning")

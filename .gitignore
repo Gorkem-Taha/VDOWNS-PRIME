@@ -1,0 +1,27 @@
+# Windows & PowerShell
+*.log
+*.tmp
+*.bak
+Thumbs.db
+desktop.ini
+
+# VDOWNS Backup Artifacts
+*.vdowns
+VDOWNS_ConfigBackup_*.zip
+Winget_Installed_*.json
+
+# Scratch & Temporary Test Scripts
+*temp*
+test_*.ps1
+test_*.xaml
+analyze_*.py
+
+# IDE & Editor
+.vscode/
+.idea/
+*.suo
+*.user
+
+# PS2EXE Temp Files
+*.obj
+*.pdb

@@ -29,7 +29,7 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
             Start-Process $exePath -Verb RunAs
         } catch {
             Write-Host "ERROR: Please run as Administrator." -ForegroundColor Red
-            Read-Host "Press Enter to exit..."
+            # Read-Host removed for noConsole GUI
         }
     } else {
         Start-Process powershell.exe "-STA -NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
@@ -159,7 +159,7 @@ try {
                             <TextBlock Text="v3.3" FontSize="10" FontWeight="Bold" Foreground="#22D3EE"/>
                         </Border>
                     </StackPanel>
-                    <TextBlock Text="FLUENT SYSTEM ARCHITECT" FontSize="10" FontWeight="Bold" Foreground="#484F58" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="1.2"/>
+                    <TextBlock Text="FLUENT SYSTEM ARCHITECT" FontSize="10" FontWeight="Bold" Foreground="#484F58" HorizontalAlignment="Center" Margin="0,3,0,0"/>
                     <Border Height="1" Background="#21262D" Margin="16,14,16,0"/>
                 </StackPanel>
 
@@ -732,35 +732,6 @@ try {
                                 </Grid>
                             </StackPanel>
                         </Border>
-
-                        <!-- DNS Optimizer & Latency Benchmark -->
-                        <Border Background="#161B22" CornerRadius="10" BorderBrush="#30363D" BorderThickness="1" Padding="18" Margin="0,14,0,0">
-                            <StackPanel>
-                                <Grid Margin="0,0,0,10">
-                                    <TextBlock Text="DNS Optimizer &amp; Latency Benchmark" FontSize="16" FontWeight="Bold" Foreground="#22D3EE"/>
-                                    <TextBlock x:Name="lblActiveDnsAdapter" Text="Active Adapter: Detecting..." Foreground="#8B949E" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                </Grid>
-                                <TextBlock Text="Switch your DNS provider to reduce network latency, block malware, or eliminate ads at the connection level." Foreground="#8B949E" FontSize="12" Margin="0,0,0,12"/>
-                                <Grid Margin="0,0,0,12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="12"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <ComboBox x:Name="cbDnsProvider" Grid.Column="0" Height="36" Background="#21262D" Foreground="#E6EDF3" FontSize="13" VerticalContentAlignment="Center" Padding="8,0"/>
-                                    <Button x:Name="btnApplyDns" Grid.Column="2" Content="APPLY SELECTED DNS" Background="#238636" FontSize="13" Padding="0,10" Style="{StaticResource RoundedBtn}"/>
-                                </Grid>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="12"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Button x:Name="btnPingDns" Grid.Column="0" Content="⚡ BENCHMARK DNS LATENCIES (PING)" Background="#1F6FEB" FontSize="12.5" Padding="0,10" Style="{StaticResource RoundedBtn}"/>
-                                    <Button x:Name="btnResetDns" Grid.Column="2" Content="RESET TO AUTOMATIC (DHCP)" Background="#21262D" FontSize="12.5" Padding="0,10" Style="{StaticResource RoundedBtn}"/>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
@@ -775,7 +746,7 @@ try {
 
                     <Grid Grid.Row="0" Margin="14,6,14,5">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="ACTIVITY CONSOLE" Foreground="#8B949E" FontSize="10" FontWeight="Bold" LetterSpacing="0.8"/>
+                            <TextBlock Text="ACTIVITY CONSOLE" Foreground="#8B949E" FontSize="10" FontWeight="Bold"/>
                             <Border Background="#161B22" CornerRadius="4" Padding="6,1" Margin="8,0,0,0">
                                 <TextBlock x:Name="lblLogCount" Text="READY" Foreground="#58A6FF" FontSize="9" FontWeight="SemiBold"/>
                             </Border>
@@ -3381,5 +3352,5 @@ $window.ShowDialog() | Out-Null
         "VDOWNS PRIME Error", "OK", "Error")
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host "Line: $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Yellow
-    Read-Host "Press Enter to exit..."
+    # Read-Host removed for noConsole GUI
 }

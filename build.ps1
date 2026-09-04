@@ -67,6 +67,8 @@ if (-not $SkipCompile) {
         outputFile  = $outputExe
         STA         = $true
         noConsole   = $true
+        x64         = $true
+        requireAdmin= $true
         title       = "VDOWNS PRIME"
         description = "Windows 10/11 Modern Optimization, Debloater & Winget Package Deployment Suite"
         company     = "VDOWNS Systems"

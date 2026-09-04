@@ -152,5 +152,3 @@ This repository adheres to [Semantic Versioning 2.0.0](https://semver.org/) (`vM
 - **Author:** [Görkem Taha Çanakcı](https://github.com/Gorkem-Taha)
 - **Repository:** [VDOWNS-PRIME](https://github.com/Gorkem-Taha/VDOWNS-PRIME)
 - **License:** [MIT License](LICENSE)
-
-<!-- github-badges-verification: pair-extraordinaire & yolo -->

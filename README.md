@@ -1,12 +1,12 @@
-# ⚡ VDOWNS PRIME v3.3.0 | Fluent System Architect & Optimizer
+# ⚡ VDOWNS PRIME v3.3.1 | Fluent System Architect & Optimizer
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-00A8FF?style=for-the-badge&logo=windows)](https://github.com/Gorkem-Taha/VDOWNS-PRIME)
 [![Language](https://img.shields.io/badge/Language-PowerShell%207%20%2F%205.1%20%2B%20WPF%20XAML-5391FE?style=for-the-badge&logo=powershell)](https://github.com/Gorkem-Taha/VDOWNS-PRIME)
 [![Architecture](https://img.shields.io/badge/Engine-Async%20ThreadPool%20Runspaces-FF5722?style=for-the-badge)](https://github.com/Gorkem-Taha/VDOWNS-PRIME)
-[![Version](https://img.shields.io/badge/Version-v3.3.0%20(SemVer)-2ECC71?style=for-the-badge)](https://github.com/Gorkem-Taha/VDOWNS-PRIME/releases)
+[![Version](https://img.shields.io/badge/Version-v3.3.1%20(SemVer)-2ECC71?style=for-the-badge)](https://github.com/Gorkem-Taha/VDOWNS-PRIME/releases)
 [![License](https://img.shields.io/badge/License-MIT-F39C12?style=for-the-badge)](LICENSE)
 
-**VDOWNS PRIME v3.3.0** is an enterprise-grade Windows 10/11 optimization, debloating, package management, developer profile backup, and automated unattended deployment suite. Engineered with a hardware-accelerated Windows 11 Fluent 2.0 interface, vector SVG iconography, real-time hardware telemetry, live PC Health Scoring, DNS latency benchmarking, safe startup item management, in-GUI custom app wizard, and an asynchronous PowerShell Runspace engine, it guarantees a 60 FPS non-blocking user experience while executing deep registry modifications, DISM repairs, and batch winget deployments.
+**VDOWNS PRIME v3.3.1** is an enterprise-grade Windows 10/11 optimization, debloating, package management, developer profile backup, and automated unattended deployment suite. Engineered with a hardware-accelerated Windows 11 Fluent 2.0 interface, vector SVG iconography, real-time hardware telemetry, live PC Health Scoring, DNS latency benchmarking, safe startup item management, in-GUI custom app wizard, and an asynchronous PowerShell Runspace engine, it guarantees a 60 FPS non-blocking user experience while executing deep registry modifications, DISM repairs, and batch winget deployments.
 
 ---
 

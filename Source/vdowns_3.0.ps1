@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    VDOWNS PRIME v3.1.0 - System Architect (WPF Edition)
+    VDOWNS PRIME v3.2.0 - System Architect (WPF Edition)
 .DESCRIPTION
     Advanced System Configuration Tool built with PowerShell + WPF.
     Features: App Center, System Tweaks, Windows Features, Debloater, Update & Repair Center, Backup & Restore Center, Winget Manager.
@@ -55,39 +55,45 @@ try {
 <Window 
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="VDOWNS PRIME v3.1.0 | System Architect"
-    Width="1280" Height="780"
+    Title="VDOWNS PRIME v3.2.0 | Fluent System Architect"
+    Width="1320" Height="820"
     WindowStartupLocation="CenterScreen"
     WindowState="Maximized"
     Background="#0D1117"
     Foreground="#E6EDF3"
     FontFamily="Segoe UI"
-    MinWidth="920" MinHeight="640">
+    MinWidth="980" MinHeight="680">
 
     <Window.Resources>
 
-        <!-- SIDEBAR BUTTON -->
+        <!-- MODERN SIDEBAR BUTTON WITH SVG PATH -->
         <Style x:Key="SidebarBtn" TargetType="Button">
             <Setter Property="Foreground" Value="#8B949E"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="8,2"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="bd" Background="Transparent" 
-                                BorderBrush="Transparent" BorderThickness="3,0,0,0" 
-                                Padding="17,12">
-                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                        </Border>
+                        <Grid>
+                            <Border x:Name="bd" Background="Transparent" CornerRadius="8" Padding="12,10">
+                                <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border x:Name="activeIndicator" Width="3" Height="20" Background="#58A6FF" 
+                                    CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                    Margin="2,0,0,0" Visibility="Collapsed"/>
+                        </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#1F2937"/>
-                            </Trigger>
-                            <Trigger Property="Tag" Value="Active">
-                                <Setter TargetName="bd" Property="BorderBrush" Value="#58A6FF"/>
                                 <Setter TargetName="bd" Property="Background" Value="#161B22"/>
                                 <Setter Property="Foreground" Value="#E6EDF3"/>
+                            </Trigger>
+                            <Trigger Property="Tag" Value="Active">
+                                <Setter TargetName="bd" Property="Background" Value="#1C2128"/>
+                                <Setter TargetName="activeIndicator" Property="Visibility" Value="Visible"/>
+                                <Setter Property="Foreground" Value="#58A6FF"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -106,8 +112,8 @@ try {
                     <ControlTemplate TargetType="Button">
                         <Grid>
                             <Border x:Name="bg" Background="{TemplateBinding Background}" 
-                                    CornerRadius="6" Padding="{TemplateBinding Padding}"/>
-                            <Border x:Name="hoverOverlay" Background="White" CornerRadius="6" Opacity="0"/>
+                                    CornerRadius="8" Padding="{TemplateBinding Padding}"/>
+                            <Border x:Name="hoverOverlay" Background="White" CornerRadius="8" Opacity="0"/>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" 
                                               Margin="{TemplateBinding Padding}"/>
                         </Grid>
@@ -131,12 +137,12 @@ try {
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="235"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <!-- ==================== SIDEBAR ==================== -->
-        <Border Grid.Column="0" Background="#0D1117" BorderBrush="#30363D" BorderThickness="0,0,1,0">
+        <Border Grid.Column="0" Background="#090D13" BorderBrush="#21262D" BorderThickness="0,0,1,0">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -145,51 +151,127 @@ try {
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Logo -->
-                <StackPanel Grid.Row="0" Margin="0,25,0,20" HorizontalAlignment="Center">
-                    <TextBlock Text="VDOWNS" FontSize="28" FontWeight="Bold" Foreground="#58A6FF" HorizontalAlignment="Center"/>
-                    <TextBlock Text="PRIME V3.1" FontSize="16" FontWeight="SemiBold" Foreground="#484F58" HorizontalAlignment="Center" Margin="0,2,0,0"/>
-                    <Border Height="1" Background="#30363D" Margin="20,15,20,0"/>
+                <!-- Brand Header -->
+                <StackPanel Grid.Row="0" Margin="0,22,0,16" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="VDOWNS" FontSize="24" FontWeight="Bold" Foreground="#58A6FF" VerticalAlignment="Center"/>
+                        <Border Background="#1F2937" CornerRadius="4" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="v3.2" FontSize="10" FontWeight="Bold" Foreground="#22D3EE"/>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="FLUENT SYSTEM ARCHITECT" FontSize="10" FontWeight="Bold" Foreground="#484F58" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="1.2"/>
+                    <Border Height="1" Background="#21262D" Margin="16,14,16,0"/>
                 </StackPanel>
 
-                <!-- Menu -->
-                <StackPanel Grid.Row="1" Margin="0,5,0,0">
-                    <Button x:Name="btnMenuInstall" Style="{StaticResource SidebarBtn}" Tag="Active">
-                        <TextBlock Text="&#9656;  App Center" FontSize="14"/>
-                    </Button>
-                    <Button x:Name="btnMenuWinget" Style="{StaticResource SidebarBtn}">
-                        <TextBlock Text="&#9656;  Winget Manager" FontSize="14"/>
-                    </Button>
-                    <Button x:Name="btnMenuTweaks" Style="{StaticResource SidebarBtn}">
-                        <TextBlock Text="&#9656;  System Tweaks" FontSize="14"/>
-                    </Button>
-                    <Button x:Name="btnMenuConfig" Style="{StaticResource SidebarBtn}">
-                        <TextBlock Text="&#9656;  Features" FontSize="14"/>
-                    </Button>
-                    <Button x:Name="btnMenuDebloat" Style="{StaticResource SidebarBtn}">
-                        <TextBlock Text="&#9656;  Debloater" FontSize="14"/>
-                    </Button>
-                    <Button x:Name="btnMenuUpdates" Style="{StaticResource SidebarBtn}">
-                        <TextBlock Text="&#9656;  Updates" FontSize="14"/>
-                    </Button>
-                    <Button x:Name="btnMenuBackup" Style="{StaticResource SidebarBtn}">
-                        <TextBlock Text="&#9656;  Backup &amp; Restore" FontSize="14"/>
-                    </Button>
-                </StackPanel>
+                <!-- Navigation Menu -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="4,2,4,0">
+                        <Button x:Name="btnMenuInstall" Style="{StaticResource SidebarBtn}" Tag="Active">
+                            <StackPanel Orientation="Horizontal">
+                                <Viewbox Width="16" Height="16" Margin="0,0,10,0">
+                                    <Path Data="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm8 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM3 12a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-4zm8 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" Fill="#58A6FF"/>
+                                </Viewbox>
+                                <TextBlock Text="App Center" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
 
-                <!-- System Info -->
-                <Border Grid.Row="2" Background="#161B22" CornerRadius="8" Margin="12,5" Padding="12,10">
+                        <Button x:Name="btnMenuWinget" Style="{StaticResource SidebarBtn}">
+                            <StackPanel Orientation="Horizontal">
+                                <Viewbox Width="16" Height="16" Margin="0,0,10,0">
+                                    <Path Data="M8 1a1 1 0 00-.5.13L1.5 4.38A1 1 0 001 5.25v5.5a1 1 0 00.5.87l6 3.25a1 1 0 001 0l6-3.25a1 1 0 00.5-.87v-5.5a1 1 0 00-.5-.87L8.5 1.13A1 1 0 008 1zM2.5 5.5l5.5-3 5.5 3-5.5 3-5.5-3zm6 4.14l5.5-3v4.72l-5.5 2.98V9.64zm-1 0v4.72l-5.5-2.98V6.64l5.5 3z" Fill="#22D3EE"/>
+                                </Viewbox>
+                                <TextBlock Text="Winget Manager" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="btnMenuTweaks" Style="{StaticResource SidebarBtn}">
+                            <StackPanel Orientation="Horizontal">
+                                <Viewbox Width="16" Height="16" Margin="0,0,10,0">
+                                    <Path Data="M9.13 1.07a1 1 0 00-1.04.14L1.3 7.07A1 1 0 002 8.75h4.25L4.87 14.93a1 1 0 001.7.94l6.79-5.86a1 1 0 00-.7-1.76H8.41l1.38-6.18a1 1 0 00-.66-1z" Fill="#EAB308"/>
+                                </Viewbox>
+                                <TextBlock Text="System Tweaks" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="btnMenuConfig" Style="{StaticResource SidebarBtn}">
+                            <StackPanel Orientation="Horizontal">
+                                <Viewbox Width="16" Height="16" Margin="0,0,10,0">
+                                    <Path Data="M8 0a2 2 0 00-2 2v.26A5 5 0 004.26 3.4l-.18-.18a2 2 0 00-2.83 2.83l.18.18A5 5 0 001.26 8H1a2 2 0 00-2 2 2 2 0 002 2h.26a5 5 0 001.14 1.74l-.18.18a2 2 0 002.83 2.83l.18-.18A5 5 0 008 17.74V18a2 2 0 002 2 2 2 0 002-2v-.26a5 5 0 001.74-1.14l.18.18a2 2 0 002.83-2.83l-.18-.18A5 5 0 0017.74 12H18a2 2 0 002-2 2 2 0 00-2-2h-.26a5 5 0 00-1.14-1.74l.18-.18a2 2 0 00-2.83-2.83l-.18.18A5 5 0 0012 2.26V2a2 2 0 00-2-2zm0 6a4 4 0 110 8 4 4 0 010-8z" Fill="#A855F7"/>
+                                </Viewbox>
+                                <TextBlock Text="Features &amp; Clean" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="btnMenuDebloat" Style="{StaticResource SidebarBtn}">
+                            <StackPanel Orientation="Horizontal">
+                                <Viewbox Width="16" Height="16" Margin="0,0,10,0">
+                                    <Path Data="M8 0c-.8 0-4.5 1.5-7.5 2.5C.2 2.6 0 2.9 0 3.3c0 7.2 4.4 12 8 13.7 3.6-1.7 8-6.5 8-13.7 0-.4-.2-.7-.5-.8C12.5 1.5 8.8 0 8 0zm0 1.5c.6 0 3.8 1.3 6.5 2.2C14.2 8.7 10.7 13 8 14.6 5.3 13 1.8 8.7 1.5 3.7 4.2 2.8 7.4 1.5 8 1.5z" Fill="#EF4444"/>
+                                </Viewbox>
+                                <TextBlock Text="OS Debloater" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="btnMenuUpdates" Style="{StaticResource SidebarBtn}">
+                            <StackPanel Orientation="Horizontal">
+                                <Viewbox Width="16" Height="16" Margin="0,0,10,0">
+                                    <Path Data="M8 1.5a6.5 6.5 0 106.18 4.5h-1.57A5 5 0 118 3v2l4-2.5L8 0v1.5z" Fill="#10B981"/>
+                                </Viewbox>
+                                <TextBlock Text="Repair &amp; Updates" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="btnMenuBackup" Style="{StaticResource SidebarBtn}">
+                            <StackPanel Orientation="Horizontal">
+                                <Viewbox Width="16" Height="16" Margin="0,0,10,0">
+                                    <Path Data="M4 4a4 4 0 017.9-1A3.5 3.5 0 0115 6.5a3.5 3.5 0 01-3.5 3.5H4a4 4 0 010-8zm4 1v3.5h2L7.5 11 5 8.5h2V5h1z" Fill="#38BDF8"/>
+                                </Viewbox>
+                                <TextBlock Text="Backup &amp; Deploy" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Live Hardware Telemetry Panel -->
+                <Border Grid.Row="2" Background="#161B22" CornerRadius="10" BorderBrush="#21262D" BorderThickness="1" Margin="10,6" Padding="12,10">
                     <StackPanel>
-                        <TextBlock Text="SYSTEM" FontSize="10" FontWeight="Bold" Foreground="#484F58" Margin="0,0,0,6"/>
-                        <TextBlock x:Name="lblOsInfo" Text="Loading..." Foreground="#8B949E" FontSize="11" TextWrapping="Wrap"/>
-                        <TextBlock x:Name="lblCpuInfo" Text="" Foreground="#8B949E" FontSize="11" Margin="0,3,0,0" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="32"/>
-                        <TextBlock x:Name="lblRamInfo" Text="" Foreground="#8B949E" FontSize="11" Margin="0,3,0,0"/>
+                        <Grid Margin="0,0,0,6">
+                            <TextBlock Text="HARDWARE TELEMETRY" FontSize="9.5" FontWeight="Bold" Foreground="#8B949E"/>
+                            <TextBlock Text="● LIVE" FontSize="9" FontWeight="Bold" Foreground="#3FB950" HorizontalAlignment="Right"/>
+                        </Grid>
+
+                        <TextBlock x:Name="lblOsInfo" Text="Windows 11 x64" Foreground="#C9D1D9" FontSize="11" FontWeight="SemiBold" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+
+                        <!-- CPU Load -->
+                        <Grid Margin="0,6,0,2">
+                            <TextBlock Text="CPU Load" FontSize="10" Foreground="#8B949E"/>
+                            <TextBlock x:Name="lblCpuPct" Text="-- %" FontSize="10" Foreground="#58A6FF" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                        </Grid>
+                        <ProgressBar x:Name="pbCpu" Height="4" Minimum="0" Maximum="100" Value="0" Background="#21262D" Foreground="#58A6FF" BorderThickness="0"/>
+
+                        <!-- RAM Usage -->
+                        <Grid Margin="0,6,0,2">
+                            <TextBlock Text="Memory" FontSize="10" Foreground="#8B949E"/>
+                            <TextBlock x:Name="lblRamPct" Text="-- GB" FontSize="10" Foreground="#3FB950" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                        </Grid>
+                        <ProgressBar x:Name="pbRam" Height="4" Minimum="0" Maximum="100" Value="0" Background="#21262D" Foreground="#3FB950" BorderThickness="0"/>
+
+                        <!-- Disk Space -->
+                        <Grid Margin="0,6,0,2">
+                            <TextBlock Text="Storage (C:)" FontSize="10" Foreground="#8B949E"/>
+                            <TextBlock x:Name="lblDiskPct" Text="-- GB" FontSize="10" Foreground="#A855F7" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                        </Grid>
+                        <ProgressBar x:Name="pbDisk" Height="4" Minimum="0" Maximum="100" Value="0" Background="#21262D" Foreground="#A855F7" BorderThickness="0"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Exit -->
-                <Button Grid.Row="3" x:Name="btnExit" Style="{StaticResource SidebarBtn}" Margin="0,5,0,10">
-                    <TextBlock Foreground="#F85149" FontWeight="SemiBold" FontSize="14" Text="&#10005;  TERMINATE"/>
+                <!-- Terminate Application -->
+                <Button Grid.Row="3" x:Name="btnExit" Style="{StaticResource SidebarBtn}" Margin="8,4,8,12">
+                    <StackPanel Orientation="Horizontal">
+                        <Viewbox Width="14" Height="14" Margin="0,0,8,0">
+                            <Path Data="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z" Fill="#F85149"/>
+                        </Viewbox>
+                        <TextBlock Text="TERMINATE" Foreground="#F85149" FontWeight="Bold" FontSize="12.5"/>
+                    </StackPanel>
                 </Button>
             </Grid>
         </Border>
@@ -202,70 +284,80 @@ try {
             </Grid.RowDefinitions>
 
             <!-- ===== PAGE: APP CENTER ===== -->
-            <Grid x:Name="pageInstall" Grid.Row="0" Margin="25,20,25,15">
+            <Grid x:Name="pageInstall" Grid.Row="0" Margin="25,20,25,12">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/> <!-- 0: Header -->
+                    <RowDefinition Height="Auto"/> <!-- 1: Search & Batch Buttons -->
+                    <RowDefinition Height="Auto"/> <!-- 2: Category Filter Chips -->
+                    <RowDefinition Height="*"/>    <!-- 3: Cards Container -->
+                    <RowDefinition Height="Auto"/> <!-- 4: Progress Panel -->
+                    <RowDefinition Height="Auto"/> <!-- 5: Main Action Buttons -->
                 </Grid.RowDefinitions>
 
+                <!-- Header -->
                 <StackPanel Grid.Row="0" Margin="0,0,0,10">
                     <TextBlock Text="App Center" FontSize="26" FontWeight="Bold" Foreground="#E6EDF3"/>
-                    <TextBlock Text="Discover, install, and manage applications with instant search and official web links" Foreground="#8B949E" FontSize="13" Margin="0,4,0,0"/>
+                    <TextBlock Text="Discover, install, and manage applications with instant category filtering, silent winget execution, and single-click installs" Foreground="#8B949E" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
                 <!-- Search and Controls bar -->
-                <Grid Grid.Row="1" Margin="0,0,0,12">
+                <Grid Grid.Row="1" Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="10"/>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition Width="6"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <Grid Grid.Column="0">
-                        <Border Background="#161B22" CornerRadius="6" BorderBrush="#30363D" BorderThickness="1" Padding="2">
+                        <Border Background="#161B22" CornerRadius="8" BorderBrush="#30363D" BorderThickness="1" Padding="2">
                             <TextBox x:Name="searchBox" Background="Transparent" Foreground="#E6EDF3" 
-                                     BorderThickness="0" FontSize="14" Padding="10,8" CaretBrush="#E6EDF3"/>
+                                     BorderThickness="0" FontSize="13.5" Padding="12,8" CaretBrush="#E6EDF3"/>
                         </Border>
-                        <TextBlock x:Name="searchPlaceholder" Text="  Search applications by name or description..." 
-                                   Foreground="#484F58" FontSize="14" VerticalAlignment="Center" 
-                                   Margin="14,0" IsHitTestVisible="False"/>
+                        <TextBlock x:Name="searchPlaceholder" Text="  🔍  Search 96 software packages by name, keyword, or Winget ID..." 
+                                   Foreground="#484F58" FontSize="13" VerticalAlignment="Center" 
+                                   Margin="12,0" IsHitTestVisible="False"/>
                     </Grid>
 
                     <Button x:Name="btnAppSelectAll" Grid.Column="2" Content="Select All" 
-                            Background="#30363D" Foreground="#E6EDF3" FontSize="12" Padding="12,8" Style="{StaticResource RoundedBtn}"/>
+                            Background="#21262D" Foreground="#E6EDF3" FontSize="12" Padding="14,8" Style="{StaticResource RoundedBtn}"/>
                     <Button x:Name="btnAppDeselectAll" Grid.Column="4" Content="Deselect All" 
-                            Background="#30363D" Foreground="#E6EDF3" FontSize="12" Padding="12,8" Style="{StaticResource RoundedBtn}"/>
+                            Background="#21262D" Foreground="#E6EDF3" FontSize="12" Padding="14,8" Style="{StaticResource RoundedBtn}"/>
                 </Grid>
 
-                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <!-- Category Filter Chips -->
+                <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="0,0,0,12">
+                    <StackPanel x:Name="filterChipsPanel" Orientation="Horizontal"/>
+                </ScrollViewer>
+
+                <!-- App Cards View -->
+                <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel x:Name="appContainer"/>
                 </ScrollViewer>
 
-                <Border x:Name="progressPanel" Grid.Row="3" Visibility="Collapsed" 
-                        Background="#161B22" CornerRadius="8" Padding="15" Margin="0,10,0,0" 
+                <!-- Progress Panel -->
+                <Border x:Name="progressPanel" Grid.Row="4" Visibility="Collapsed" 
+                        Background="#161B22" CornerRadius="8" Padding="14" Margin="0,10,0,0" 
                         BorderBrush="#30363D" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock x:Name="progressText" Text="" Foreground="#E6EDF3" FontSize="14" Margin="0,0,0,8"/>
+                        <TextBlock x:Name="progressText" Text="" Foreground="#E6EDF3" FontSize="13.5" FontWeight="SemiBold" Margin="0,0,0,8"/>
                         <ProgressBar x:Name="progressBar" Height="8" Minimum="0" Maximum="100" Value="0" 
-                                     Foreground="#58A6FF" Background="#30363D" BorderThickness="0"/>
+                                     Foreground="#58A6FF" Background="#21262D" BorderThickness="0"/>
                     </StackPanel>
                 </Border>
 
-                <Grid Grid.Row="4" Margin="0,10,0,0">
+                <!-- Batch Action Buttons -->
+                <Grid Grid.Row="5" Margin="0,12,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="14"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Button x:Name="btnInstall" Grid.Column="0" Content="INSTALL SELECTED" 
-                            Background="#3FB950" FontSize="16" Padding="0,15" Style="{StaticResource RoundedBtn}"/>
-                    <Button x:Name="btnUninstall" Grid.Column="2" Content="UNINSTALL SELECTED" 
-                            Background="#F85149" FontSize="16" Padding="0,15" Style="{StaticResource RoundedBtn}"/>
+                    <Button x:Name="btnInstall" Grid.Column="0" Content="INSTALL SELECTED PACKAGES" 
+                            Background="#238636" FontSize="15" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
+                    <Button x:Name="btnUninstall" Grid.Column="2" Content="UNINSTALL SELECTED PACKAGES" 
+                            Background="#DA3633" FontSize="15" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
                 </Grid>
             </Grid>
 
@@ -296,84 +388,69 @@ try {
                     </Grid.ColumnDefinitions>
 
                     <Grid Grid.Column="0">
-                        <Border Background="#161B22" CornerRadius="6" BorderBrush="#30363D" BorderThickness="1" Padding="2">
+                        <Border Background="#161B22" CornerRadius="8" BorderBrush="#30363D" BorderThickness="1" Padding="2">
                             <TextBox x:Name="wingetSearchBox" Background="Transparent" Foreground="#E6EDF3" 
-                                     BorderThickness="0" FontSize="14" Padding="10,8" CaretBrush="#E6EDF3"/>
+                                     BorderThickness="0" FontSize="13.5" Padding="12,8" CaretBrush="#E6EDF3"/>
                         </Border>
-                        <TextBlock x:Name="wingetSearchPlaceholder" Text="  Type to filter installed apps or search online repo..." 
-                                   Foreground="#484F58" FontSize="14" VerticalAlignment="Center" 
-                                   Margin="14,0" IsHitTestVisible="False"/>
+                        <TextBlock x:Name="wingetSearchPlaceholder" Text="  🔍  Search Microsoft Winget online repository..." 
+                                   Foreground="#484F58" FontSize="13" VerticalAlignment="Center" 
+                                   Margin="12,0" IsHitTestVisible="False"/>
                     </Grid>
 
-                    <Button x:Name="btnScanWingetInstalled" Grid.Column="2" Content="Scan Installed Apps" 
-                            Background="#58A6FF" FontSize="13" Padding="14,8" Style="{StaticResource RoundedBtn}"/>
-                    <Button x:Name="btnSearchWingetRepo" Grid.Column="4" Content="Search Online Repo" 
-                            Background="#A855F7" FontSize="13" Padding="14,8" Style="{StaticResource RoundedBtn}"/>
-                    <Button x:Name="btnExportWingetCustom" Grid.Column="6" Content="Export List" 
-                            Background="#30363D" Foreground="#E6EDF3" FontSize="13" Padding="12,8" Style="{StaticResource RoundedBtn}"/>
+                    <Button x:Name="btnWingetSearch" Grid.Column="2" Content="Search Online" 
+                            Background="#58A6FF" Foreground="White" FontSize="12" Padding="14,8" Style="{StaticResource RoundedBtn}"/>
+                    <Button x:Name="btnScanWingetInstalled" Grid.Column="4" Content="Scan Installed" 
+                            Background="#21262D" Foreground="#E6EDF3" FontSize="12" Padding="14,8" Style="{StaticResource RoundedBtn}"/>
+                    <Button x:Name="btnWingetUpgradeAll" Grid.Column="6" Content="Upgrade All" 
+                            Background="#238636" Foreground="White" FontSize="12" Padding="14,8" Style="{StaticResource RoundedBtn}"/>
                 </Grid>
 
-                <!-- Dynamic Content Area -->
-                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel x:Name="wingetItemsContainer"/>
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="wingetResultsContainer"/>
                 </ScrollViewer>
 
-                <!-- Action Footer -->
-                <Grid Grid.Row="3" Margin="0,10,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="10"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="10"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Button x:Name="btnInstallSelectedWinget" Grid.Column="0" Content="INSTALL SELECTED PACKAGES" 
-                            Background="#3FB950" FontSize="14" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
-                    <Button x:Name="btnRemoveSelectedWinget" Grid.Column="2" Content="UNINSTALL SELECTED PACKAGES" 
-                            Background="#F85149" FontSize="14" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
-                    <Button x:Name="btnAddCustomWingetApp" Grid.Column="4" Content="INSTALL / ADD BY ID" 
-                            Background="#8957E5" FontSize="14" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
-                </Grid>
+                <Border x:Name="wingetProgressPanel" Grid.Row="3" Visibility="Collapsed" 
+                        Background="#161B22" CornerRadius="8" Padding="14" Margin="0,10,0,0" 
+                        BorderBrush="#30363D" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock x:Name="wingetProgressText" Text="Loading Winget Data..." Foreground="#E6EDF3" FontSize="13.5" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <ProgressBar x:Name="wingetProgressBar" Height="6" IsIndeterminate="True" 
+                                     Foreground="#58A6FF" Background="#21262D" BorderThickness="0"/>
+                    </StackPanel>
+                </Border>
             </Grid>
 
-            <!-- ===== PAGE: TWEAKS ===== -->
+            <!-- ===== PAGE: SYSTEM TWEAKS ===== -->
             <Grid x:Name="pageTweaks" Grid.Row="0" Margin="25,20,25,15" Visibility="Collapsed">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                <StackPanel Grid.Row="0" Margin="0,0,0,12">
                     <TextBlock Text="System Tweaks" FontSize="26" FontWeight="Bold" Foreground="#E6EDF3"/>
-                    <TextBlock Text="Apply or revert system optimizations" Foreground="#8B949E" FontSize="13" Margin="0,4,0,0"/>
+                    <TextBlock Text="Safe and reversible performance, privacy, and interface optimizations for Windows 10 and 11" Foreground="#8B949E" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,12">
-                    <Button x:Name="btnProfileDesktop" Content="Desktop Profile" Background="#58A6FF" Padding="15,8" Margin="0,0,8,0" FontSize="13" Style="{StaticResource RoundedBtn}"/>
-                    <Button x:Name="btnProfileLaptop" Content="Laptop Profile" Background="#58A6FF" Padding="15,8" Margin="0,0,8,0" FontSize="13" Style="{StaticResource RoundedBtn}"/>
-                    <Button x:Name="btnResetTweaks" Content="Reset Selection" Background="#484F58" Padding="15,8" FontSize="13" Style="{StaticResource RoundedBtn}"/>
-                </StackPanel>
-
-                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                    <WrapPanel x:Name="tweaksContainer"/>
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="tweakContainer"/>
                 </ScrollViewer>
 
-                <Grid Grid.Row="3" Margin="0,10,0,0">
+                <Grid Grid.Row="2" Margin="0,12,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="14"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Button x:Name="btnApplyTweaks" Grid.Column="0" Content="APPLY SELECTED TWEAKS" 
-                            Background="#A855F7" FontSize="16" Padding="0,15" Style="{StaticResource RoundedBtn}"/>
+                            Background="#238636" FontSize="15" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
                     <Button x:Name="btnRevertTweaks" Grid.Column="2" Content="REVERT SELECTED TWEAKS" 
-                            Background="#3B82F6" FontSize="16" Padding="0,15" Style="{StaticResource RoundedBtn}"/>
+                            Background="#DA3633" FontSize="15" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
                 </Grid>
             </Grid>
 
-            <!-- ===== PAGE: CONFIG ===== -->
+            <!-- ===== PAGE: FEATURES & CONFIG ===== -->
             <Grid x:Name="pageConfig" Grid.Row="0" Margin="25,20,25,15" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -382,108 +459,118 @@ try {
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Margin="0,0,0,12">
-                    <TextBlock Text="Features &amp; Configuration" FontSize="26" FontWeight="Bold" Foreground="#E6EDF3"/>
-                    <TextBlock Text="Enable Windows features and perform system maintenance" Foreground="#8B949E" FontSize="13" Margin="0,4,0,0"/>
+                    <TextBlock Text="Features &amp; Extended Maintenance" FontSize="26" FontWeight="Bold" Foreground="#E6EDF3"/>
+                    <TextBlock Text="Enable optional Windows subsystems and run deep disk cleanup" Foreground="#8B949E" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                    <StackPanel x:Name="configContainer"/>
+                    <StackPanel x:Name="featureContainer"/>
                 </ScrollViewer>
 
-                <Grid Grid.Row="2" Margin="0,10,0,0">
+                <Grid Grid.Row="2" Margin="0,12,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="14"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Button x:Name="btnEnableFeatures" Grid.Column="0" Content="ENABLE SELECTED" 
-                            Background="#3FB950" FontSize="14" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
-                    <Button x:Name="btnDisableFeatures" Grid.Column="2" Content="DISABLE SELECTED" 
-                            Background="#484F58" FontSize="14" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
-                    <Button x:Name="btnDeepClean" Grid.Column="4" Content="DEEP SYSTEM CLEAN" 
-                            Background="#F85149" FontSize="14" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
+                    <Button x:Name="btnInstallFeatures" Grid.Column="0" Content="INSTALL SELECTED FEATURES" 
+                            Background="#238636" FontSize="15" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
+                    <Button x:Name="btnDeepClean" Grid.Column="2" Content="RUN EXTENDED DISK CLEANUP" 
+                            Background="#58A6FF" FontSize="15" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
                 </Grid>
             </Grid>
 
-            <!-- ===== PAGE: DEBLOAT ===== -->
+            <!-- ===== PAGE: DEBLOATER ===== -->
             <Grid x:Name="pageDebloat" Grid.Row="0" Margin="25,20,25,15" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Margin="0,0,0,8">
-                    <TextBlock Text="Advanced Debloater" FontSize="26" FontWeight="Bold" Foreground="#E6EDF3"/>
-                    <TextBlock Text="Remove pre-installed Windows bloatware" Foreground="#8B949E" FontSize="13" Margin="0,4,0,0"/>
+                <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                    <TextBlock Text="Windows Debloater" FontSize="26" FontWeight="Bold" Foreground="#E6EDF3"/>
+                    <TextBlock Text="Safely remove pre-installed Windows UWP apps and telemetry packages to free RAM and background CPU" Foreground="#8B949E" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,12">
-                    <Button x:Name="btnSelectAll" Content="Select All" Background="#484F58" Padding="15,8" Margin="0,0,8,0" FontSize="13" Style="{StaticResource RoundedBtn}"/>
-                    <Button x:Name="btnDeselectAll" Content="Deselect All" Background="#484F58" Padding="15,8" FontSize="13" Style="{StaticResource RoundedBtn}"/>
-                </StackPanel>
-
-                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                    <WrapPanel x:Name="debloatContainer"/>
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="debloatContainer"/>
                 </ScrollViewer>
 
-                <Button x:Name="btnDebloat" Grid.Row="3" Content="INITIATE DEBLOAT SEQUENCE" 
-                        Background="#F85149" FontSize="16" Padding="0,15" Margin="0,10,0,0" Style="{StaticResource RoundedBtn}"/>
+                <Grid Grid.Row="2" Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="14"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="btnDebloatSelectAll" Grid.Column="0" Content="SELECT RECOMMENDED FOR REMOVAL" 
+                            Background="#21262D" FontSize="14" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
+                    <Button x:Name="btnRemoveBloat" Grid.Column="2" Content="REMOVE SELECTED BLOATWARE" 
+                            Background="#DA3633" FontSize="14" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
+                </Grid>
             </Grid>
 
-            <!-- ===== PAGE: UPDATES ===== -->
+            <!-- ===== PAGE: UPDATES & REPAIR ===== -->
             <Grid x:Name="pageUpdates" Grid.Row="0" Margin="25,20,25,15" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Margin="0,0,0,15">
-                    <TextBlock Text="Update &amp; Repair Center" FontSize="26" FontWeight="Bold" Foreground="#E6EDF3"/>
-                    <TextBlock Text="System updates and repair tools" Foreground="#8B949E" FontSize="13" Margin="0,4,0,0"/>
+                <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                    <TextBlock Text="Update &amp; System Repair Center" FontSize="26" FontWeight="Bold" Foreground="#E6EDF3"/>
+                    <TextBlock Text="Update software, scan and repair Windows image corruptions, and reset network stack" Foreground="#8B949E" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <Grid Grid.Row="1" Margin="0,0,0,15">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <!-- Update Cards -->
+                        <Border Background="#161B22" CornerRadius="10" BorderBrush="#30363D" BorderThickness="1" Padding="18" Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="Update Modules" FontSize="16" FontWeight="Bold" Foreground="#58A6FF" Margin="0,0,0,10"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="10"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Button x:Name="btnUpdateApps" Grid.Row="0" Grid.Column="0" Content="UPDATE ALL APPS (WINGET)" Background="#238636" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnUpdateWindows" Grid.Row="0" Grid.Column="2" Content="UPDATE WINDOWS (OS ONLY)" Background="#21262D" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnUpdateDrivers" Grid.Row="2" Grid.Column="0" Content="UPDATE DRIVERS ONLY" Background="#21262D" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnUpdateStore" Grid.Row="2" Grid.Column="2" Content="FORCE MS STORE UPDATES" Background="#21262D" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
 
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Updates" FontSize="18" FontWeight="SemiBold" Foreground="#58A6FF" Margin="0,0,0,10"/>
-                        <Button x:Name="btnUpdateApps" Content="UPDATE ALL APPS (Winget)" Background="#D29922" Foreground="Black" FontSize="13" Padding="0,12" Margin="0,0,0,8" Style="{StaticResource RoundedBtn}"/>
-                        <Button x:Name="btnUpdateWindows" Content="UPDATE WINDOWS (OS)" Background="#3FB950" FontSize="13" Padding="0,12" Margin="0,0,0,8" Style="{StaticResource RoundedBtn}"/>
-                        <Button x:Name="btnUpdateDrivers" Content="UPDATE DRIVERS" Background="#22D3EE" Foreground="Black" FontSize="13" Padding="0,12" Margin="0,0,0,8" Style="{StaticResource RoundedBtn}"/>
-                        <Button x:Name="btnUpdateStore" Content="MS STORE UPDATES" Background="#A855F7" FontSize="13" Padding="0,12" Margin="0,0,0,8" Style="{StaticResource RoundedBtn}"/>
+                        <!-- Repair Cards -->
+                        <Border Background="#161B22" CornerRadius="10" BorderBrush="#30363D" BorderThickness="1" Padding="18">
+                            <StackPanel>
+                                <TextBlock Text="System Repair &amp; Diagnostics" FontSize="16" FontWeight="Bold" Foreground="#A855F7" Margin="0,0,0,10"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="10"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Button x:Name="btnRepairSfc" Grid.Row="0" Grid.Column="0" Content="RUN SFC /SCANNOW" Background="#21262D" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnRepairDism" Grid.Row="0" Grid.Column="2" Content="RUN DISM REPAIR" Background="#21262D" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnResetNetwork" Grid.Row="2" Grid.Column="0" Content="RESET NETWORK STACK" Background="#21262D" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnFixUpdates" Grid.Row="2" Grid.Column="2" Content="PURGE UPDATE CACHE" Background="#DA3633" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
-
-                    <StackPanel Grid.Column="2">
-                        <TextBlock Text="System Repair" FontSize="18" FontWeight="SemiBold" Foreground="#F85149" Margin="0,0,0,10"/>
-                        <Button x:Name="btnSfc" Content="RUN SFC /SCANNOW" Background="#30363D" FontSize="13" Padding="0,12" Margin="0,0,0,8" Style="{StaticResource RoundedBtn}"/>
-                        <Button x:Name="btnDism" Content="RUN DISM REPAIR" Background="#30363D" FontSize="13" Padding="0,12" Margin="0,0,0,8" Style="{StaticResource RoundedBtn}"/>
-                        <Button x:Name="btnNetReset" Content="RESET NETWORK STACK" Background="#D29922" Foreground="Black" FontSize="13" Padding="0,12" Margin="0,0,0,8" Style="{StaticResource RoundedBtn}"/>
-                        <Button x:Name="btnFixWU" Content="EMERGENCY: FIX UPDATES" Background="#F85149" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
-                    </StackPanel>
-                </Grid>
-
-                <Border Grid.Row="2" Background="#0D1117" CornerRadius="8" BorderBrush="#30363D" BorderThickness="1">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="  Command Output" Foreground="#484F58" FontSize="12" Margin="10,8,0,5"/>
-                        <TextBox x:Name="outputBox" Grid.Row="1" IsReadOnly="True" TextWrapping="Wrap" 
-                                 VerticalScrollBarVisibility="Auto" Background="Transparent" Foreground="#3FB950" 
-                                 FontFamily="Consolas" FontSize="12" BorderThickness="0" Padding="10,5"
-                                 AcceptsReturn="True"/>
-                    </Grid>
-                </Border>
+                </ScrollViewer>
             </Grid>
 
             <!-- ===== PAGE: BACKUP & RESTORE ===== -->
@@ -493,61 +580,61 @@ try {
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Margin="0,0,0,15">
-                    <TextBlock Text="Backup &amp; Restore Center" FontSize="26" FontWeight="Bold" Foreground="#E6EDF3"/>
-                    <TextBlock Text="Export or import app lists, tweak preferences, and application configurations" Foreground="#8B949E" FontSize="13" Margin="0,4,0,0"/>
+                <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                    <TextBlock Text="Backup, Deploy &amp; Restore Center" FontSize="26" FontWeight="Bold" Foreground="#E6EDF3"/>
+                    <TextBlock Text="Export configurations, generate unattended bare-metal deployment scripts, and archive developer environments" Foreground="#8B949E" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <!-- SECTION 1: SYSTEM PROFILE BACKUP -->
-                        <Border Background="#161B22" CornerRadius="8" BorderBrush="#30363D" BorderThickness="1" Padding="20" Margin="0,0,0,15">
+                        <Border Background="#161B22" CornerRadius="10" BorderBrush="#30363D" BorderThickness="1" Padding="18" Margin="0,0,0,14">
                             <StackPanel>
-                                <TextBlock Text="1. VDOWNS System Profile (.vdowns)" FontSize="18" FontWeight="Bold" Foreground="#58A6FF" Margin="0,0,0,6"/>
-                                <TextBlock Text="Export your currently selected apps, active tweaks, and debloat settings into a single portable profile file. Import it on a fresh system to auto-select and batch install everything." Foreground="#8B949E" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                                <TextBlock Text="1. VDOWNS System Profile &amp; Unattended Script" FontSize="17" FontWeight="Bold" Foreground="#58A6FF" Margin="0,0,0,6"/>
+                                <TextBlock Text="Export your currently selected apps, active tweaks, and debloat settings into a portable profile file, or generate a standalone script to provision new PCs from a USB drive." Foreground="#8B949E" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,14"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="12"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Button x:Name="btnExportProfile" Grid.Column="0" Content="EXPORT PROFILE (.vdowns)" Background="#58A6FF" FontSize="14" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
-                                    <Button x:Name="btnImportProfile" Grid.Column="2" Content="IMPORT PROFILE &amp; APPLY" Background="#3FB950" FontSize="14" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnExportProfile" Grid.Column="0" Content="EXPORT PROFILE (.vdowns)" Background="#58A6FF" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnImportProfile" Grid.Column="2" Content="IMPORT PROFILE &amp; APPLY" Background="#238636" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
                                 </Grid>
-                                <Button x:Name="btnExportUnattendedScript" Margin="0,12,0,0" Content="⚡ GENERATE UNATTENDED STANDALONE SETUP SCRIPT (.ps1)" Background="#238636" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
+                                <Button x:Name="btnExportUnattendedScript" Margin="0,10,0,0" Content="⚡ GENERATE UNATTENDED STANDALONE SETUP SCRIPT (.ps1)" Background="#1F6FEB" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
                             </StackPanel>
                         </Border>
 
                         <!-- SECTION 2: APPDATA CONFIG BACKUP -->
-                        <Border Background="#161B22" CornerRadius="8" BorderBrush="#30363D" BorderThickness="1" Padding="20" Margin="0,0,0,15">
+                        <Border Background="#161B22" CornerRadius="10" BorderBrush="#30363D" BorderThickness="1" Padding="18" Margin="0,0,0,14">
                             <StackPanel>
-                                <TextBlock Text="2. Application Settings &amp; Config Backup (.zip)" FontSize="18" FontWeight="Bold" Foreground="#A855F7" Margin="0,0,0,6"/>
-                                <TextBlock Text="Backup popular app configurations (VS Code settings &amp; extensions, Git config, PowerShell profile, Windows Terminal settings, Notepad++ preferences) into a compressed Zip archive. Restore on a new PC to keep your exact workflow." Foreground="#8B949E" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                                <TextBlock Text="2. Developer Environment &amp; AppData Snapshot (.zip)" FontSize="17" FontWeight="Bold" Foreground="#A855F7" Margin="0,0,0,6"/>
+                                <TextBlock Text="Asynchronously archive developer tools (VS Code settings &amp; extension manifest, Cursor, Git identity, PowerShell profile, Windows Terminal, Notepad++, SSH configs) into a compressed archive with non-blocking UI." Foreground="#8B949E" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,14"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="12"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Button x:Name="btnBackupConfig" Grid.Column="0" Content="CREATE CONFIG BACKUP (.zip)" Background="#A855F7" FontSize="14" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
-                                    <Button x:Name="btnRestoreConfig" Grid.Column="2" Content="RESTORE CONFIG BACKUP (.zip)" Background="#D29922" Foreground="Black" FontSize="14" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnBackupConfig" Grid.Column="0" Content="CREATE DEVELOPER BACKUP (.zip)" Background="#8957E5" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnRestoreConfig" Grid.Column="2" Content="RESTORE DEVELOPER BACKUP (.zip)" Background="#D29922" Foreground="Black" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
                                 </Grid>
                             </StackPanel>
                         </Border>
 
                         <!-- SECTION 3: WINGET BUNDLE BACKUP -->
-                        <Border Background="#161B22" CornerRadius="8" BorderBrush="#30363D" BorderThickness="1" Padding="20">
+                        <Border Background="#161B22" CornerRadius="10" BorderBrush="#30363D" BorderThickness="1" Padding="18">
                             <StackPanel>
-                                <TextBlock Text="3. Winget Installed Package Export" FontSize="18" FontWeight="Bold" Foreground="#22D3EE" Margin="0,0,0,6"/>
-                                <TextBlock Text="Export all software installed on this PC via Winget native package export, or import a winget file to install missing software." Foreground="#8B949E" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                                <TextBlock Text="3. Winget Installed Packages List" FontSize="17" FontWeight="Bold" Foreground="#22D3EE" Margin="0,0,0,6"/>
+                                <TextBlock Text="Export all installed applications via native Winget manifest, or restore missing packages on a clean installation." Foreground="#8B949E" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,14"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="12"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Button x:Name="btnWingetExport" Grid.Column="0" Content="EXPORT WINGET LIST" Background="#30363D" FontSize="14" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
-                                    <Button x:Name="btnWingetImport" Grid.Column="2" Content="IMPORT WINGET LIST" Background="#30363D" FontSize="14" Padding="0,14" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnWingetExport" Grid.Column="0" Content="EXPORT WINGET MANIFEST" Background="#21262D" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnWingetImport" Grid.Column="2" Content="IMPORT WINGET MANIFEST" Background="#21262D" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
                                 </Grid>
                             </StackPanel>
                         </Border>
@@ -555,22 +642,32 @@ try {
                 </ScrollViewer>
             </Grid>
 
-            <!-- ===== LOG PANEL ===== -->
-            <Border Grid.Row="1" Background="#161B22" BorderBrush="#30363D" BorderThickness="0,1,0,0">
-                <Grid Height="120">
+            <!-- ===== COLLAPSIBLE LIVE LOG PANEL ===== -->
+            <Border Grid.Row="1" Background="#0D1117" BorderBrush="#21262D" BorderThickness="0,1,0,0">
+                <Grid x:Name="logPanelGrid" Height="130">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <Grid Grid.Row="0" Margin="15,8,15,5">
-                        <TextBlock Text="Activity Log" Foreground="#484F58" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        <Button x:Name="btnClearLog" HorizontalAlignment="Right" Content="Clear" 
-                                Background="Transparent" Foreground="#8B949E" FontSize="11" 
-                                Padding="8,3" Style="{StaticResource RoundedBtn}"/>
+
+                    <Grid Grid.Row="0" Margin="14,6,14,5">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="ACTIVITY CONSOLE" Foreground="#8B949E" FontSize="10" FontWeight="Bold" LetterSpacing="0.8"/>
+                            <Border Background="#161B22" CornerRadius="4" Padding="6,1" Margin="8,0,0,0">
+                                <TextBlock x:Name="lblLogCount" Text="READY" Foreground="#58A6FF" FontSize="9" FontWeight="SemiBold"/>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button x:Name="btnCopyLog" Content="📋 Copy" Background="Transparent" Foreground="#8B949E" FontSize="11" Padding="8,3" Style="{StaticResource RoundedBtn}" Margin="0,0,6,0"/>
+                            <Button x:Name="btnClearLog" Content="🧹 Clear" Background="Transparent" Foreground="#8B949E" FontSize="11" Padding="8,3" Style="{StaticResource RoundedBtn}" Margin="0,0,6,0"/>
+                            <Button x:Name="btnToggleLog" Content="▼ Collapse" Background="#161B22" Foreground="#C9D1D9" FontSize="10.5" FontWeight="SemiBold" Padding="10,3" Style="{StaticResource RoundedBtn}"/>
+                        </StackPanel>
                     </Grid>
+
                     <TextBox x:Name="logBox" Grid.Row="1" IsReadOnly="True" TextWrapping="Wrap" 
-                             VerticalScrollBarVisibility="Auto" Background="Transparent" Foreground="#8B949E" 
-                             FontFamily="Consolas" FontSize="11" BorderThickness="0" Padding="15,2"
+                             VerticalScrollBarVisibility="Auto" Background="#090D13" Foreground="#8B949E" 
+                             FontFamily="Consolas" FontSize="11" BorderThickness="0" Padding="14,4"
                              AcceptsReturn="True"/>
                 </Grid>
             </Border>
@@ -2158,7 +2255,7 @@ if ($btnExportUnattendedScript) {
                 $scriptContent = @"
 <#
 .SYNOPSIS
-    VDOWNS PRIME v3.1.0 - Automated Standalone Unattended Deployment Script
+    VDOWNS PRIME v3.2.0 - Automated Standalone Unattended Deployment Script
     Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
 #>
 # Self-elevation check
@@ -2536,32 +2633,100 @@ if ($btnWingetImport) {
     })
 }
 
-# 14. SYSTEM INFO
+# 14. LIVE HARDWARE TELEMETRY & CONSOLE DRAWER
 # =============================================================================
+
+# A. Collapsible Log Drawer & Copy Handler
+if ($btnToggleLog -and $logPanelGrid) {
+    $script:logExpanded = $true
+    $btnToggleLog.Add_Click({
+        if ($script:logExpanded) {
+            $logPanelGrid.Height = 32
+            $logBox.Visibility = "Collapsed"
+            $btnToggleLog.Content = "▲ Expand"
+            $script:logExpanded = $false
+        } else {
+            $logPanelGrid.Height = 130
+            $logBox.Visibility = "Visible"
+            $btnToggleLog.Content = "▼ Collapse"
+            $script:logExpanded = $true
+        }
+    })
+}
+
+if ($btnCopyLog -and $logBox) {
+    $btnCopyLog.Add_Click({
+        try {
+            if (-not [string]::IsNullOrEmpty($logBox.Text)) {
+                [System.Windows.Clipboard]::SetText($logBox.Text)
+                Write-AppLog "Activity logs copied to clipboard." "SUCCESS"
+            }
+        } catch {}
+    })
+}
+
+if ($btnClearLog -and $logBox) {
+    $btnClearLog.Add_Click({
+        $logBox.Clear()
+        if ($lblLogCount) { $lblLogCount.Text = "CLEARED" }
+    })
+}
+
+# B. Live Hardware Telemetry Engine
 try {
     $os = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
     $lblOsInfo.Text = ($os.Caption -replace "Microsoft ", "")
-    $cpu = (Get-CimInstance Win32_Processor -ErrorAction Stop).Name -replace '\s+', ' ' -replace '^\s+', ''
-    $lblCpuInfo.Text = $cpu
-    $ramGB = [math]::Round($os.TotalVisibleMemorySize / 1MB, 1)
-    $freeGB = [math]::Round($os.FreePhysicalMemory / 1MB, 1)
-    $lblRamInfo.Text = "RAM: ${freeGB}GB free / ${ramGB}GB"
 } catch {
-    $lblOsInfo.Text = "Could not load system info"
+    $lblOsInfo.Text = "Windows 10/11"
 }
 
-# Initial log
-Write-AppLog "VDOWNS PRIME v3.1.0 initialized." "INFO"
-Write-AppLog "Running as Administrator." "SUCCESS"
+$script:telemetryTimer = New-Object System.Windows.Threading.DispatcherTimer
+$script:telemetryTimer.Interval = [TimeSpan]::FromSeconds(2.5)
+$script:telemetryTimer.Add_Tick({
+    try {
+        # Memory
+        $osInfo = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
+        if ($osInfo) {
+            $totalGB = [math]::Round($osInfo.TotalVisibleMemorySize / 1MB, 1)
+            $freeGB  = [math]::Round($osInfo.FreePhysicalMemory / 1MB, 1)
+            $usedGB  = [math]::Round($totalGB - $freeGB, 1)
+            $ramPct  = [math]::Min(100, [math]::Max(0, [int](($usedGB / $totalGB) * 100)))
+            if ($lblRamPct) { $lblRamPct.Text = "${usedGB}/${totalGB} GB (${ramPct}%)" }
+            if ($pbRam) { $pbRam.Value = $ramPct }
+        }
+
+        # Disk C:
+        $drives = [System.IO.DriveInfo]::GetDrives() | Where-Object { $_.Name -eq "C:\" -and $_.IsReady }
+        if ($drives) {
+            $d = $drives[0]
+            $dFreeGB  = [math]::Round($d.AvailableFreeSpace / 1GB, 1)
+            $dTotalGB = [math]::Round($d.TotalSize / 1GB, 1)
+            $dUsedGB  = [math]::Round($dTotalGB - $dFreeGB, 1)
+            $dPct     = [math]::Min(100, [math]::Max(0, [int](($dUsedGB / $dTotalGB) * 100)))
+            if ($lblDiskPct) { $lblDiskPct.Text = "${dFreeGB} GB free" }
+            if ($pbDisk) { $pbDisk.Value = $dPct }
+        }
+
+        # CPU Load
+        $cpu = Get-CimInstance Win32_Processor -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($cpu -and $cpu.LoadPercentage -ne $null) {
+            $load = [int]$cpu.LoadPercentage
+            if ($lblCpuPct) { $lblCpuPct.Text = "${load} %" }
+            if ($pbCpu) { $pbCpu.Value = $load }
+        }
+    } catch {}
+})
+$script:telemetryTimer.Start()
+
+# Initial logs
+Write-AppLog "VDOWNS PRIME v3.2.0 (Fluent UI Edition) initialized." "INFO"
+Write-AppLog "Hardware-accelerated WPF subsystem online." "SUCCESS"
 try {
     $wv = & winget --version 2>$null
     Write-AppLog "Winget detected: $wv" "INFO"
 } catch { Write-AppLog "Winget not found! App Center may not work." "ERROR" }
-
-# Ready status notification
 Write-AppLog "System Architect is ready. Select a category from the sidebar to begin." "SUCCESS"
 
-# =============================================================================
 # 15. SHOW WINDOW
 # =============================================================================
 $window.ShowDialog() | Out-Null

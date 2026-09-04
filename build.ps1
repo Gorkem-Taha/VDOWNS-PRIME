@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    VDOWNS PRIME Build & Compiler Script (v3.2.0)
+    VDOWNS PRIME Build & Compiler Script (v3.3.0)
 .DESCRIPTION
     Validates syntax, verifies integrity, and compiles VDOWNS_PRIME.ps1 into a standalone executable.
 #>
@@ -16,7 +16,7 @@ $outputExe = Join-Path $rootDir "VDOWNS_PRIME.exe"
 $appsJson = Join-Path $rootDir "apps.json"
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "   VDOWNS PRIME - Automated Build System (v3.2.0)         " -ForegroundColor Cyan
+Write-Host "   VDOWNS PRIME - Automated Build System (v3.3.0)         " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
 # 1. Validate apps.json
@@ -72,7 +72,7 @@ if (-not $SkipCompile) {
         company     = "VDOWNS Systems"
         product     = "VDOWNS PRIME"
         copyright   = "Copyright (c) 2026 VDOWNS PRIME Contributors"
-        version     = "3.2.0.0"
+        version     = "3.3.0.0"
         DPIAware    = $true
         supportOS   = $true
     }

@@ -1,0 +1,46 @@
+name: Release Build & Artifact Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Compile Standalone Executable
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Install ps2exe Module
+        shell: pwsh
+        run: |
+          Install-Module -Name ps2exe -Scope CurrentUser -Force -SkipPublisherCheck
+
+      - name: Run Build & Integrity Checks
+        shell: pwsh
+        run: |
+          .\build.ps1
+
+      - name: Compute SHA-256 Checksums
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash -Path .\VDOWNS_PRIME.exe -Algorithm SHA256).Hash
+          "$hash  VDOWNS_PRIME.exe" | Out-File -FilePath .\VDOWNS_PRIME.exe.sha256 -Encoding ascii
+          Write-Host "Executable SHA256: $hash"
+
+      - name: Create GitHub Release & Upload Artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            VDOWNS_PRIME.exe
+            VDOWNS_PRIME.exe.sha256
+            apps.json
+          generate_release_notes: true
+          draft: false
+          prerelease: false

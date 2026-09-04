@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    VDOWNS PRIME v3.2.0 - System Architect (WPF Edition)
+    VDOWNS PRIME v3.3.0 - System Architect (WPF Edition)
 .DESCRIPTION
     Advanced System Configuration Tool built with PowerShell + WPF.
     Features: App Center, System Tweaks, Windows Features, Debloater, Update & Repair Center, Backup & Restore Center, Winget Manager.
@@ -55,7 +55,7 @@ try {
 <Window 
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="VDOWNS PRIME v3.2.0 | Fluent System Architect"
+    Title="VDOWNS PRIME v3.3.0 | Fluent System Architect"
     Width="1320" Height="820"
     WindowStartupLocation="CenterScreen"
     WindowState="Maximized"
@@ -156,7 +156,7 @@ try {
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <TextBlock Text="VDOWNS" FontSize="24" FontWeight="Bold" Foreground="#58A6FF" VerticalAlignment="Center"/>
                         <Border Background="#1F2937" CornerRadius="4" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="v3.2" FontSize="10" FontWeight="Bold" Foreground="#22D3EE"/>
+                            <TextBlock Text="v3.3" FontSize="10" FontWeight="Bold" Foreground="#22D3EE"/>
                         </Border>
                     </StackPanel>
                     <TextBlock Text="FLUENT SYSTEM ARCHITECT" FontSize="10" FontWeight="Bold" Foreground="#484F58" HorizontalAlignment="Center" Margin="0,3,0,0" LetterSpacing="1.2"/>
@@ -279,12 +279,39 @@ try {
         <!-- ==================== MAIN CONTENT ==================== -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/> <!-- 0: Top Health & Optimization Banner -->
+                <RowDefinition Height="*"/>    <!-- 1: Page Views Container -->
+                <RowDefinition Height="Auto"/> <!-- 2: Collapsible Console Drawer -->
             </Grid.RowDefinitions>
 
+            <!-- ===== TOP DASHBOARD & PC HEALTH BANNER ===== -->
+            <Border Grid.Row="0" Background="#0C1017" BorderBrush="#21262D" BorderThickness="0,0,0,1" Padding="20,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="#161B22" CornerRadius="6" BorderBrush="#30363D" BorderThickness="1" Padding="10,5" Margin="0,0,12,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🛡️ " FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock Text="PC Optimization Score: " FontSize="12" Foreground="#8B949E" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="lblHealthScore" Text="Analyzing..." FontSize="12" FontWeight="Bold" Foreground="#3FB950" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <Button x:Name="btnRefreshHealth" Content="🔄 Scan Health" Background="#21262D" Foreground="#8B949E" FontSize="11" FontWeight="SemiBold" Padding="10,5" Style="{StaticResource RoundedBtn}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button x:Name="btnPrimeBoost" Content="⚡ 1-CLICK PRIME OPTIMIZATION" Background="#238636" Foreground="White" FontSize="12.5" FontWeight="Bold" Padding="16,7" Style="{StaticResource RoundedBtn}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
             <!-- ===== PAGE: APP CENTER ===== -->
-            <Grid x:Name="pageInstall" Grid.Row="0" Margin="25,20,25,12">
+            <Grid x:Name="pageInstall" Grid.Row="1" Margin="25,20,25,12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/> <!-- 0: Header -->
                     <RowDefinition Height="Auto"/> <!-- 1: Search & Batch Buttons -->
@@ -308,6 +335,8 @@ try {
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="6"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="6"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <Grid Grid.Column="0">
@@ -320,9 +349,11 @@ try {
                                    Margin="12,0" IsHitTestVisible="False"/>
                     </Grid>
 
-                    <Button x:Name="btnAppSelectAll" Grid.Column="2" Content="Select All" 
+                    <Button x:Name="btnAddCustomApp" Grid.Column="2" Content="➕ Add App" 
+                            Background="#1F6FEB" Foreground="White" FontSize="12" FontWeight="SemiBold" Padding="14,8" Style="{StaticResource RoundedBtn}"/>
+                    <Button x:Name="btnAppSelectAll" Grid.Column="4" Content="Select All" 
                             Background="#21262D" Foreground="#E6EDF3" FontSize="12" Padding="14,8" Style="{StaticResource RoundedBtn}"/>
-                    <Button x:Name="btnAppDeselectAll" Grid.Column="4" Content="Deselect All" 
+                    <Button x:Name="btnAppDeselectAll" Grid.Column="6" Content="Deselect All" 
                             Background="#21262D" Foreground="#E6EDF3" FontSize="12" Padding="14,8" Style="{StaticResource RoundedBtn}"/>
                 </Grid>
 
@@ -362,7 +393,7 @@ try {
             </Grid>
 
             <!-- ===== PAGE: WINGET MANAGER ===== -->
-            <Grid x:Name="pageWinget" Grid.Row="0" Margin="25,20,25,15" Visibility="Collapsed">
+            <Grid x:Name="pageWinget" Grid.Row="1" Margin="25,20,25,15" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -421,7 +452,7 @@ try {
             </Grid>
 
             <!-- ===== PAGE: SYSTEM TWEAKS ===== -->
-            <Grid x:Name="pageTweaks" Grid.Row="0" Margin="25,20,25,15" Visibility="Collapsed">
+            <Grid x:Name="pageTweaks" Grid.Row="1" Margin="25,20,25,15" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -451,7 +482,7 @@ try {
             </Grid>
 
             <!-- ===== PAGE: FEATURES & CONFIG ===== -->
-            <Grid x:Name="pageConfig" Grid.Row="0" Margin="25,20,25,15" Visibility="Collapsed">
+            <Grid x:Name="pageConfig" Grid.Row="1" Margin="25,20,25,15" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -464,7 +495,32 @@ try {
                 </StackPanel>
 
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                    <StackPanel x:Name="featureContainer"/>
+                    <StackPanel>
+                        <StackPanel x:Name="featureContainer"/>
+
+                        <!-- Windows Startup Programs Optimizer -->
+                        <Border Background="#161B22" CornerRadius="10" BorderBrush="#30363D" BorderThickness="1" Padding="18" Margin="0,16,0,0">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,10">
+                                    <TextBlock Text="Windows Startup Programs Optimizer" FontSize="16" FontWeight="Bold" Foreground="#A855F7"/>
+                                    <Button x:Name="btnScanStartup" Content="🔄 Scan Startup Items" HorizontalAlignment="Right" Background="#21262D" Foreground="#E6EDF3" FontSize="11" FontWeight="SemiBold" Padding="12,5" Style="{StaticResource RoundedBtn}"/>
+                                </Grid>
+                                <TextBlock Text="Manage background applications that launch automatically when Windows boots. Disabling unnecessary startup items drastically reduces system boot times." Foreground="#8B949E" FontSize="12" Margin="0,0,0,12"/>
+                                <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto" Margin="0,0,0,12">
+                                    <StackPanel x:Name="startupContainer"/>
+                                </ScrollViewer>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button x:Name="btnDisableStartup" Grid.Column="0" Content="DISABLE SELECTED STARTUP ITEMS" Background="#DA3633" FontSize="13" Padding="0,10" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnEnableStartup" Grid.Column="2" Content="RE-ENABLE SELECTED STARTUP ITEMS" Background="#238636" FontSize="13" Padding="0,10" Style="{StaticResource RoundedBtn}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
                 </ScrollViewer>
 
                 <Grid Grid.Row="2" Margin="0,12,0,0">
@@ -481,7 +537,7 @@ try {
             </Grid>
 
             <!-- ===== PAGE: DEBLOATER ===== -->
-            <Grid x:Name="pageDebloat" Grid.Row="0" Margin="25,20,25,15" Visibility="Collapsed">
+            <Grid x:Name="pageDebloat" Grid.Row="1" Margin="25,20,25,15" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -511,7 +567,7 @@ try {
             </Grid>
 
             <!-- ===== PAGE: UPDATES & REPAIR ===== -->
-            <Grid x:Name="pageUpdates" Grid.Row="0" Margin="25,20,25,15" Visibility="Collapsed">
+            <Grid x:Name="pageUpdates" Grid.Row="1" Margin="25,20,25,15" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -544,6 +600,15 @@ try {
                                     <Button x:Name="btnUpdateDrivers" Grid.Row="2" Grid.Column="0" Content="UPDATE DRIVERS ONLY" Background="#21262D" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
                                     <Button x:Name="btnUpdateStore" Grid.Row="2" Grid.Column="2" Content="FORCE MS STORE UPDATES" Background="#21262D" FontSize="13" Padding="0,12" Style="{StaticResource RoundedBtn}"/>
                                 </Grid>
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button x:Name="btnPauseUpdates" Grid.Column="0" Content="PAUSE UPDATES (35 DAYS)" Background="#D29922" Foreground="Black" FontWeight="SemiBold" FontSize="12.5" Padding="0,11" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnResumeUpdates" Grid.Column="2" Content="RESUME AUTOMATIC UPDATES" Background="#21262D" FontSize="12.5" Padding="0,11" Style="{StaticResource RoundedBtn}"/>
+                                </Grid>
                             </StackPanel>
                         </Border>
 
@@ -569,12 +634,41 @@ try {
                                 </Grid>
                             </StackPanel>
                         </Border>
+
+                        <!-- DNS Optimizer & Latency Benchmark -->
+                        <Border Background="#161B22" CornerRadius="10" BorderBrush="#30363D" BorderThickness="1" Padding="18" Margin="0,14,0,0">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,10">
+                                    <TextBlock Text="DNS Optimizer &amp; Latency Benchmark" FontSize="16" FontWeight="Bold" Foreground="#22D3EE"/>
+                                    <TextBlock x:Name="lblActiveDnsAdapter" Text="Active Adapter: Detecting..." Foreground="#8B949E" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="Switch your DNS provider to reduce network latency, block malware, or eliminate ads at the connection level." Foreground="#8B949E" FontSize="12" Margin="0,0,0,12"/>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox x:Name="cbDnsProvider" Grid.Column="0" Height="36" Background="#21262D" Foreground="#E6EDF3" FontSize="13" VerticalContentAlignment="Center" Padding="8,0"/>
+                                    <Button x:Name="btnApplyDns" Grid.Column="2" Content="APPLY SELECTED DNS" Background="#238636" FontSize="13" Padding="0,10" Style="{StaticResource RoundedBtn}"/>
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button x:Name="btnPingDns" Grid.Column="0" Content="⚡ BENCHMARK DNS LATENCIES (PING)" Background="#1F6FEB" FontSize="12.5" Padding="0,10" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnResetDns" Grid.Column="2" Content="RESET TO AUTOMATIC (DHCP)" Background="#21262D" FontSize="12.5" Padding="0,10" Style="{StaticResource RoundedBtn}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
 
             <!-- ===== PAGE: BACKUP & RESTORE ===== -->
-            <Grid x:Name="pageBackup" Grid.Row="0" Margin="25,20,25,15" Visibility="Collapsed">
+            <Grid x:Name="pageBackup" Grid.Row="1" Margin="25,20,25,15" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -638,12 +732,41 @@ try {
                                 </Grid>
                             </StackPanel>
                         </Border>
+
+                        <!-- DNS Optimizer & Latency Benchmark -->
+                        <Border Background="#161B22" CornerRadius="10" BorderBrush="#30363D" BorderThickness="1" Padding="18" Margin="0,14,0,0">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,10">
+                                    <TextBlock Text="DNS Optimizer &amp; Latency Benchmark" FontSize="16" FontWeight="Bold" Foreground="#22D3EE"/>
+                                    <TextBlock x:Name="lblActiveDnsAdapter" Text="Active Adapter: Detecting..." Foreground="#8B949E" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="Switch your DNS provider to reduce network latency, block malware, or eliminate ads at the connection level." Foreground="#8B949E" FontSize="12" Margin="0,0,0,12"/>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox x:Name="cbDnsProvider" Grid.Column="0" Height="36" Background="#21262D" Foreground="#E6EDF3" FontSize="13" VerticalContentAlignment="Center" Padding="8,0"/>
+                                    <Button x:Name="btnApplyDns" Grid.Column="2" Content="APPLY SELECTED DNS" Background="#238636" FontSize="13" Padding="0,10" Style="{StaticResource RoundedBtn}"/>
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button x:Name="btnPingDns" Grid.Column="0" Content="⚡ BENCHMARK DNS LATENCIES (PING)" Background="#1F6FEB" FontSize="12.5" Padding="0,10" Style="{StaticResource RoundedBtn}"/>
+                                    <Button x:Name="btnResetDns" Grid.Column="2" Content="RESET TO AUTOMATIC (DHCP)" Background="#21262D" FontSize="12.5" Padding="0,10" Style="{StaticResource RoundedBtn}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
 
             <!-- ===== COLLAPSIBLE LIVE LOG PANEL ===== -->
-            <Border Grid.Row="1" Background="#0D1117" BorderBrush="#21262D" BorderThickness="0,1,0,0">
+            <Border Grid.Row="2" Background="#0D1117" BorderBrush="#21262D" BorderThickness="0,1,0,0">
                 <Grid x:Name="logPanelGrid" Height="130">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -2255,7 +2378,7 @@ if ($btnExportUnattendedScript) {
                 $scriptContent = @"
 <#
 .SYNOPSIS
-    VDOWNS PRIME v3.2.0 - Automated Standalone Unattended Deployment Script
+    VDOWNS PRIME v3.3.0 - Automated Standalone Unattended Deployment Script
     Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
 #>
 # Self-elevation check
@@ -2633,6 +2756,526 @@ if ($btnWingetImport) {
     })
 }
 
+# =============================================================================
+# 13B. PC HEALTH SCORE & 1-CLICK PRIME OPTIMIZATION
+# =============================================================================
+function Get-SystemHealthScore {
+    $score = 100
+    $deductions = [System.Collections.ArrayList]::new()
+    
+    # 1. Telemetry DiagTrack service
+    try {
+        $svc = Get-Service -Name "DiagTrack" -ErrorAction SilentlyContinue
+        if ($svc -and $svc.Status -eq "Running") {
+            $score -= 15
+            [void]$deductions.Add("Telemetry service active (-15)")
+        }
+    } catch {}
+
+    # 2. AllowTelemetry registry
+    try {
+        $val = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -EA SilentlyContinue).AllowTelemetry
+        if ($val -ne 0) {
+            $score -= 15
+            [void]$deductions.Add("Telemetry policies enabled (-15)")
+        }
+    } catch {}
+
+    # 3. GameDVR
+    try {
+        $g = (Get-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -EA SilentlyContinue).GameDVR_Enabled
+        if ($g -eq 1) {
+            $score -= 10
+            [void]$deductions.Add("Xbox GameDVR background recorder active (-10)")
+        }
+    } catch {}
+
+    # 4. SysMain
+    try {
+        $sm = Get-Service -Name "SysMain" -ErrorAction SilentlyContinue
+        if ($sm -and $sm.Status -eq "Running") {
+            $score -= 10
+            [void]$deductions.Add("SysMain Superfetch active (-10)")
+        }
+    } catch {}
+
+    # 5. Restore Point Check
+    try {
+        $rp = Get-ComputerRestorePoint -ErrorAction SilentlyContinue | Select-Object -Last 1
+        if (-not $rp) {
+            $score -= 10
+            [void]$deductions.Add("No recent System Restore Point found (-10)")
+        }
+    } catch {}
+
+    # 6. File extensions hidden
+    try {
+        $he = (Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -EA SilentlyContinue).HideFileExt
+        if ($he -ne 0) {
+            $score -= 10
+            [void]$deductions.Add("Known file extensions hidden (-10)")
+        }
+    } catch {}
+
+    $finalScore = [math]::Max(0, [math]::Min(100, $score))
+    return @{ Score = $finalScore; Deductions = $deductions }
+}
+
+function Update-HealthScoreUI {
+    $res = Get-SystemHealthScore
+    if ($lblHealthScore) {
+        $lblHealthScore.Text = "$($res.Score)/100"
+        if ($res.Score -ge 80) {
+            $lblHealthScore.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#3FB950")
+        } elseif ($res.Score -ge 50) {
+            $lblHealthScore.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#D29922")
+        } else {
+            $lblHealthScore.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#F85149")
+        }
+    }
+}
+
+if ($btnRefreshHealth) {
+    $btnRefreshHealth.Add_Click({
+        Update-HealthScoreUI
+        Write-AppLog "System optimization health score refreshed." "INFO"
+    })
+}
+
+if ($btnPrimeBoost) {
+    $btnPrimeBoost.Add_Click({
+        $msg = "⚡ PRIME 1-CLICK SYSTEM OPTIMIZATION`n`nThis action will safely apply recommended system baselines:`n1. Create a System Restore Point ('VDOWNS_PrimeBoost')`n2. Disable Windows Telemetry & DiagTrack background data collection`n3. Disable Xbox Game DVR background recording`n4. Disable SysMain Superfetch SSD thrashing`n5. Enable file extensions and Dark Mode`n6. Purge temporary Windows cache`n`nDo you want to proceed?"
+        $res = [System.Windows.MessageBox]::Show($msg, "Confirm Prime Optimization", "YesNo", "Question")
+        if ($res -ne [System.Windows.Forms.DialogResult]::Yes -and $res -ne "Yes") { return }
+
+        Write-AppLog "Executing 1-Click Prime Optimization pipeline..." "ACTION"
+        $btnPrimeBoost.IsEnabled = $false
+
+        $runspace = [runspacefactory]::CreateRunspace()
+        $runspace.Open()
+        $runspace.SessionStateProxy.SetVariable("window", $script:window)
+        $runspace.SessionStateProxy.SetVariable("logBox", $script:logBox)
+        $runspace.SessionStateProxy.SetVariable("btnPrimeBoost", $btnPrimeBoost)
+
+        $ps = [powershell]::Create()
+        $ps.Runspace = $runspace
+        $ps.AddScript({
+            function Log-Msg($txt, $type="INFO") {
+                if ($window -and $logBox) {
+                    $window.Dispatcher.Invoke([Action]{
+                        $ts = Get-Date -Format 'HH:mm:ss'
+                        $logBox.AppendText("[$ts] [$type] $txt`r`n")
+                        $logBox.ScrollToEnd()
+                    })
+                }
+            }
+
+            try {
+                Log-Msg "[1/6] Creating System Restore Point..." "ACTION"
+                try {
+                    Enable-ComputerRestore -Drive "C:\" -EA SilentlyContinue
+                    Checkpoint-Computer -Description "VDOWNS_PrimeBoost" -RestorePointType "MODIFY_SETTINGS" -EA SilentlyContinue
+                    Log-Msg "System Restore Point created." "SUCCESS"
+                } catch { Log-Msg "Restore Point skipped: $($_.Exception.Message)" "WARN" }
+
+                Log-Msg "[2/6] Disabling Windows Telemetry & Advertising ID..." "ACTION"
+                Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Value 0 -Type DWord -Force -EA SilentlyContinue
+                Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Value 0 -Type DWord -Force -EA SilentlyContinue
+                Stop-Service -Name "DiagTrack" -Force -EA SilentlyContinue
+                Set-Service -Name "DiagTrack" -StartupType Disabled -EA SilentlyContinue
+
+                Log-Msg "[3/6] Disabling Xbox GameDVR background recording..." "ACTION"
+                Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Value 0 -Type DWord -Force -EA SilentlyContinue
+                Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" -Name "AllowGameDVR" -Value 0 -Type DWord -Force -EA SilentlyContinue
+
+                Log-Msg "[4/6] Disabling SysMain Superfetch..." "ACTION"
+                Stop-Service -Name "SysMain" -Force -EA SilentlyContinue
+                Set-Service -Name "SysMain" -StartupType Disabled -EA SilentlyContinue
+
+                Log-Msg "[5/6] Applying Dark Mode & Showing File Extensions..." "ACTION"
+                Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0 -Type DWord -Force -EA SilentlyContinue
+                Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0 -Type DWord -Force -EA SilentlyContinue
+                Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -Value 0 -Type DWord -Force -EA SilentlyContinue
+
+                Log-Msg "[6/6] Purging Temporary File Caches..." "ACTION"
+                Remove-Item "$env:TEMP\*" -Recurse -Force -EA SilentlyContinue
+
+                Log-Msg "Prime 1-Click Optimization successfully applied!" "SUCCESS"
+            } catch {
+                Log-Msg "Optimization error: $($_.Exception.Message)" "ERROR"
+            } finally {
+                if ($window -and $btnPrimeBoost) {
+                    $window.Dispatcher.Invoke([Action]{
+                        $btnPrimeBoost.IsEnabled = $true
+                        Update-HealthScoreUI
+                        [System.Windows.MessageBox]::Show("Prime Optimization completed successfully!`nSystem score updated.", "Optimization Complete", "OK", "Information")
+                    })
+                }
+            }
+        })
+
+        $handle = $ps.BeginInvoke()
+        $timer = New-Object System.Windows.Threading.DispatcherTimer
+        $timer.Interval = [TimeSpan]::FromMilliseconds(500)
+        $timer.Add_Tick({
+            if ($handle.IsCompleted) {
+                $timer.Stop()
+                try { $ps.EndInvoke($handle) } catch {}
+                $ps.Dispose()
+                $runspace.Close()
+            }
+        })
+        $timer.Start()
+    })
+}
+
+# =============================================================================
+# 13C. DNS OPTIMIZER & LATENCY BENCHMARK
+# =============================================================================
+function Get-ActivePhysicalAdapter {
+    return Get-NetAdapter | Where-Object { $_.Status -eq "Up" -and $_.InterfaceDescription -notmatch "Virtual|Hyper-V|Loopback|WSL|VPN|TAP|PANGP" } | Select-Object -First 1
+}
+
+$script:DnsProviders = [ordered]@{
+    "Cloudflare (1.1.1.1 / 1.0.0.1) - Privacy & Low Latency" = @("1.1.1.1", "1.0.0.1")
+    "Google Public DNS (8.8.8.8 / 8.8.4.4) - Fast & Reliable" = @("8.8.8.8", "8.8.4.4")
+    "AdGuard DNS (94.140.14.14 / 94.140.15.15) - Ad & Tracker Block" = @("94.140.14.14", "94.140.15.15")
+    "Quad9 (9.9.9.9 / 149.112.112.112) - Malware Threat Protection" = @("9.9.9.9", "149.112.112.112")
+}
+
+if ($cbDnsProvider) {
+    $cbDnsProvider.Items.Clear()
+    foreach ($k in $script:DnsProviders.Keys) { [void]$cbDnsProvider.Items.Add($k) }
+    $cbDnsProvider.SelectedIndex = 0
+}
+
+try {
+    $actAdapter = Get-ActivePhysicalAdapter
+    if ($actAdapter -and $lblActiveDnsAdapter) {
+        $lblActiveDnsAdapter.Text = "Active: $($actAdapter.Name) ($($actAdapter.InterfaceDescription))"
+    }
+} catch {}
+
+if ($btnApplyDns) {
+    $btnApplyDns.Add_Click({
+        $adapter = Get-ActivePhysicalAdapter
+        if (-not $adapter) {
+            Write-AppLog "No active physical network adapter detected." "ERROR"
+            return
+        }
+        $selectedKey = $cbDnsProvider.SelectedItem
+        $servers = $script:DnsProviders[$selectedKey]
+        if ($servers) {
+            Write-AppLog "Applying DNS $($servers -join ', ') to adapter '$($adapter.Name)'..." "ACTION"
+            Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses $servers -ErrorAction SilentlyContinue
+            Clear-DnsClientCache
+            Write-AppLog "DNS successfully set to $selectedKey." "SUCCESS"
+            [System.Windows.MessageBox]::Show("DNS updated to:`n$($servers -join ', ')`nAdapter: $($adapter.Name)", "DNS Updated", "OK", "Information")
+        }
+    })
+}
+
+if ($btnResetDns) {
+    $btnResetDns.Add_Click({
+        $adapter = Get-ActivePhysicalAdapter
+        if (-not $adapter) { return }
+        Write-AppLog "Resetting DNS on adapter '$($adapter.Name)' to DHCP..." "ACTION"
+        Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ResetServerAddresses -ErrorAction SilentlyContinue
+        Clear-DnsClientCache
+        Write-AppLog "DNS reset to automatic DHCP." "SUCCESS"
+        [System.Windows.MessageBox]::Show("DNS reset to DHCP (automatic) on adapter $($adapter.Name)", "DNS Reset", "OK", "Information")
+    })
+}
+
+if ($btnPingDns) {
+    $btnPingDns.Add_Click({
+        Write-AppLog "Starting DNS Latency Benchmark (Ping)..." "ACTION"
+        $targets = @(
+            @{ Name = "Cloudflare"; IP = "1.1.1.1" },
+            @{ Name = "Google"; IP = "8.8.8.8" },
+            @{ Name = "Quad9"; IP = "9.9.9.9" },
+            @{ Name = "AdGuard"; IP = "94.140.14.14" }
+        )
+        foreach ($t in $targets) {
+            try {
+                $ping = Test-Connection -ComputerName $t.IP -Count 2 -ErrorAction SilentlyContinue
+                if ($ping) {
+                    $avgMs = [math]::Round(($ping | Measure-Object -Property ResponseTime -Average).Average, 1)
+                    Write-AppLog "$($t.Name) ($($t.IP)): $avgMs ms" "INFO"
+                } else {
+                    Write-AppLog "$($t.Name) ($($t.IP)): Request timed out" "WARN"
+                }
+            } catch {
+                Write-AppLog "$($t.Name): Ping test failed" "WARN"
+            }
+        }
+        Write-AppLog "DNS Latency Benchmark completed." "SUCCESS"
+    })
+}
+
+# =============================================================================
+# 13D. STARTUP PROGRAMS OPTIMIZER
+# =============================================================================
+$script:StartupItemsList = [System.Collections.ArrayList]::new()
+
+function Scan-StartupPrograms {
+    if (-not $startupContainer) { return }
+    $startupContainer.Children.Clear()
+    $script:StartupItemsList.Clear()
+    Write-AppLog "Scanning Windows startup entries..." "INFO"
+    
+    $paths = @(
+        @{ Hive = "HKCU"; Path = "Software\Microsoft\Windows\CurrentVersion\Run"; Disabled = $false },
+        @{ Hive = "HKLM"; Path = "Software\Microsoft\Windows\CurrentVersion\Run"; Disabled = $false },
+        @{ Hive = "HKCU"; Path = "Software\VDOWNS\DisabledStartup"; Disabled = $true }
+    )
+    
+    foreach ($p in $paths) {
+        $regPath = "$($p.Hive):\$($p.Path)"
+        if (Test-Path $regPath) {
+            $props = (Get-Item -Path $regPath).Property
+            foreach ($prop in $props) {
+                if ($prop -eq "(default)") { continue }
+                $val = (Get-ItemProperty -Path $regPath -Name $prop).$prop
+                
+                $card = New-Object System.Windows.Controls.Border
+                $card.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#161B22")
+                $card.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#21262D")
+                $card.BorderThickness = [System.Windows.Thickness]::new(1)
+                $card.CornerRadius = [System.Windows.CornerRadius]::new(6)
+                $card.Padding = [System.Windows.Thickness]::new(10, 8, 10, 8)
+                $card.Margin = [System.Windows.Thickness]::new(0, 3, 0, 3)
+
+                $grid = New-Object System.Windows.Controls.Grid
+                $c0 = New-Object System.Windows.Controls.ColumnDefinition; $c0.Width = [System.Windows.GridLength]::Auto
+                $c1 = New-Object System.Windows.Controls.ColumnDefinition; $c1.Width = [System.Windows.GridLength]::new(1, [System.Windows.GridUnitType]::Star)
+                $c2 = New-Object System.Windows.Controls.ColumnDefinition; $c2.Width = [System.Windows.GridLength]::Auto
+                $grid.ColumnDefinitions.Add($c0); $grid.ColumnDefinitions.Add($c1); $grid.ColumnDefinitions.Add($c2)
+
+                $cb = New-Object System.Windows.Controls.CheckBox
+                $cb.VerticalAlignment = "Center"
+                $cb.Margin = [System.Windows.Thickness]::new(0, 0, 10, 0)
+                [System.Windows.Controls.Grid]::SetColumn($cb, 0)
+                [void]$grid.Children.Add($cb)
+
+                $infoStack = New-Object System.Windows.Controls.StackPanel
+                $lblN = New-Object System.Windows.Controls.TextBlock
+                $lblN.Text = $prop
+                $lblN.FontWeight = "Bold"
+                $lblN.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3")
+                $lblN.FontSize = 12.5
+
+                $lblC = New-Object System.Windows.Controls.TextBlock
+                $lblC.Text = $val
+                $lblC.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#8B949E")
+                $lblC.FontSize = 10.5
+                $lblC.TextTrimming = "CharacterEllipsis"
+
+                [void]$infoStack.Children.Add($lblN)
+                [void]$infoStack.Children.Add($lblC)
+                [System.Windows.Controls.Grid]::SetColumn($infoStack, 1)
+                [void]$grid.Children.Add($infoStack)
+
+                $statusBorder = New-Object System.Windows.Controls.Border
+                $statusBorder.CornerRadius = [System.Windows.CornerRadius]::new(4)
+                $statusBorder.Padding = [System.Windows.Thickness]::new(6, 2, 6, 2)
+                $statusBorder.VerticalAlignment = "Center"
+                $statusText = New-Object System.Windows.Controls.TextBlock
+                $statusText.FontSize = 10
+                $statusText.FontWeight = "Bold"
+
+                if ($p.Disabled) {
+                    $statusBorder.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#3D1F24")
+                    $statusText.Text = "DISABLED"
+                    $statusText.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#F85149")
+                } else {
+                    $statusBorder.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#1F3D2A")
+                    $statusText.Text = "ENABLED"
+                    $statusText.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#3FB950")
+                }
+                $statusBorder.Child = $statusText
+                [System.Windows.Controls.Grid]::SetColumn($statusBorder, 2)
+                [void]$grid.Children.Add($statusBorder)
+
+                $card.Child = $grid
+                [void]$startupContainer.Children.Add($card)
+                [void]$script:StartupItemsList.Add(@{ Check = $cb; Name = $prop; Val = $val; RegPath = $regPath; Disabled = $p.Disabled })
+            }
+        }
+    }
+    Write-AppLog "Found $($script:StartupItemsList.Count) startup programs." "SUCCESS"
+}
+
+if ($btnScanStartup) { $btnScanStartup.Add_Click({ Scan-StartupPrograms }) }
+
+if ($btnDisableStartup) {
+    $btnDisableStartup.Add_Click({
+        $disPath = "HKCU:\Software\VDOWNS\DisabledStartup"
+        if (-not (Test-Path $disPath)) { New-Item -Path $disPath -Force | Out-Null }
+        $count = 0
+        foreach ($item in $script:StartupItemsList) {
+            if ($item.Check.IsChecked -and -not $item.Disabled) {
+                Set-ItemProperty -Path $disPath -Name $item.Name -Value $item.Val -Force
+                Remove-ItemProperty -Path $item.RegPath -Name $item.Name -Force -EA SilentlyContinue
+                $count++
+            }
+        }
+        Write-AppLog "Disabled $count startup programs (safely preserved in VDOWNS store)." "SUCCESS"
+        Scan-StartupPrograms
+    })
+}
+
+if ($btnEnableStartup) {
+    $btnEnableStartup.Add_Click({
+        $runPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+        $count = 0
+        foreach ($item in $script:StartupItemsList) {
+            if ($item.Check.IsChecked -and $item.Disabled) {
+                Set-ItemProperty -Path $runPath -Name $item.Name -Value $item.Val -Force
+                Remove-ItemProperty -Path $item.RegPath -Name $item.Name -Force -EA SilentlyContinue
+                $count++
+            }
+        }
+        Write-AppLog "Re-enabled $count startup programs." "SUCCESS"
+        Scan-StartupPrograms
+    })
+}
+
+# =============================================================================
+# 13E. ADD CUSTOM APPLICATION DIALOG
+# =============================================================================
+if ($btnAddCustomApp) {
+    $btnAddCustomApp.Add_Click({
+        $dlg = New-Object System.Windows.Window
+        $dlg.Title = "Add Custom Software to Catalog"
+        $dlg.Width = 480
+        $dlg.Height = 440
+        $dlg.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#0D1117")
+        $dlg.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3")
+        $dlg.WindowStartupLocation = "CenterOwner"
+        $dlg.Owner = $script:window
+        $dlg.ResizeMode = "NoResize"
+
+        $mainStack = New-Object System.Windows.Controls.StackPanel
+        $mainStack.Margin = [System.Windows.Thickness]::new(20)
+
+        $t = New-Object System.Windows.Controls.TextBlock
+        $t.Text = "➕ Add Application to Catalog"
+        $t.FontSize = 18
+        $t.FontWeight = "Bold"
+        $t.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#58A6FF")
+        $t.Margin = [System.Windows.Thickness]::new(0, 0, 0, 15)
+        [void]$mainStack.Children.Add($t)
+
+        $lbl1 = New-Object System.Windows.Controls.TextBlock; $lbl1.Text = "Application Name (e.g. Spotify)"; $lbl1.FontSize = 12; $lbl1.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#8B949E"); $lbl1.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
+        $txtName = New-Object System.Windows.Controls.TextBox; $txtName.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#161B22"); $txtName.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3"); $txtName.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#30363D"); $txtName.Padding = [System.Windows.Thickness]::new(8, 6, 8, 6); $txtName.Margin = [System.Windows.Thickness]::new(0, 0, 0, 10)
+        [void]$mainStack.Children.Add($lbl1); [void]$mainStack.Children.Add($txtName)
+
+        $lbl2 = New-Object System.Windows.Controls.TextBlock; $lbl2.Text = "Winget Package ID (e.g. Spotify.Spotify)"; $lbl2.FontSize = 12; $lbl2.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#8B949E"); $lbl2.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
+        $txtId = New-Object System.Windows.Controls.TextBox; $txtId.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#161B22"); $txtId.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3"); $txtId.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#30363D"); $txtId.Padding = [System.Windows.Thickness]::new(8, 6, 8, 6); $txtId.Margin = [System.Windows.Thickness]::new(0, 0, 0, 10)
+        [void]$mainStack.Children.Add($lbl2); [void]$mainStack.Children.Add($txtId)
+
+        $lbl3 = New-Object System.Windows.Controls.TextBlock; $lbl3.Text = "Category"; $lbl3.FontSize = 12; $lbl3.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#8B949E"); $lbl3.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
+        $cbCat = New-Object System.Windows.Controls.ComboBox; $cbCat.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#161B22"); $cbCat.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3"); $cbCat.Padding = [System.Windows.Thickness]::new(8, 6, 8, 6); $cbCat.Margin = [System.Windows.Thickness]::new(0, 0, 0, 10)
+        foreach ($sec in $script:CategorySections) { [void]$cbCat.Items.Add($sec.Name) }
+        $cbCat.SelectedIndex = 0
+        [void]$mainStack.Children.Add($lbl3); [void]$mainStack.Children.Add($cbCat)
+
+        $lbl4 = New-Object System.Windows.Controls.TextBlock; $lbl4.Text = "Official Web / GitHub URL (Optional)"; $lbl4.FontSize = 12; $lbl4.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#8B949E"); $lbl4.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
+        $txtUrl = New-Object System.Windows.Controls.TextBox; $txtUrl.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#161B22"); $txtUrl.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3"); $txtUrl.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#30363D"); $txtUrl.Padding = [System.Windows.Thickness]::new(8, 6, 8, 6); $txtUrl.Margin = [System.Windows.Thickness]::new(0, 0, 0, 15)
+        [void]$mainStack.Children.Add($lbl4); [void]$mainStack.Children.Add($txtUrl)
+
+        $btnGrid = New-Object System.Windows.Controls.Grid
+        $bc0 = New-Object System.Windows.Controls.ColumnDefinition; $bc0.Width = [System.Windows.GridLength]::new(1, [System.Windows.GridUnitType]::Star)
+        $bc1 = New-Object System.Windows.Controls.ColumnDefinition; $bc1.Width = [System.Windows.GridLength]::new(10, [System.Windows.GridUnitType]::Pixel)
+        $bc2 = New-Object System.Windows.Controls.ColumnDefinition; $bc2.Width = [System.Windows.GridLength]::new(1, [System.Windows.GridUnitType]::Star)
+        $btnGrid.ColumnDefinitions.Add($bc0); $btnGrid.ColumnDefinitions.Add($bc1); $btnGrid.ColumnDefinitions.Add($bc2)
+
+        $btnSave = New-Object System.Windows.Controls.Button; $btnSave.Content = "SAVE TO CATALOG"; $btnSave.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#238636"); $btnSave.Foreground = [System.Windows.Media.Brushes]::White; $btnSave.FontWeight = "Bold"; $btnSave.Padding = [System.Windows.Thickness]::new(0, 10, 0, 10); $btnSave.Style = $window.Resources["RoundedBtn"]
+        $btnCancel = New-Object System.Windows.Controls.Button; $btnCancel.Content = "CANCEL"; $btnCancel.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#21262D"); $btnCancel.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3"); $btnCancel.Padding = [System.Windows.Thickness]::new(0, 10, 0, 10); $btnCancel.Style = $window.Resources["RoundedBtn"]
+
+        [System.Windows.Controls.Grid]::SetColumn($btnSave, 0); [void]$btnGrid.Children.Add($btnSave)
+        [System.Windows.Controls.Grid]::SetColumn($btnCancel, 2); [void]$btnGrid.Children.Add($btnCancel)
+        [void]$mainStack.Children.Add($btnGrid)
+
+        $dlg.Content = $mainStack
+
+        $btnCancel.Add_Click({ $dlg.Close() })
+
+        $btnSave.Add_Click({
+            $nameVal = $txtName.Text.Trim()
+            $idVal = $txtId.Text.Trim()
+            $catVal = $cbCat.SelectedItem
+            $urlVal = $txtUrl.Text.Trim()
+
+            if ([string]::IsNullOrWhiteSpace($nameVal) -or [string]::IsNullOrWhiteSpace($idVal)) {
+                [System.Windows.MessageBox]::Show("App Name and Winget ID are required.", "Validation Error", "OK", "Warning")
+                return
+            }
+
+            if ($idVal -notmatch '^[a-zA-Z0-9_\-\.]+$') {
+                [System.Windows.MessageBox]::Show("Winget ID contains invalid characters. Use alphanumeric, dot or hyphen (e.g. Vendor.App).", "Invalid ID", "OK", "Warning")
+                return
+            }
+
+            try {
+                $jPath = Join-Path $ScriptPath "apps.json"
+                $catalog = Get-Content -Path $jPath -Raw -Encoding UTF8 | ConvertFrom-Json
+                $newObj = @{ Name = $nameVal; Id = $idVal; Desc = $idVal }
+                if (![string]::IsNullOrWhiteSpace($urlVal)) { $newObj["Url"] = $urlVal }
+
+                if ($catalog.$catVal) {
+                    $catalog.$catVal += $newObj
+                } else {
+                    $catalog | Add-Member -MemberType NoteProperty -Name $catVal -Value @($newObj)
+                }
+
+                $catalog | ConvertTo-Json -Depth 5 | Set-Content -Path $jPath -Encoding UTF8 -Force
+                Write-AppLog "Custom app '$nameVal' ($idVal) added to $catVal and saved to apps.json." "SUCCESS"
+                $dlg.Close()
+                [System.Windows.MessageBox]::Show("Application '$nameVal' added successfully!`nRestart or re-open App Center to view updated list.", "App Added", "OK", "Information")
+            } catch {
+                Write-AppLog "Failed to save custom app: $($_.Exception.Message)" "ERROR"
+            }
+        })
+
+        $dlg.ShowDialog() | Out-Null
+    })
+}
+
+# =============================================================================
+# 13F. WINDOWS UPDATE DEFERRAL CONTROLS
+# =============================================================================
+if ($btnPauseUpdates) {
+    $btnPauseUpdates.Add_Click({
+        $res = [System.Windows.MessageBox]::Show("Do you want to pause Windows Updates for 35 days?`n(Registry: PauseQualityUpdates & PauseFeatureUpdates)", "Pause Updates", "YesNo", "Question")
+        if ($res -eq "Yes" -or $res -eq [System.Windows.Forms.DialogResult]::Yes) {
+            $now = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+            $end = (Get-Date).AddDays(35).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+            $wuPath = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
+            Set-ItemProperty -Path $wuPath -Name "PauseFeatureUpdatesStartTime" -Value $now -Force -EA SilentlyContinue
+            Set-ItemProperty -Path $wuPath -Name "PauseFeatureUpdatesEndTime" -Value $end -Force -EA SilentlyContinue
+            Set-ItemProperty -Path $wuPath -Name "PauseQualityUpdatesStartTime" -Value $now -Force -EA SilentlyContinue
+            Set-ItemProperty -Path $wuPath -Name "PauseQualityUpdatesEndTime" -Value $end -Force -EA SilentlyContinue
+            Set-ItemProperty -Path $wuPath -Name "PauseUpdatesExpiryTime" -Value $end -Force -EA SilentlyContinue
+            Write-AppLog "Windows Updates paused for 35 days until: $end" "SUCCESS"
+            [System.Windows.MessageBox]::Show("Windows Updates paused until:`n$end", "Updates Paused", "OK", "Information")
+        }
+    })
+}
+
+if ($btnResumeUpdates) {
+    $btnResumeUpdates.Add_Click({
+        $wuPath = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
+        $props = @("PauseFeatureUpdatesStartTime", "PauseFeatureUpdatesEndTime", "PauseQualityUpdatesStartTime", "PauseQualityUpdatesEndTime", "PauseUpdatesExpiryTime")
+        foreach ($p in $props) {
+            Remove-ItemProperty -Path $wuPath -Name $p -Force -EA SilentlyContinue
+        }
+        Write-AppLog "Windows Updates resumed. Standard automatic checks active." "SUCCESS"
+        [System.Windows.MessageBox]::Show("Windows Updates resumed to normal automatic checks.", "Updates Resumed", "OK", "Information")
+    })
+}
+
 # 14. LIVE HARDWARE TELEMETRY & CONSOLE DRAWER
 # =============================================================================
 
@@ -2719,12 +3362,13 @@ $script:telemetryTimer.Add_Tick({
 $script:telemetryTimer.Start()
 
 # Initial logs
-Write-AppLog "VDOWNS PRIME v3.2.0 (Fluent UI Edition) initialized." "INFO"
+Write-AppLog "VDOWNS PRIME v3.3.0 (Fluent UI Edition) initialized." "INFO"
 Write-AppLog "Hardware-accelerated WPF subsystem online." "SUCCESS"
 try {
     $wv = & winget --version 2>$null
     Write-AppLog "Winget detected: $wv" "INFO"
 } catch { Write-AppLog "Winget not found! App Center may not work." "ERROR" }
+Update-HealthScoreUI
 Write-AppLog "System Architect is ready. Select a category from the sidebar to begin." "SUCCESS"
 
 # 15. SHOW WINDOW

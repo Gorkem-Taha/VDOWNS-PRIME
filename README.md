@@ -18,18 +18,18 @@
 
 ## 🚀 Key Modernizations Across Versions
 
-| Feature | v2.0 (Legacy WinForms) | v3.0.0 (WPF Base) | v3.2.0 (Fluent UI) | v3.3.0 (Prime Optimizer) |
-| :--- | :--- | :--- | :--- | :--- |
-| **UI / UX Design** | Synchronous WinForms | Basic WPF XAML Grid | Fluent 2.0 Glassmorphic | Top Health Banner + Modal Wizards + SVG Badges |
-| **PC Health Benchmark**| Not available | Not available | Not available | Real-time 0-100 Score with 1-Click Prime Optimization |
-| **DNS Optimizer** | Not available | Not available | Not available | Cloudflare/Google/AdGuard/Quad9 + Ping Benchmark |
-| **Startup Optimizer** | Not available | Not available | Not available | Safe non-destructive toggle via HKCU registry backup |
-| **Custom App Wizard** | Manual JSON edits | Manual JSON edits | Manual JSON edits | In-GUI Modal with Regex Winget ID validation |
-| **Update Controls** | Not available | Not available | Not available | 35-Day Update Deferral / Instant Resume |
-| **Hardware Telemetry**| Static text | Static text | Real-time CPU, RAM, Disk C: | Real-time CPU, RAM, Disk C: + Health Deductions |
-| **CI / CD Pipeline** | Not available | Not available | Not available | Automated GitHub Actions release on tag push |
-| **Threading Model** | Single UI thread (hangs) | Async Runspaces | Full Async Runspaces | Asynchronous non-blocking multi-runspace execution |
-| **Safety Net** | None | Manual Restore Point | Manual Restore Point | Automated VSS Restore Point on 1-Click Boost |
+| Feature | v2.0 (Legacy WinForms) | v3.0.0 (WPF Base) | v3.2.0 (Fluent UI) | v3.3.0 (Prime Optimizer) | v3.3.1 (Reliability & Testing) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **UI / UX Design** | Synchronous WinForms | Basic WPF XAML Grid | Fluent 2.0 Glassmorphic | Top Health Banner + Modal Wizards + SVG Badges | Zero-Flicker Null-Safe Element Binding |
+| **PC Health Benchmark**| Not available | Not available | Not available | Real-time 0-100 Score with 1-Click Prime Optimization | Hardened Benchmark Calculation |
+| **DNS Optimizer** | Not available | Not available | Not available | Cloudflare/Google/AdGuard/Quad9 + Ping Benchmark | Latency Ranking & Quick Apply |
+| **Startup Optimizer** | Not available | Not available | Not available | Safe non-destructive toggle via HKCU registry backup | Reversible Registry Backup |
+| **Custom App Wizard** | Manual JSON edits | Manual JSON edits | Manual JSON edits | In-GUI Modal with Regex Winget ID validation | Validated JSON Schema Engine |
+| **Update Controls** | Not available | Not available | Not available | 35-Day Update Deferral / Instant Resume | Clean GPO State Restorations |
+| **Hardware Telemetry**| Static text | Static text | Real-time CPU, RAM, Disk C: | Real-time CPU, RAM, Disk C: + Health Deductions | High-Precision Async Polling |
+| **CI / CD Pipeline** | Not available | Not available | Not available | Automated GitHub Actions release on tag push | Automated GitHub Actions + E2E Harness |
+| **Threading Model** | Single UI thread (hangs) | Async Runspaces | Full Async Runspaces | Asynchronous non-blocking multi-runspace execution | Dispatcher Null-Safe Execution |
+| **Safety Net** | None | Manual Restore Point | Manual Restore Point | Automated VSS Restore Point on 1-Click Boost | VSS Restore Point + Graceful Process Exit |
 
 ---
 
@@ -81,14 +81,15 @@ Vdowns_2.0/
 ├── build.ps1                   # Automated build, AST syntax check & ps2exe compilation
 ├── LICENSE                     # MIT License
 ├── README.md                   # Complete architectural documentation & user guide
-├── VDOWNS_PRIME.exe            # Standalone compiled portable 64-bit binary (v3.3.0)
+├── VDOWNS_PRIME.exe            # Standalone compiled portable 64-bit binary (v3.3.1)
 ├── VDOWNS_PRIME.ps1            # Canonical modern WPF + Async Runspace engine
 ├── vdowns.ps1                  # Backward-compatibility launcher forwarder
+├── run_e2e_test.ps1            # Automated headless E2E test harness
 ├── Picture/                    # Interface assets and screenshots
 └── Source/
     ├── apps.json               # Catalog backup / local source copy
     ├── vdowns_2.0.ps1          # Legacy WinForms fallback reference
-    └── vdowns_3.0.ps1          # Synced source script (v3.3.0)
+    └── vdowns_3.0.ps1          # Synced source script (v3.3.1)
 ```
 
 ---

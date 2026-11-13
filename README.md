@@ -1,155 +1,158 @@
-# ⚡ VDOWNS PRIME v3.3.1 | Fluent System Architect & Optimizer
+# ⚡ VDOWNS PRIME | Windows System Architect
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-00A8FF?style=for-the-badge&logo=windows)](https://github.com/Gorkem-Taha/VDOWNS-PRIME)
-[![Language](https://img.shields.io/badge/Language-PowerShell%207%20%2F%205.1%20%2B%20WPF%20XAML-5391FE?style=for-the-badge&logo=powershell)](https://github.com/Gorkem-Taha/VDOWNS-PRIME)
-[![Architecture](https://img.shields.io/badge/Engine-Async%20ThreadPool%20Runspaces-FF5722?style=for-the-badge)](https://github.com/Gorkem-Taha/VDOWNS-PRIME)
-[![Version](https://img.shields.io/badge/Version-v3.3.1%20(SemVer)-2ECC71?style=for-the-badge)](https://github.com/Gorkem-Taha/VDOWNS-PRIME/releases)
+[![Language](https://img.shields.io/badge/PowerShell%205.1%20%2B%20WPF-5391FE?style=for-the-badge&logo=powershell)](https://github.com/Gorkem-Taha/VDOWNS-PRIME)
+[![Version](https://img.shields.io/badge/Version-v3.4.0-2ECC71?style=for-the-badge)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/License-MIT-F39C12?style=for-the-badge)](LICENSE)
 
-**VDOWNS PRIME v3.3.1** is an enterprise-grade Windows 10/11 optimization, debloating, package management, developer profile backup, and automated unattended deployment suite. Engineered with a hardware-accelerated Windows 11 Fluent 2.0 interface, vector SVG iconography, real-time hardware telemetry, live PC Health Scoring, DNS latency benchmarking, safe startup item management, in-GUI custom app wizard, and an asynchronous PowerShell Runspace engine, it guarantees a 60 FPS non-blocking user experience while executing deep registry modifications, DISM repairs, and batch winget deployments.
+VDOWNS PRIME is a portable Windows 10/11 post-install tool written in PowerShell with a WPF interface.
+It installs software through **winget**, applies **reversible** system tweaks, removes pre-installed
+Store apps, runs repair tools with live output, and backs up developer configuration — without any
+third-party runtime or telemetry.
+
+> [!WARNING]
+> VDOWNS PRIME runs as Administrator and changes the registry, services, power plans and installed
+> apps. Read what each module does below, create a restore point first, and test on a non-critical
+> machine before using it on your daily system.
 
 ---
 
-## 📸 Architecture & Interface
+## Modules
 
-![VDOWNS PRIME Interface](/Picture/VDOWNS_PRIME_2.0.png)
+### 📦 App Center
+- Curated catalog of 96 apps in 7 categories (`apps.json`), with search and category filter chips.
+- Batch install / uninstall with `winget` (exact IDs, silent, already-installed apps are detected
+  instead of reinstalled). Every catalog ID is checked against
+  [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs).
+- **Add App** wizard: adds your own winget ID (validated) and an optional `http(s)` link to the catalog.
+- **Winget tab**: scan installed packages, search the winget repository, install/uninstall single
+  packages, upgrade all, export/import winget package lists.
+- If `apps.json` is missing or corrupt, the built-in copy of the catalog is used and restored.
 
----
+### ⚡ System Tweaks (reversible)
+Privacy, interface and performance tweaks (telemetry service, advertising ID, dark mode, Explorer
+options, classic context menu, taskbar alignment, clipboard history, Sticky Keys, hibernate,
+Storage Sense, Ultimate Performance plan, SysMain, Game DVR, O&O ShutUp10, restore point).
 
-## 🚀 Key Modernizations Across Versions
+- Before a tweak is applied for the first time, every registry value, service start mode,
+  hibernate state and active power plan it touches is saved to `HKCU\Software\VDOWNS\TweakState`.
+- **Revert** restores exactly that state (including "value did not exist") and removes the snapshot.
+- Failures are reported as failures in the activity log.
+- O&O ShutUp10 is downloaded fresh and only started if its Authenticode signature is valid and
+  issued to O&O Software.
 
-| Feature | v2.0 (Legacy WinForms) | v3.0.0 (WPF Base) | v3.2.0 (Fluent UI) | v3.3.0 (Prime Optimizer) | v3.3.1 (Reliability & Testing) |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **UI / UX Design** | Synchronous WinForms | Basic WPF XAML Grid | Fluent 2.0 Glassmorphic | Top Health Banner + Modal Wizards + SVG Badges | Zero-Flicker Null-Safe Element Binding |
-| **PC Health Benchmark**| Not available | Not available | Not available | Real-time 0-100 Score with 1-Click Prime Optimization | Hardened Benchmark Calculation |
-| **DNS Optimizer** | Not available | Not available | Not available | Cloudflare/Google/AdGuard/Quad9 + Ping Benchmark | Latency Ranking & Quick Apply |
-| **Startup Optimizer** | Not available | Not available | Not available | Safe non-destructive toggle via HKCU registry backup | Reversible Registry Backup |
-| **Custom App Wizard** | Manual JSON edits | Manual JSON edits | Manual JSON edits | In-GUI Modal with Regex Winget ID validation | Validated JSON Schema Engine |
-| **Update Controls** | Not available | Not available | Not available | 35-Day Update Deferral / Instant Resume | Clean GPO State Restorations |
-| **Hardware Telemetry**| Static text | Static text | Real-time CPU, RAM, Disk C: | Real-time CPU, RAM, Disk C: + Health Deductions | High-Precision Async Polling |
-| **CI / CD Pipeline** | Not available | Not available | Not available | Automated GitHub Actions release on tag push | Automated GitHub Actions + E2E Harness |
-| **Threading Model** | Single UI thread (hangs) | Async Runspaces | Full Async Runspaces | Asynchronous non-blocking multi-runspace execution | Dispatcher Null-Safe Execution |
-| **Safety Net** | None | Manual Restore Point | Manual Restore Point | Automated VSS Restore Point on 1-Click Boost | VSS Restore Point + Graceful Process Exit |
+### 🧩 Features & Maintenance
+- Enable Hyper-V, WSL 2 (incl. Virtual Machine Platform), Windows Sandbox and .NET 3.5 in a
+  background process with live output.
+- **Deep Clean** runs Disk Cleanup for a safe allow-list of categories (temp files, caches, logs,
+  crash dumps, Delivery Optimization, superseded updates). It never selects Downloads, the Recycle
+  Bin, previous Windows installations, Windows ESD files ("Reset this PC") or language packs.
 
----
+### 🛡️ Debloater
+- Removes selected pre-installed Store apps for the current user; optionally also the provisioned
+  copies so they do not come back for new user accounts.
+- "Select Recommended" picks a conservative default set; removal is not reversible from the app
+  (reinstall from the Microsoft Store if needed).
 
-## 🛠️ Core Modules
+### 🔄 Update & Repair
+- `winget upgrade --all`, Microsoft Store updates, Windows updates and driver-only updates via
+  [PSWindowsUpdate](https://www.powershellgallery.com/packages/PSWindowsUpdate) **2.2.1.5**
+  (pinned version, Authenticode-verified before it is loaded).
+- SFC, DISM RestoreHealth, network stack reset and a Windows Update component reset, all with live
+  output and exit codes.
+- Pause Windows Update for 35 days / resume.
 
-### 1. 🏆 PC Health Score & 1-Click Prime Optimization
-- **Dynamic Optimization Scoring (0-100):** Real-time algorithm continuously assesses hardware telemetry, excessive startup items, temporary junk files, telemetry services, and unapplied optimizations.
-- **⚡ 1-Click Prime Optimization:** Automatically executes safe temp file purging, DNS flushing, memory working set trimming, and performance service tuning with zero system damage.
-- **Automated VSS System Restore Point:** Automatically triggers `Checkpoint-Computer -Description "VDOWNS_PrimeBoost"` before applying optimizations.
+### 🏆 Health score, DNS and startup
+- **Health score**: a 0–100 indicator built from six configuration checks (telemetry service and
+  policy, Game DVR, SysMain, restore points, hidden file extensions). It is a checklist, not a
+  performance benchmark.
+- **Quick Boost**: restore point, then the recommended privacy/performance settings and a temp clean.
+- **DNS**: Cloudflare, Google, AdGuard or Quad9 (IPv4 + IPv6) on every active physical adapter,
+  reset to DHCP, and a background benchmark that measures real DNS lookups per resolver.
+- **Startup manager**: disables `Run` entries (HKCU, HKLM, HKLM 32-bit) by moving them to
+  `HKCU\Software\VDOWNS\DisabledStartupV2` together with their origin and value type; re-enabling
+  puts them back where they came from.
 
-### 2. 🌐 High-Performance DNS Benchmark & Optimizer
-- **Curated High-Speed Resolvers:** Instant switching between **Cloudflare (1.1.1.1)**, **Google (8.8.8.8)**, **AdGuard Ad-Blocking (94.140.14.14)**, and **Quad9 Security (9.9.9.9)**.
-- **Ping Latency Benchmark:** Pings all candidate DNS servers in real time, displaying round-trip millisecond response times in the log console to help choose the fastest server.
-- **One-Click DHCP Reset:** Revert all network adapters back to automatic dynamic DHCP configuration instantly.
-
-### 3. 🚀 Windows Startup Programs Manager
-- **Non-Destructive Safe Toggle:** Scans `HKCU:\Software\Microsoft\Windows\CurrentVersion\Run` and lists all startup entries.
-- **Reversible Registry Archival:** When disabling an item, its full executable path and launch parameters are moved to `HKCU:\Software\VDOWNS\DisabledStartup` rather than being permanently deleted. Can be re-enabled at any time.
-
-### 4. 📦 Dynamic App Center & In-GUI Package Wizard
-- **Database-Driven Catalog (`apps.json`):** Curated applications grouped into 7 major categories with instant category filter chips (`All`, `Browsers`, `Dev`, `Gaming`, `Utilities`, `Security`, `Communication`).
-- **➕ In-GUI Custom App Addition Modal:** Add custom applications directly from the GUI without touching raw JSON files. Validates Winget package identifiers using strict regex (`^[a-zA-Z0-9_\-\.]+$`) to eliminate CLI/JSON injection risks.
-- **Winget Live Search & Quick Install (`⚡`):** Query Microsoft Community Repository in real-time and install/upgrade/uninstall directly from glassmorphic cards.
-
-### 5. ⏸️ Windows Update Deferral Controls
-- **35-Day Deferral / Pause:** Safely defers Windows Feature & Quality updates for up to 35 days using native group policy registry keys (`HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate`), preventing disruptive reboots during active development or gaming.
-- **Instant Resume:** Re-enables automatic update scans and servicing immediately with one click.
-
-### 6. ⚡ Reversible System Tweaks & Debloater
-- **Privacy & Telemetry:** Disable Telemetry (DiagTrack), Diagnostics Tracking, Advertising ID, Activity History, and automatic O&O ShutUp10 privacy enforcement.
-- **Interface & Explorer:** Force Dark Mode, restore Classic Windows 10 Context Menu on Windows 11, align Taskbar left, show file extensions and hidden files.
-- **Performance & Gaming:** Unlock Windows Ultimate Performance power plan, disable Xbox Game DVR background recording, disable SysMain (Superfetch) for NVMe/SSD, disable Sticky Keys, enable Storage Sense.
-- **AppX Debloater:** Non-destructively purges non-essential bloatware (Cortana, Bing News, Weather, Microsoft Solitaire, People, Xbox Game Bar) while strictly protecting essential system utilities.
-
-### 7. 💾 Developer Backup & Standalone Unattended Script Generator
-- **Asynchronous Runspace Snapshotting:** Archive developer tools into `.zip` without freezing the UI (VS Code, Cursor, Git config, PowerShell profile, Windows Terminal, Notepad++, SSH host keys).
-- **Standalone Unattended Script Generator (.ps1):** Export selected apps, tweaks, and debloat settings into a single autonomous, self-elevating script (`VDOWNS_Unattended_Setup.ps1`) for instant bare-metal provisioning.
-
----
-
-## 🏗️ Project Structure
-
-```
-Vdowns_2.0/
-├── .github/
-│   └── workflows/
-│       └── release.yml         # Automated GitHub Actions CI/CD release workflow
-├── apps.json                   # Curated software packages catalog (96+ apps)
-├── build.ps1                   # Automated build, AST syntax check & ps2exe compilation
-├── LICENSE                     # MIT License
-├── README.md                   # Complete architectural documentation & user guide
-├── VDOWNS_PRIME.exe            # Standalone compiled portable 64-bit binary (v3.3.1)
-├── VDOWNS_PRIME.ps1            # Canonical modern WPF + Async Runspace engine
-├── vdowns.ps1                  # Backward-compatibility launcher forwarder
-├── run_e2e_test.ps1            # Automated headless E2E test harness
-├── Picture/                    # Interface assets and screenshots
-└── Source/
-    ├── apps.json               # Catalog backup / local source copy
-    ├── vdowns_2.0.ps1          # Legacy WinForms fallback reference
-    └── vdowns_3.0.ps1          # Synced source script (v3.3.1)
-```
+### 💾 Backup & Profiles
+- **Developer backup** (`.zip`): VS Code and Cursor user settings, VS Code extension list, `.gitconfig`,
+  PowerShell 5.1/7 profiles, Windows Terminal settings, Notepad++ settings, SSH `config` (keys are
+  never included).
+- **Restore** shows what will be overwritten, rejects archives with unsafe paths, and first copies
+  your current files to `%LOCALAPPDATA%\VDOWNS\PreRestore_<date>`.
+- **Profiles** (`.vdowns`): save/load your selection of apps, tweaks and debloat items.
+- **Unattended script**: export the current selection as a self-elevating `.ps1` that installs the
+  apps, applies exactly the selected tweaks and removes the selected packages on a fresh machine.
 
 ---
 
-## 💻 Building from Source
+## What VDOWNS PRIME leaves on your system
 
-### Prerequisites
-- Windows 10 (Build 19041+) or Windows 11 (x64)
-- PowerShell 5.1 or PowerShell 7+
-- Administrator privileges (for system tweaks, debloater, and DNS switching)
-- Optional: `ps2exe` module (`Install-Module -Name ps2exe -Scope CurrentUser`)
+| Location | Purpose | Safe to delete? |
+| --- | --- | --- |
+| `HKCU\Software\VDOWNS\TweakState` | Original values for **Revert** | Yes, but Revert then falls back to generic defaults |
+| `HKCU\Software\VDOWNS\DisabledStartupV2` | Disabled startup entries | Only after re-enabling what you need |
+| `HKCU\Software\VDOWNS\DisabledStartup` | Disabled startup entries from v3.3.x | Same as above |
+| `%LOCALAPPDATA%\VDOWNS\PreRestore_*` | Your files from before a backup restore | Yes, once you are happy with the restore |
+| Power plan `c4e0702f-b217-4220-b268-5cbd645bac82` | Ultimate Performance copy | Revert removes it |
 
-### Automated Build Pipeline
-Run the included build script to validate AST syntax, check JSON integrity, and compile the standalone executable:
+---
 
+## Download and run
+
+1. Download `VDOWNS_PRIME.exe`, `apps.json` and `SHA256SUMS` from
+   [Releases](https://github.com/Gorkem-Taha/VDOWNS-PRIME/releases) into one folder.
+2. Verify the download:
+   ```powershell
+   Get-FileHash .\VDOWNS_PRIME.exe, .\apps.json -Algorithm SHA256
+   Get-Content .\SHA256SUMS
+   ```
+   The hashes must match. The exe is built by GitHub Actions from the tagged source and is not
+   code-signed, so SmartScreen will warn about an unknown publisher.
+3. Run `VDOWNS_PRIME.exe` (it requests Administrator rights).
+
+**Or run the script directly** (Windows PowerShell 5.1):
 ```powershell
-# In PowerShell as Administrator:
-.\build.ps1
-```
-
-To run syntax and integrity verification without re-compiling the binary:
-```powershell
-.\build.ps1 -SkipCompile
-```
-
----
-
-## 🏃 Execution
-
-### Option A: Portable Binary (Recommended)
-1. Download `VDOWNS_PRIME.exe` and `apps.json` from [Releases](https://github.com/Gorkem-Taha/VDOWNS-PRIME/releases).
-2. Right-click `VDOWNS_PRIME.exe` and select **Run as Administrator**.
-
-### Option B: PowerShell Direct
-```powershell
-# Set ExecutionPolicy for process scope
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-
-# Launch canonical engine
 .\VDOWNS_PRIME.ps1
 ```
 
----
-
-## 🛡️ Safety & Disclaimer
-
-> [!WARNING]
-> This software directly interfaces with the Windows Registry, Component-Based Servicing (CBS), network adapters, and system services. Always utilize the automated **Create Restore Point** before applying bulk system tweaks, debloater commands, or 1-Click Prime Optimization.
+**Requirements:** Windows 10 (19041+) or Windows 11 x64, winget (App Installer) for the App Center,
+Administrator rights.
 
 ---
 
-## 📜 Versioning & Conventions
+## Building from source
 
-This repository adheres to [Semantic Versioning 2.0.0](https://semver.org/) (`vMAJOR.MINOR.PATCH`) and [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/):
-- Releases are tagged with standard git tags (e.g. `v3.3.0`).
-- Commits are structured as `feat:`, `fix:`, `refactor:`, `chore(release):`.
+```powershell
+.\build.ps1               # checks + compile + SHA256SUMS
+.\build.ps1 -SkipCompile  # checks only
+```
 
----
+`build.ps1` reads the version from `$script:VdownsVersion` in `VDOWNS_PRIME.ps1`, verifies the UTF-8
+BOM, checks `apps.json` (duplicates, ID format, embedded copy in sync), parses all scripts and compiles
+with **ps2exe 1.0.18**. Pushing a `v*` tag runs the same build in GitHub Actions (actions pinned to
+commit SHAs) and publishes `VDOWNS_PRIME.exe`, `apps.json` and `SHA256SUMS`; the tag must match the
+script version.
 
-## 👤 Author & License
+## Project structure
+
+```
+VDOWNS-PRIME/
+├── VDOWNS_PRIME.ps1        # The application (WPF UI + logic), UTF-8 with BOM
+├── apps.json               # App catalog (an identical copy is embedded in the script)
+├── build.ps1               # Checks, pinned ps2exe compile, SHA256SUMS
+├── vdowns.ps1              # Legacy entry point, forwards to VDOWNS_PRIME.ps1
+├── CHANGELOG.md
+├── .github/workflows/release.yml
+└── legacy/                 # v2.0 WinForms script and its screenshot (reference only)
+```
+
+## Versioning
+
+[Semantic Versioning](https://semver.org/) and [Conventional Commits](https://www.conventionalcommits.org/).
+See [CHANGELOG.md](CHANGELOG.md).
+
+## Author & License
+
 - **Author:** [Görkem Taha Çanakcı](https://github.com/Gorkem-Taha)
-- **Repository:** [VDOWNS-PRIME](https://github.com/Gorkem-Taha/VDOWNS-PRIME)
-- **License:** [MIT License](LICENSE)
+- **License:** [MIT](LICENSE)

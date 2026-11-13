@@ -1,15 +1,17 @@
 ﻿<#
 .SYNOPSIS
-    VDOWNS PRIME v3.3.2 - System Architect (WPF Edition)
+    VDOWNS PRIME - System Architect (WPF Edition). Version: see $script:VdownsVersion below.
 .DESCRIPTION
     Advanced System Configuration Tool built with PowerShell + WPF.
     Features: App Center, System Tweaks, Windows Features, Debloater, Update & Repair Center, Backup & Restore Center, Winget Manager.
     
-    Compilation (PS2EXE):
-    ps2exe -inputFile .\vdowns_3.0.ps1 -outputFile .\VDOWNS_PRIME.exe -noConsole -STA -title "VDOWNS PRIME" -version "3.0.0.0"
+    Build the standalone exe with .\build.ps1 (pinned ps2exe, checks, SHA256SUMS).
 #>
 
 $ErrorActionPreference = "Continue"
+
+# Single source of truth for the version (build.ps1 reads this line for the exe metadata)
+$script:VdownsVersion = "3.4.0"
 
 # =============================================================================
 # 1. ADMINISTRATION AND SECURITY CONTROL
@@ -113,7 +115,7 @@ try {
 <Window 
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="VDOWNS PRIME v3.3.2 | Fluent System Architect"
+    Title="VDOWNS PRIME | Fluent System Architect"
     Width="1320" Height="820"
     WindowStartupLocation="CenterScreen"
     WindowState="Maximized"
@@ -248,7 +250,7 @@ try {
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <TextBlock Text="VDOWNS" FontSize="24" FontWeight="Bold" Foreground="#58A6FF" VerticalAlignment="Center"/>
                         <Border Background="#1F2937" CornerRadius="4" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="v3.3" FontSize="10" FontWeight="Bold" Foreground="#22D3EE"/>
+                            <TextBlock x:Name="lblVersionBadge" Text="v3" FontSize="10" FontWeight="Bold" Foreground="#22D3EE"/>
                         </Border>
                     </StackPanel>
                     <TextBlock Text="FLUENT SYSTEM ARCHITECT" FontSize="10" FontWeight="Bold" Foreground="#484F58" HorizontalAlignment="Center" Margin="0,3,0,0"/>
@@ -891,6 +893,7 @@ try {
 $reader = [System.Xml.XmlNodeReader]::new($xaml)
 $window = [System.Windows.Markup.XamlReader]::Load($reader)
 $script:window = $window
+$window.Title = "VDOWNS PRIME v$($script:VdownsVersion) | Fluent System Architect"
 
 # Auto-discover all named elements and register globally across scopes
 $global:window = $window
@@ -928,6 +931,8 @@ function Get-UIElement {
     if ($v -and $v.Value) { return $v.Value }
     return $null
 }
+
+if ($lblVersionBadge) { $lblVersionBadge.Text = "v$($script:VdownsVersion)" }
 
 # Explicit aliases for XAML to script element compatibility
 $script:tweaksContainer = $script:tweakContainer; $tweaksContainer = $tweakContainer; $global:tweaksContainer = $tweakContainer
@@ -1256,6 +1261,7 @@ try {
     }
     if ($jsonContent) {
         $script:CatalogCategories = @($jsonContent.PSObject.Properties.Name)
+        $script:CategorySections = [ordered]@{}
         
         foreach ($categoryName in $jsonContent.PSObject.Properties.Name) {
             # Category header
@@ -1336,9 +1342,10 @@ try {
                 $cb.Add_Unchecked({ $this.Parent.BorderBrush = $borderBrush })
                 
                 [void]$wrapPanel.Children.Add($card)
-                [void]$script:InstallList.Add(@{Check=$cb; Id=$app.Id; Name=$app.Name; Card=$card; WrapPanel=$wrapPanel})
+                [void]$script:InstallList.Add(@{Check=$cb; Id=$app.Id; Name=$app.Name; Card=$card; WrapPanel=$wrapPanel; Category=$categoryName})
             }
             [void]$appContainer.Children.Add($wrapPanel)
+            $script:CategorySections[$categoryName] = @{ Header = $catHeader; Panel = $wrapPanel }
         }
     } else {
         Write-AppLog "apps.json not found at: $jsonPath" "ERROR"
@@ -1351,15 +1358,49 @@ try {
 if ($btnAppSelectAll) { $btnAppSelectAll.Add_Click({ foreach ($item in $script:InstallList) { if ($item.Card.Visibility -ne "Collapsed") { $item.Check.IsChecked = $true } } }) }
 if ($btnAppDeselectAll) { $btnAppDeselectAll.Add_Click({ foreach ($item in $script:InstallList) { $item.Check.IsChecked = $false } }) }
 
-# Search
-$searchBox.Add_TextChanged({
-    $query = $searchBox.Text.ToLower()
-    $searchPlaceholder.Visibility = if ($query.Length -gt 0) { "Collapsed" } else { "Visible" }
+# Search + category filter: a card is shown when it matches both; empty sections are hidden
+$script:ActiveCategory = "All"
+function Update-AppFilter {
+    $query = if ($searchBox) { $searchBox.Text.Trim().ToLower() } else { "" }
     foreach ($item in $script:InstallList) {
-        $visible = ($query.Length -eq 0) -or ($item.Name.ToLower().Contains($query))
-        $item.Card.Visibility = if ($visible) { "Visible" } else { "Collapsed" }
+        $inCategory = ($script:ActiveCategory -eq "All") -or ($item.Category -eq $script:ActiveCategory)
+        $hit = ($query.Length -eq 0) -or $item.Name.ToLower().Contains($query) -or "$($item.Id)".ToLower().Contains($query)
+        $item.Card.Visibility = if ($inCategory -and $hit) { "Visible" } else { "Collapsed" }
     }
+    if ($script:CategorySections) {
+        foreach ($name in $script:CategorySections.Keys) {
+            $sec = $script:CategorySections[$name]
+            $any = @($script:InstallList | Where-Object { $_.Category -eq $name -and $_.Card.Visibility -eq "Visible" }).Count -gt 0
+            $vis = if ($any) { "Visible" } else { "Collapsed" }
+            $sec.Header.Visibility = $vis
+            $sec.Panel.Visibility = $vis
+        }
+    }
+}
+
+$searchBox.Add_TextChanged({
+    $searchPlaceholder.Visibility = if ($searchBox.Text.Length -gt 0) { "Collapsed" } else { "Visible" }
+    Update-AppFilter
 })
+
+$chipPanel = Get-UIElement "filterChipsPanel"
+if ($chipPanel -and $script:CategorySections) {
+    $chipStyle = try { $window.FindResource("SubTabBtn") } catch { $null }
+    foreach ($chipName in @("All") + @($script:CategorySections.Keys)) {
+        $chip = New-Object System.Windows.Controls.Button
+        $chip.Content = if ($chipName -eq "All") { "All ($($script:InstallList.Count))" } else { "$chipName ($(@($script:InstallList | Where-Object { $_.Category -eq $chipName }).Count))" }
+        if ($chipStyle) { $chip.Style = $chipStyle }
+        # Tag drives the "Active" highlight in SubTabBtn; the category name rides in the Uid
+        $chip.Uid = $chipName
+        if ($chipName -eq "All") { $chip.Tag = "Active" }
+        $chip.Add_Click({
+            $script:ActiveCategory = $this.Uid
+            foreach ($c in (Get-UIElement "filterChipsPanel").Children) { $c.Tag = if ($c.Uid -eq $script:ActiveCategory) { "Active" } else { $null } }
+            Update-AppFilter
+        })
+        [void]$chipPanel.Children.Add($chip)
+    }
+}
 
 # INSTALL (Async with Runspace)
 if ($btnInstall) {
@@ -1562,6 +1603,15 @@ if ($btnUninstall) {
 # =============================================================================
 # 8. WINGET MANAGER MODULE
 # =============================================================================
+function Set-WingetBusy([string]$Message) {
+    $panel = Get-UIElement "wingetProgressPanel"
+    $txt = Get-UIElement "wingetProgressText"
+    if ($Message) {
+        if ($txt) { $txt.Text = $Message }
+        if ($panel) { $panel.Visibility = "Visible" }
+    } elseif ($panel) { $panel.Visibility = "Collapsed" }
+}
+
 function Render-WingetCards {
     param([array]$Items)
     if (-not $wingetItemsContainer) { return }
@@ -1696,6 +1746,7 @@ if ($btnScanWingetInstalled) {
         if (-not (Test-WingetAvailable)) { return }
         $window.Cursor = [System.Windows.Input.Cursors]::Wait
         Write-AppLog "Scanning installed packages via Winget..." "ACTION"
+        Set-WingetBusy "Scanning installed packages..."
         
         $syncHash = [hashtable]::Synchronized(@{
             Window = $window
@@ -1720,6 +1771,7 @@ if ($btnScanWingetInstalled) {
             param($result)
             $results = @($result)
             $window.Cursor = [System.Windows.Input.Cursors]::Arrow
+            Set-WingetBusy $null
             Render-WingetCards $results
             Write-AppLog "Winget Scan complete: $($results.Count) packages found." "SUCCESS"
         }
@@ -1738,6 +1790,7 @@ if ($btnSearchWingetRepo) {
 
         $window.Cursor = [System.Windows.Input.Cursors]::Wait
         Write-AppLog "Searching online Winget repository for: $query..." "ACTION"
+        Set-WingetBusy "Searching the Winget repository for '$query'..."
 
         $runspace = [runspacefactory]::CreateRunspace()
         $runspace.Open()
@@ -1757,6 +1810,7 @@ if ($btnSearchWingetRepo) {
             param($result)
             $results = @($result)
             $window.Cursor = [System.Windows.Input.Cursors]::Arrow
+            Set-WingetBusy $null
             Render-WingetCards $results
             Write-AppLog "Winget Online Search complete: $($results.Count) matching packages found." "SUCCESS"
         }
@@ -1771,152 +1825,6 @@ if ($btnWingetUpgradeAll) {
         if ($res -ne "Yes") { return }
         Write-AppLog "Starting bulk upgrade of all installed packages via Winget..." "ACTION"
         Start-StreamingCommand "winget" "upgrade --all --include-unknown --accept-package-agreements --accept-source-agreements"
-    })
-}
-
-# Install Selected Packages from Winget List
-if ($btnInstallSelectedWinget) {
-    $btnInstallSelectedWinget.Add_Click({
-        if (-not (Test-WingetAvailable)) { return }
-        $selected = @($script:WingetList | Where-Object { $_.Check.IsChecked -eq $true -and $_.Id -ne "" })
-        if ($selected.Count -eq 0) {
-            [System.Windows.MessageBox]::Show("No packages selected from the list.", "Info", "OK", "Information")
-            return
-        }
-
-        Write-AppLog "Installing $($selected.Count) selected Winget packages..." "ACTION"
-        $appsData = @()
-        foreach ($s in $selected) { $appsData += @{Id=$s.Id; Name=$s.Name} }
-
-        $syncHash = [hashtable]::Synchronized(@{
-            Window = $window; LogBox = $logBox; Total = $appsData.Count
-        })
-
-        $runspace = [runspacefactory]::CreateRunspace()
-        $runspace.Open()
-        $ps = [powershell]::Create()
-        $ps.Runspace = $runspace
-
-        [void]$ps.AddScript({
-            param($Apps, $SH, $Lib)
-            . ([scriptblock]::Create($Lib))
-            foreach ($app in $Apps) {
-                $n = $app.Name; $id = $app.Id
-                try {
-                    $r = Invoke-VdNative 'winget.exe' @('install', '--id', $id, '-e', '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity') 'UTF8'
-                    $code = $r.ExitCode
-                    try { $SH.Window.Dispatcher.Invoke([action]{
-                        $ts = Get-Date -Format 'HH:mm:ss'
-                        if ($code -eq 0) { $SH.LogBox.AppendText("[$ts] [SUCCESS] Installed Winget Package: $n ($id)`r`n") }
-                        else { $SH.LogBox.AppendText("[$ts] [ERROR] Failed to install: $n (Code: $code)`r`n") }
-                        $SH.LogBox.ScrollToEnd()
-                    }) } catch {}
-                } catch {
-                    $msg = $_.Exception.Message
-                    try { $SH.Window.Dispatcher.Invoke([action]{ $SH.LogBox.AppendText("[$(Get-Date -Format 'HH:mm:ss')] [ERROR] $n - $msg`r`n"); $SH.LogBox.ScrollToEnd() }) } catch {}
-                }
-            }
-        })
-        [void]$ps.AddParameter("Apps", $appsData)
-        [void]$ps.AddParameter("SH", $syncHash)
-        [void]$ps.AddParameter("Lib", $script:VdNativeLib)
-        $handle = $ps.BeginInvoke()
-        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-            param($result)
-            Write-AppLog "Winget Package Installation Cycle Complete." "INFO"
-        }
-    })
-}
-
-# Remove Selected Installed Packages
-if ($btnRemoveSelectedWinget) {
-    $btnRemoveSelectedWinget.Add_Click({
-        if (-not (Test-WingetAvailable)) { return }
-        $selected = @($script:WingetList | Where-Object { $_.Check.IsChecked -eq $true -and $_.Id -ne "" })
-        if ($selected.Count -eq 0) {
-            [System.Windows.MessageBox]::Show("No packages selected from the list.", "Info", "OK", "Information")
-            return
-        }
-
-        $result = [System.Windows.MessageBox]::Show("Selected $($selected.Count) packages will be UNINSTALLED from Windows. Continue?", "Confirm Uninstall", "YesNo", "Warning")
-        if ($result -ne "Yes") { return }
-
-        Write-AppLog "Uninstalling $($selected.Count) selected Winget packages..." "WARN"
-        $appsData = @()
-        foreach ($s in $selected) { $appsData += @{Id=$s.Id; Name=$s.Name} }
-
-        $syncHash = [hashtable]::Synchronized(@{
-            Window = $window; LogBox = $logBox; Total = $appsData.Count
-        })
-
-        $runspace = [runspacefactory]::CreateRunspace()
-        $runspace.Open()
-        $ps = [powershell]::Create()
-        $ps.Runspace = $runspace
-
-        [void]$ps.AddScript({
-            param($Apps, $SH, $Lib)
-            . ([scriptblock]::Create($Lib))
-            foreach ($app in $Apps) {
-                $n = $app.Name; $id = $app.Id
-                try {
-                    $r = Invoke-VdNative 'winget.exe' @('uninstall', '--id', $id, '-e', '--silent', '--accept-source-agreements', '--disable-interactivity', '--force') 'UTF8'
-                    $code = $r.ExitCode
-                    try { $SH.Window.Dispatcher.Invoke([action]{
-                        $ts = Get-Date -Format 'HH:mm:ss'
-                        if ($code -eq 0) { $SH.LogBox.AppendText("[$ts] [SUCCESS] Uninstalled Winget Package: $n ($id)`r`n") }
-                        else { $SH.LogBox.AppendText("[$ts] [ERROR] Failed to uninstall: $n (Code: $code)`r`n") }
-                        $SH.LogBox.ScrollToEnd()
-                    }) } catch {}
-                } catch {
-                    $msg = $_.Exception.Message
-                    try { $SH.Window.Dispatcher.Invoke([action]{ $SH.LogBox.AppendText("[$(Get-Date -Format 'HH:mm:ss')] [ERROR] $n - $msg`r`n"); $SH.LogBox.ScrollToEnd() }) } catch {}
-                }
-            }
-        })
-        [void]$ps.AddParameter("Apps", $appsData)
-        [void]$ps.AddParameter("SH", $syncHash)
-        [void]$ps.AddParameter("Lib", $script:VdNativeLib)
-        $handle = $ps.BeginInvoke()
-        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-            param($result)
-            Write-AppLog "Winget Package Removal Cycle Complete." "INFO"
-        }
-    })
-}
-
-# Install / Add Custom Package By ID
-if ($btnAddCustomWingetApp) {
-    $btnAddCustomWingetApp.Add_Click({
-        if (-not (Test-WingetAvailable)) { return }
-        $pkgId = [Microsoft.VisualBasic.Interaction]::InputBox("Enter Winget Package ID (e.g. Google.Chrome or Python.Python.3):", "Install Package by ID", "")
-        if ([string]::IsNullOrWhiteSpace($pkgId)) { return }
-
-        $result = [System.Windows.MessageBox]::Show("Install package '$pkgId' now?", "Confirm Install", "YesNo", "Question")
-        if ($result -eq "Yes") {
-            Write-AppLog "Installing custom package ID: $pkgId..." "ACTION"
-            Start-StreamingCommand "winget" "install --id `"$pkgId`" -e --silent --accept-package-agreements --accept-source-agreements"
-        }
-    })
-}
-
-# Export Custom List
-if ($btnExportWingetCustom) {
-    $btnExportWingetCustom.Add_Click({
-        $sfd = New-Object System.Windows.Forms.SaveFileDialog
-        $sfd.Filter = "JSON Files (*.json)|*.json|Text Files (*.txt)|*.txt"
-        $sfd.FileName = "Winget_Manager_List_$(Get-Date -Format 'yyyyMMdd').json"
-        if ($sfd.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-            try {
-                $exportData = @($script:WingetList | ForEach-Object { @{ Name=$_.Name; Id=$_.Id } })
-                $jsonStr = $exportData | ConvertTo-Json -Depth 3
-                Set-Content -Path $sfd.FileName -Value $jsonStr -Encoding UTF8
-                Write-AppLog "Winget list exported to: $($sfd.FileName)" "SUCCESS"
-                [System.Windows.MessageBox]::Show("List exported successfully!", "Export Done", "OK", "Information")
-            } catch {
-                Write-AppLog "Export failed: $($_.Exception.Message)" "ERROR"
-            }
-        }
     })
 }
 
@@ -2124,11 +2032,6 @@ $perfTweaks = @(
 Add-TweakGroup "Essential Privacy" $essentialTweaks "#F85149"
 Add-TweakGroup "Interface Explorer" $uiTweaks "#58A6FF"
 Add-TweakGroup "Performance Power" $perfTweaks "#3FB950"
-
-# Profile buttons
-if ($btnProfileDesktop) { $btnProfileDesktop.Add_Click({ foreach ($t in $script:TweakList) { if ($t.Tag -eq "Essential" -or $t.Tag -eq "UI") { $t.Check.IsChecked = $true } } }) }
-if ($btnProfileLaptop) { $btnProfileLaptop.Add_Click({ foreach ($t in $script:TweakList) { if ($t.Tag -eq "Power") { $t.Check.IsChecked = $true } } }) }
-if ($btnResetTweaks) { $btnResetTweaks.Add_Click({ foreach ($t in $script:TweakList) { $t.Check.IsChecked = $false } }) }
 
 # Apply Tweaks (Async Runspace to prevent UI freezing)
 $btnApplyTweaks.Add_Click({
@@ -2397,21 +2300,6 @@ if (`$restart) { Write-Output 'A RESTART is required to finish enabling the sele
 "@
     Write-AppLog "Enabling $($names.Count) Windows feature(s) in the background..." "ACTION"
     Start-PSStreamingCommand $featureScript
-}) }
-
-if ($btnDisableFeatures) { $btnDisableFeatures.Add_Click({
-    Write-AppLog "Disabling features..." "WARN"
-    $window.Cursor = [System.Windows.Input.Cursors]::Wait
-    foreach ($f in $script:FeatureList) {
-        if ($f.Check.IsChecked) {
-            try {
-                Write-AppLog "Disabling: $($f.Name)..." "INFO"
-                Disable-WindowsOptionalFeature -Online -FeatureName $f.WinName -NoRestart -ErrorAction Stop
-                Write-AppLog "Disabled: $($f.Name)" "SUCCESS"
-            } catch { Write-AppLog "Failed: $($f.Name) - $($_.Exception.Message)" "ERROR" }
-        }
-    }
-    $window.Cursor = [System.Windows.Input.Cursors]::Arrow
 }) }
 
 if ($btnDeepClean) { $btnDeepClean.Add_Click({
@@ -2820,7 +2708,7 @@ try {
                 $scriptContent = @"
 <#
 .SYNOPSIS
-    VDOWNS PRIME v3.3.2 - Automated Standalone Unattended Deployment Script
+    VDOWNS PRIME v$($script:VdownsVersion) - Automated Standalone Unattended Deployment Script
     Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
 #>
 # Self-elevation check
@@ -3570,7 +3458,7 @@ function Scan-StartupPrograms {
         }
     }
 
-    # Disabled entries (v3.3.2+): one subkey per entry remembers where it came from
+    # Disabled entries (v3.4.0+): one subkey per entry remembers where it came from
     if (Test-Path $script:StartupStoreV2) {
         foreach ($sub in Get-ChildItem -Path $script:StartupStoreV2) {
             $entryName = $sub.GetValue("EntryName"); $srcPath = $sub.GetValue("SourcePath")
@@ -3581,7 +3469,7 @@ function Scan-StartupPrograms {
         }
     }
 
-    # Disabled entries written by v3.3.1 and earlier (flat values, origin unknown -> HKCU Run)
+    # Disabled entries written by v3.3.x and earlier (flat values, origin unknown -> HKCU Run)
     if (Test-Path $script:StartupStoreLegacy) {
         $lkey = Get-Item -Path $script:StartupStoreLegacy
         foreach ($n in $lkey.GetValueNames()) {
@@ -3957,7 +3845,7 @@ $script:telemetryTimer.Add_Tick({
 $script:telemetryTimer.Start()
 
 # Initial logs
-Write-AppLog "VDOWNS PRIME v3.3.2 (Fluent UI Edition) initialized." "INFO"
+Write-AppLog "VDOWNS PRIME v$($script:VdownsVersion) (Fluent UI Edition) initialized." "INFO"
 Write-AppLog "Hardware-accelerated WPF subsystem online." "SUCCESS"
 try {
     $wv = (Invoke-VdNative 'winget.exe' @('--version') 'UTF8').Output.Trim()

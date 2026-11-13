@@ -14,33 +14,30 @@ jobs:
     name: Compile Standalone Executable
     runs-on: windows-latest
     steps:
+      # Third-party actions are pinned to full commit SHAs (tag in the comment)
       - name: Checkout Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Install ps2exe Module
+      - name: Check tag matches script version
+        if: startsWith(github.ref, 'refs/tags/v')
         shell: pwsh
         run: |
-          Install-Module -Name ps2exe -Scope CurrentUser -Force -SkipPublisherCheck
+          $m = Select-String -Path .\VDOWNS_PRIME.ps1 -Pattern '^\$script:VdownsVersion = "(\d+\.\d+\.\d+)"' | Select-Object -First 1
+          $v = $m.Matches[0].Groups[1].Value
+          if ("v$v" -ne "${{ github.ref_name }}") { throw "Tag ${{ github.ref_name }} does not match script version v$v" }
 
-      - name: Run Build & Integrity Checks
+      - name: Build (checks + pinned ps2exe + SHA256SUMS)
         shell: pwsh
-        run: |
-          .\build.ps1
-
-      - name: Compute SHA-256 Checksums
-        shell: pwsh
-        run: |
-          $hash = (Get-FileHash -Path .\VDOWNS_PRIME.exe -Algorithm SHA256).Hash
-          "$hash  VDOWNS_PRIME.exe" | Out-File -FilePath .\VDOWNS_PRIME.exe.sha256 -Encoding ascii
-          Write-Host "Executable SHA256: $hash"
+        run: .\build.ps1
 
       - name: Create GitHub Release & Upload Artifacts
-        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           files: |
             VDOWNS_PRIME.exe
-            VDOWNS_PRIME.exe.sha256
             apps.json
+            SHA256SUMS
           generate_release_notes: true
           draft: false
           prerelease: false

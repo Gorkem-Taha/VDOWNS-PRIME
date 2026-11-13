@@ -25,3 +25,8 @@ analyze_*.py
 # PS2EXE Temp Files
 *.obj
 *.pdb
+
+# Build outputs (published as GitHub Release assets, never committed)
+/VDOWNS_PRIME.exe
+/SHA256SUMS
+*.sha256

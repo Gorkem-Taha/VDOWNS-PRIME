@@ -1933,7 +1933,7 @@ function Add-TweakGroup {
         $cb.Margin = [System.Windows.Thickness]::new(0, 5, 0, 5)
         $cb.Cursor = [System.Windows.Input.Cursors]::Hand
         [void]$innerStack.Children.Add($cb)
-        [void]$script:TweakList.Add(@{Check=$cb; Do=$t.Do; Undo=$t.Undo; Name=$t.Name; Tag=$t.Tag})
+        [void]$script:TweakList.Add(@{Check=$cb; Do=$t.Do; Undo=$t.Undo; Name=$t.Name; Tag=$t.Tag; State=$t.State})
     }
     
     $group.Child = $innerStack
@@ -1941,68 +1941,155 @@ function Add-TweakGroup {
     if ($targetTweakBox) { [void]$targetTweakBox.Children.Add($group) }
 }
 
+# Tweak state library: loaded into the apply/revert runspaces. Before a tweak runs for the
+# first time, every value it touches is snapshotted to HKCU:\Software\VDOWNS\TweakState so
+# "Revert" can put back exactly what was there (including "value did not exist").
+$script:TweakStateLib = @'
+$VdStateRoot = 'HKCU:\Software\VDOWNS\TweakState'
+$VdUltimatePlanGuid = 'c4e0702f-b217-4220-b268-5cbd645bac82'
+
+function Get-VdRegSnapshot([string]$Path, [string]$Name) {
+    $snap = @{ Path = $Path; Name = $Name; Exists = $false }
+    if (Test-Path -LiteralPath $Path) {
+        $key = Get-Item -LiteralPath $Path
+        if ($key.GetValueNames() -contains $Name) {
+            $snap.Exists = $true
+            $snap.Kind = $key.GetValueKind($Name).ToString()
+            $val = $key.GetValue($Name, $null, 'DoNotExpandEnvironmentNames')
+            if ($val -is [byte[]]) { $snap.Value = [Convert]::ToBase64String($val); $snap.IsBase64 = $true } else { $snap.Value = $val }
+        }
+    }
+    $snap
+}
+
+function Restore-VdRegSnapshot($Snap) {
+    if (-not $Snap) { return }
+    if ($Snap.Exists) {
+        if (-not (Test-Path -LiteralPath $Snap.Path)) { New-Item -Path $Snap.Path -Force | Out-Null }
+        $v = $Snap.Value
+        if ($Snap.IsBase64) { $v = [Convert]::FromBase64String($v) }
+        elseif ($Snap.Kind -eq 'MultiString') { $v = [string[]]@($v) }
+        New-ItemProperty -LiteralPath $Snap.Path -Name $Snap.Name -Value $v -PropertyType $Snap.Kind -Force -ErrorAction Stop | Out-Null
+    } elseif (Test-Path -LiteralPath $Snap.Path) {
+        Remove-ItemProperty -LiteralPath $Snap.Path -Name $Snap.Name -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Save-VdTweakState([string]$TweakName, $Spec) {
+    if (-not $Spec) { return }
+    if (-not (Test-Path $VdStateRoot)) { New-Item -Path $VdStateRoot -Force | Out-Null }
+    # Keep the very first snapshot: re-applying must not overwrite the true original
+    if ((Get-Item -Path $VdStateRoot).GetValueNames() -contains $TweakName) { return }
+    $items = foreach ($e in $Spec) {
+        if ($e.Reg) {
+            @{ Type = 'Reg'; Snap = (Get-VdRegSnapshot $e.Reg $e.Name) }
+        } elseif ($e.Svc) {
+            $svcKey = "HKLM:\SYSTEM\CurrentControlSet\Services\$($e.Svc)"
+            $svc = Get-Service -Name $e.Svc -ErrorAction SilentlyContinue
+            @{ Type = 'Svc'; Name = $e.Svc; WasRunning = [bool]($svc -and $svc.Status -eq 'Running')
+               Start = (Get-VdRegSnapshot $svcKey 'Start'); Delayed = (Get-VdRegSnapshot $svcKey 'DelayedAutostart') }
+        } elseif ($e.Key) {
+            @{ Type = 'Key'; Path = $e.Key; Existed = [bool](Test-Path -LiteralPath $e.Key) }
+        } elseif ($e.Hibernate) {
+            $h = (Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Power' -Name HibernateEnabled -ErrorAction SilentlyContinue).HibernateEnabled
+            @{ Type = 'Hibernate'; Enabled = ($h -eq 1) }
+        } elseif ($e.PowerPlan) {
+            $m = [regex]::Match((powercfg /getactivescheme | Out-String), '[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}')
+            @{ Type = 'PowerPlan'; ActiveGuid = $m.Value }
+        }
+    }
+    $json = ConvertTo-Json -InputObject @($items) -Depth 6 -Compress
+    New-ItemProperty -Path $VdStateRoot -Name $TweakName -Value $json -PropertyType String -Force -ErrorAction Stop | Out-Null
+}
+
+function Restore-VdTweakState([string]$TweakName) {
+    if (-not (Test-Path $VdStateRoot)) { return $false }
+    $json = (Get-Item -Path $VdStateRoot).GetValue($TweakName)
+    if (-not $json) { return $false }
+    foreach ($it in ($json | ConvertFrom-Json)) {
+        switch ($it.Type) {
+            'Reg' { Restore-VdRegSnapshot $it.Snap }
+            'Svc' {
+                Restore-VdRegSnapshot $it.Start
+                Restore-VdRegSnapshot $it.Delayed
+                if ($it.WasRunning) { Start-Service -Name $it.Name -ErrorAction SilentlyContinue }
+            }
+            'Key' { if (-not $it.Existed -and (Test-Path -LiteralPath $it.Path)) { Remove-Item -LiteralPath $it.Path -Recurse -Force -ErrorAction Stop } }
+            'Hibernate' { if ($it.Enabled) { powercfg /hibernate on | Out-Null } else { powercfg /hibernate off | Out-Null } }
+            'PowerPlan' {
+                if ($it.ActiveGuid) { powercfg /setactive $it.ActiveGuid | Out-Null }
+                if ($it.ActiveGuid -ne $VdUltimatePlanGuid) { powercfg /delete $VdUltimatePlanGuid 2>$null | Out-Null }
+            }
+        }
+    }
+    Remove-ItemProperty -Path $VdStateRoot -Name $TweakName -Force -ErrorAction SilentlyContinue
+    return $true
+}
+'@
+
+# The OO ShutUp10 binary only runs if Windows reports a valid Authenticode signature from O&O Software.
 $essentialTweaks = @(
     @{Name="Create Restore Point"; Tag="Essential"; 
       Do={ Checkpoint-Computer -Description "VDOWNSPrimeRestore" -RestorePointType "MODIFY_SETTINGS" }; 
       Undo={ Write-Host "Restore points cannot be deleted from here." } },
     @{Name="Run OO ShutUp10"; Tag="Essential"; 
-      Do={ $url="https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe"; Invoke-WebRequest -Uri $url -OutFile "$env:TEMP\OOSU10.exe"; Start-Process "$env:TEMP\OOSU10.exe" }; 
+      Do={ $url = "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe"; $dir = Join-Path $env:TEMP ("VDOWNS_OOSU_" + [guid]::NewGuid().ToString("N")); New-Item -ItemType Directory -Path $dir -Force | Out-Null; $exe = Join-Path $dir "OOSU10.exe"; Invoke-WebRequest -Uri $url -OutFile $exe -UseBasicParsing -ErrorAction Stop; $sig = Get-AuthenticodeSignature -FilePath $exe; if ($sig.Status -ne "Valid" -or $sig.SignerCertificate.Subject -notmatch "O&O Software") { Remove-Item $dir -Recurse -Force -ErrorAction SilentlyContinue; throw "OOSU10.exe signature check failed ($($sig.Status)); file deleted, not executed." }; Start-Process -FilePath $exe }; 
       Undo={ Write-Host "Open O&O ShutUp10 manually to revert." } },
-    @{Name="Disable Telemetry"; Tag="Essential"; 
+    @{Name="Disable Telemetry"; Tag="Essential"; State=@(@{Svc="DiagTrack"});
       Do={ Set-Service DiagTrack -StartupType Disabled -EA SilentlyContinue; Stop-Service DiagTrack -EA SilentlyContinue }; 
       Undo={ Set-Service DiagTrack -StartupType Automatic; Start-Service DiagTrack } },
-    @{Name="Disable Ad ID"; Tag="Essential"; 
+    @{Name="Disable Ad ID"; Tag="Essential"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo"; Name="Enabled"});
       Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" "Enabled" 0 }; 
       Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" "Enabled" 1 } }
 )
 
 $uiTweaks = @(
-    @{Name="Dark Mode (System)"; Tag="UI"; 
+    @{Name="Dark Mode (System)"; Tag="UI"; State=@(@{Reg="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize"; Name="SystemUsesLightTheme"});
       Do={ Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" "SystemUsesLightTheme" 0 }; 
       Undo={ Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" "SystemUsesLightTheme" 1 } },
-    @{Name="Dark Mode (Apps)"; Tag="UI"; 
+    @{Name="Dark Mode (Apps)"; Tag="UI"; State=@(@{Reg="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize"; Name="AppsUseLightTheme"});
       Do={ Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" "AppsUseLightTheme" 0 }; 
       Undo={ Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" "AppsUseLightTheme" 1 } },
-    @{Name="Show Hidden Files"; Tag="UI"; 
+    @{Name="Show Hidden Files"; Tag="UI"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="Hidden"});
       Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Hidden" 1 }; 
       Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Hidden" 2 } },
-    @{Name="Show File Extensions"; Tag="UI"; 
+    @{Name="Show File Extensions"; Tag="UI"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="HideFileExt"});
       Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HideFileExt" 0 }; 
       Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HideFileExt" 1 } },
-    @{Name="Launch to 'This PC'"; Tag="UI"; 
+    @{Name="Launch to 'This PC'"; Tag="UI"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="LaunchTo"});
       Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "LaunchTo" 1 }; 
       Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "LaunchTo" 2 } },
-    @{Name="Classic Context Menu"; Tag="UI"; 
+    @{Name="Classic Context Menu"; Tag="UI"; State=@(@{Key="HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}"});
       Do={ reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve 2>$null }; 
       Undo={ reg delete "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}" /f 2>$null } },
-    @{Name="Align Taskbar Left"; Tag="UI"; 
+    @{Name="Align Taskbar Left"; Tag="UI"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="TaskbarAl"});
       Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarAl" 0 }; 
       Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarAl" 1 } },
-    @{Name="Hide Search Icon"; Tag="UI"; 
+    @{Name="Hide Search Icon"; Tag="UI"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\Search"; Name="SearchboxTaskbarMode"});
       Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarMode" 0 }; 
       Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarMode" 1 } },
-    @{Name="Clipboard History"; Tag="UI"; 
+    @{Name="Clipboard History"; Tag="UI"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\Clipboard"; Name="EnableClipboardHistory"});
       Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Clipboard" "EnableClipboardHistory" 1 }; 
       Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Clipboard" "EnableClipboardHistory" 0 } }
 )
 
 $perfTweaks = @(
-    @{Name="Disable Sticky Keys"; Tag="Power"; 
+    @{Name="Disable Sticky Keys"; Tag="Power"; State=@(@{Reg="HKCU:\Control Panel\Accessibility\StickyKeys"; Name="Flags"});
       Do={ Set-ItemProperty "HKCU:\Control Panel\Accessibility\StickyKeys" "Flags" "506" }; 
       Undo={ Set-ItemProperty "HKCU:\Control Panel\Accessibility\StickyKeys" "Flags" "510" } },
-    @{Name="Enable Hibernate"; Tag="Power"; 
+    @{Name="Enable Hibernate"; Tag="Power"; State=@(@{Hibernate=$true});
       Do={ powercfg /hibernate on }; 
       Undo={ powercfg /hibernate off } },
-    @{Name="Storage Sense"; Tag="Power"; 
+    @{Name="Storage Sense"; Tag="Power"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy"; Name="01"});
       Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy" "01" 1 }; 
       Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy" "01" 0 } },
-    @{Name="Ultimate Performance"; Tag="Power"; 
-      Do={ powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 }; 
-      Undo={ Write-Host "Go to Power Options to remove the plan." } },
-    @{Name="Disable SysMain"; Tag="Power"; 
+    @{Name="Ultimate Performance"; Tag="Power"; State=@(@{PowerPlan=$true});
+      Do={ $g = "c4e0702f-b217-4220-b268-5cbd645bac82"; if ((powercfg /list | Out-String) -notmatch $g) { powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 $g | Out-Null }; powercfg /setactive $g }; 
+      Undo={ powercfg /setactive 381b4222-f694-41f0-9685-ff5bb260df2e; powercfg /delete c4e0702f-b217-4220-b268-5cbd645bac82 } },
+    @{Name="Disable SysMain"; Tag="Power"; State=@(@{Svc="SysMain"});
       Do={ Set-Service SysMain -StartupType Disabled -EA SilentlyContinue; Stop-Service SysMain -EA SilentlyContinue }; 
       Undo={ Set-Service SysMain -StartupType Automatic; Start-Service SysMain } },
-    @{Name="Disable Game DVR"; Tag="Power"; 
+    @{Name="Disable Game DVR"; Tag="Power"; State=@(@{Reg="HKCU:\System\GameConfigStore"; Name="GameDVR_Enabled"});
       Do={ Set-ItemProperty "HKCU:\System\GameConfigStore" "GameDVR_Enabled" 0 }; 
       Undo={ Set-ItemProperty "HKCU:\System\GameConfigStore" "GameDVR_Enabled" 1 } }
 )
@@ -2031,7 +2118,7 @@ $btnApplyTweaks.Add_Click({
 
     $tweakData = @()
     foreach ($t in $selected) {
-        $tweakData += @{ Name = $t.Name; ScriptStr = $t.Do.ToString() }
+        $tweakData += @{ Name = $t.Name; ScriptStr = $t.Do.ToString(); State = $t.State }
     }
 
     $syncHash = [hashtable]::Synchronized(@{
@@ -2047,13 +2134,16 @@ $btnApplyTweaks.Add_Click({
     $ps.Runspace = $runspace
 
     [void]$ps.AddScript({
-        param($Tweaks, $SH)
+        param($Tweaks, $SH, $Lib)
+        . ([scriptblock]::Create($Lib))
         $applied = 0
         foreach ($item in $Tweaks) {
             $tName = $item.Name
             $sBlock = [scriptblock]::Create($item.ScriptStr)
             try {
-                & $sBlock
+                # Snapshot first; if that fails the tweak is skipped so Revert can always restore
+                Save-VdTweakState $tName $item.State
+                $null = & $sBlock
                 $applied++
                 try { $SH.Window.Dispatcher.Invoke([action]{
                     $ts = Get-Date -Format 'HH:mm:ss'
@@ -2083,6 +2173,7 @@ $btnApplyTweaks.Add_Click({
     })
     [void]$ps.AddParameter("Tweaks", $tweakData)
     [void]$ps.AddParameter("SH", $syncHash)
+    [void]$ps.AddParameter("Lib", $script:TweakStateLib)
     $handle = $ps.BeginInvoke()
 
     $timer = New-Object System.Windows.Threading.DispatcherTimer
@@ -2116,7 +2207,7 @@ $btnRevertTweaks.Add_Click({
 
     $tweakData = @()
     foreach ($t in $selected) {
-        $tweakData += @{ Name = $t.Name; ScriptStr = $t.Undo.ToString() }
+        $tweakData += @{ Name = $t.Name; ScriptStr = $t.Undo.ToString(); State = $t.State }
     }
 
     $syncHash = [hashtable]::Synchronized(@{
@@ -2132,17 +2223,19 @@ $btnRevertTweaks.Add_Click({
     $ps.Runspace = $runspace
 
     [void]$ps.AddScript({
-        param($Tweaks, $SH)
+        param($Tweaks, $SH, $Lib)
+        . ([scriptblock]::Create($Lib))
         $reverted = 0
         foreach ($item in $Tweaks) {
             $tName = $item.Name
             $sBlock = [scriptblock]::Create($item.ScriptStr)
             try {
-                & $sBlock
+                # Prefer the exact pre-tweak snapshot; fall back to the generic Undo block
+                $how = if (Restore-VdTweakState $tName) { "original state restored" } else { $null = & $sBlock; "default undo applied (no snapshot)" }
                 $reverted++
                 try { $SH.Window.Dispatcher.Invoke([action]{
                     $ts = Get-Date -Format 'HH:mm:ss'
-                    $SH.LogBox.AppendText("[$ts] [SUCCESS] Reverted: $tName`r`n")
+                    $SH.LogBox.AppendText("[$ts] [SUCCESS] Reverted: $tName - $how`r`n")
                     $SH.LogBox.ScrollToEnd()
                 }) } catch {}
             } catch {
@@ -2163,6 +2256,7 @@ $btnRevertTweaks.Add_Click({
     })
     [void]$ps.AddParameter("Tweaks", $tweakData)
     [void]$ps.AddParameter("SH", $syncHash)
+    [void]$ps.AddParameter("Lib", $script:TweakStateLib)
     $handle = $ps.BeginInvoke()
 
     $timer = New-Object System.Windows.Threading.DispatcherTimer
@@ -2290,20 +2384,32 @@ if ($btnDisableFeatures) { $btnDisableFeatures.Add_Click({
 }) }
 
 if ($btnDeepClean) { $btnDeepClean.Add_Click({
-    $result = [System.Windows.MessageBox]::Show("This will run an extended Disk Cleanup in the background.`n`nIt removes temporary files, caches, old Windows Update files and previous Windows installations (you will no longer be able to roll back to an earlier Windows version).`nYour Downloads folder is NOT touched.`n`nContinue?", "Confirm Deep Clean", "YesNo", "Warning")
+    $result = [System.Windows.MessageBox]::Show("This will run Disk Cleanup in the background for a safe set of categories:`ntemporary files, caches, logs, crash dumps, Delivery Optimization files and superseded Windows Update files.`n`nNot touched: Downloads, Recycle Bin, previous Windows installations (rollback), Windows ESD files (Reset this PC) and language packs.`nNote: after Update Cleanup, already installed updates can no longer be uninstalled.`n`nContinue?", "Confirm Deep Clean", "YesNo", "Warning")
     if ($result -ne "Yes") { return }
     Write-AppLog "Starting Deep System Clean..." "ACTION"
     try {
         $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches"
-        # Never let cleanmgr empty the user's Downloads folder
-        $excludedHandlers = @("DownloadsFolder")
+        # Allow-list only: user data (Downloads, Recycle Bin) and recovery data (previous
+        # installations, ESD files used by "Reset this PC", language packs) are never selected.
+        # Every other handler gets its flag removed, which also clears flags set by v3.3.1.
+        $safeHandlers = @(
+            "Active Setup Temp Folders", "BranchCache", "D3D Shader Cache", "Delivery Optimization Files",
+            "Diagnostic Data Viewer database files", "Downloaded Program Files", "Feedback Hub Archive log files",
+            "Internet Cache Files", "Old ChkDsk Files", "RetailDemo Offline Content", "Setup Log Files",
+            "System error memory dump files", "System error minidump files", "Temporary Files",
+            "Temporary Setup Files", "Thumbnail Cache", "Update Cleanup", "Upgrade Discarded Files",
+            "Windows Error Reporting Files", "Windows Upgrade Log Files"
+        )
+        $enabled = 0
         Get-ChildItem $regPath | ForEach-Object {
-            if ($excludedHandlers -contains $_.PSChildName) {
-                Remove-ItemProperty -Path $_.PSPath -Name "StateFlags0001" -Force -ErrorAction SilentlyContinue
-            } else {
+            if ($safeHandlers -contains $_.PSChildName) {
                 New-ItemProperty -Path $_.PSPath -Name "StateFlags0001" -Value 2 -PropertyType DWORD -Force | Out-Null
+                $enabled++
+            } else {
+                Remove-ItemProperty -Path $_.PSPath -Name "StateFlags0001" -Force -ErrorAction SilentlyContinue
             }
         }
+        Write-AppLog "Disk Cleanup categories selected: $enabled (safe allow-list)." "INFO"
         Start-Process "cleanmgr.exe" -ArgumentList "/sagerun:1" -WindowStyle Hidden
         Write-AppLog "Deep Clean started in background." "SUCCESS"
     } catch { Write-AppLog "Clean Error: $($_.Exception.Message)" "ERROR" }
@@ -2486,17 +2592,39 @@ if ($btnUpdateApps) {
     })
 }
 
+# PSWindowsUpdate: pinned version, Authenticode-verified before import (runs in the child powershell.exe)
+$script:PSWUBootstrap = @'
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$ErrorActionPreference = "Stop"
+$ver = [version]"2.2.1.5"
+$mod = Get-Module -ListAvailable -Name PSWindowsUpdate | Where-Object { $_.Version -eq $ver } | Select-Object -First 1
+if (-not $mod) {
+    Write-Host "Installing PSWindowsUpdate $ver from the PowerShell Gallery..."
+    Install-Module -Name PSWindowsUpdate -RequiredVersion $ver -Scope AllUsers -Force -AllowClobber
+    $mod = Get-Module -ListAvailable -Name PSWindowsUpdate | Where-Object { $_.Version -eq $ver } | Select-Object -First 1
+}
+if (-not $mod) { throw "PSWindowsUpdate $ver could not be installed." }
+foreach ($f in @("PSWindowsUpdate.psd1", "PSWindowsUpdate.psm1", "PSWindowsUpdate.dll")) {
+    $sig = Get-AuthenticodeSignature -FilePath (Join-Path $mod.ModuleBase $f)
+    if ($sig.Status -ne "Valid" -or $sig.SignerCertificate.Subject -notmatch "Michal Gajda") {
+        throw "PSWindowsUpdate signature check failed on $f ($($sig.Status)). Aborting without loading the module."
+    }
+}
+Import-Module $mod.Path -Force
+Write-Host "PSWindowsUpdate $ver loaded (signature verified)."
+'@
+
 if ($btnUpdateWindows) {
     $btnUpdateWindows.Add_Click({
         Write-AppLog "Starting: Windows Update..." "ACTION"
-        Start-PSStreamingCommand 'if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) { Install-Module PSWindowsUpdate -Force -SkipPublisherCheck }; Import-Module PSWindowsUpdate; Get-WindowsUpdate -Install -AcceptAll -IgnoreReboot'
+        Start-PSStreamingCommand ($script:PSWUBootstrap + "`r`nGet-WindowsUpdate -Install -AcceptAll -IgnoreReboot")
     })
 }
 
 if ($btnUpdateDrivers) {
     $btnUpdateDrivers.Add_Click({
         Write-AppLog "Starting: Driver Updates..." "ACTION"
-        Start-PSStreamingCommand 'if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) { Install-Module PSWindowsUpdate -Force -SkipPublisherCheck }; Import-Module PSWindowsUpdate; Get-WindowsUpdate -UpdateType Driver -Install -AcceptAll -IgnoreReboot'
+        Start-PSStreamingCommand ($script:PSWUBootstrap + "`r`nGet-WindowsUpdate -UpdateType Driver -Install -AcceptAll -IgnoreReboot")
     })
 }
 
@@ -2868,6 +2996,36 @@ if ($btnRestoreConfig) {
         if ($ofd.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) { return }
         $srcZip = $ofd.FileName
 
+        # Show what the archive will overwrite before touching anything
+        $knownItems = [ordered]@{
+            "VSCode_User"                      = "VS Code settings"
+            "Cursor_User"                      = "Cursor settings"
+            ".gitconfig"                       = "Git config"
+            "Microsoft.PowerShell_profile.ps1" = "Windows PowerShell profile (runs code every time PowerShell starts)"
+            "PowerShell7_profile.ps1"          = "PowerShell 7 profile (runs code every time PowerShell starts)"
+            "Terminal_settings.json"           = "Windows Terminal settings"
+            "NotepadPlusPlus"                  = "Notepad++ settings"
+            "SSH_Config"                       = "SSH config"
+            "vscode_extensions.txt"            = "VS Code extension list (extensions will be installed from the Marketplace)"
+        }
+        try {
+            Add-Type -AssemblyName System.IO.Compression.FileSystem
+            $zipPeek = [System.IO.Compression.ZipFile]::OpenRead($srcZip)
+            $topNames = @($zipPeek.Entries | ForEach-Object { ($_.FullName -replace '\\', '/').Split('/')[0] } | Sort-Object -Unique)
+            $zipPeek.Dispose()
+        } catch {
+            Write-AppLog "Cannot read backup archive: $($_.Exception.Message)" "ERROR"
+            return
+        }
+        $found = @($knownItems.Keys | Where-Object { $topNames -contains $_ } | ForEach-Object { " - " + $knownItems[$_] })
+        if ($found.Count -eq 0) {
+            [System.Windows.MessageBox]::Show("This file does not look like a VDOWNS configuration backup.", "Restore", "OK", "Warning")
+            return
+        }
+        $confirmMsg = "The following will be overwritten:`n" + ($found -join "`n") + "`n`nOnly restore backups you created yourself: profiles and extensions can run code.`nYour current files are first saved to %LOCALAPPDATA%\VDOWNS\PreRestore_<date>.`n`nContinue?"
+        $res = [System.Windows.MessageBox]::Show($confirmMsg, "Confirm Restore", "YesNo", "Warning")
+        if ($res -ne [System.Windows.MessageBoxResult]::Yes) { return }
+
         Write-AppLog "Restoring AppData Configuration Backup in background..." "WARN"
         $btnRestoreConfig.IsEnabled = $false
 
@@ -2894,7 +3052,53 @@ if ($btnRestoreConfig) {
             try {
                 $tempDir = Join-Path $env:TEMP "VDOWNS_Restore_Temp"
                 if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue }
-                Expand-Archive -Path $srcZip -DestinationPath $tempDir -Force
+                # Extract manually so no entry can escape the temp folder (zip-slip)
+                Add-Type -AssemblyName System.IO.Compression.FileSystem
+                New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+                $rootFull = [System.IO.Path]::GetFullPath($tempDir).TrimEnd('\') + '\'
+                $zip = [System.IO.Compression.ZipFile]::OpenRead($srcZip)
+                try {
+                    foreach ($entry in $zip.Entries) {
+                        $target = [System.IO.Path]::GetFullPath((Join-Path $tempDir $entry.FullName))
+                        if (-not $target.StartsWith($rootFull, [System.StringComparison]::OrdinalIgnoreCase)) {
+                            throw "Unsafe path in archive, restore aborted: $($entry.FullName)"
+                        }
+                        if ($entry.FullName.EndsWith('/') -or $entry.FullName.EndsWith('\')) {
+                            New-Item -ItemType Directory -Path $target -Force | Out-Null
+                            continue
+                        }
+                        New-Item -ItemType Directory -Path (Split-Path $target -Parent) -Force | Out-Null
+                        [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $target, $true)
+                    }
+                } finally { $zip.Dispose() }
+
+                # Save everything that is about to be overwritten; abort if that fails
+                $docsDirSafe = [Environment]::GetFolderPath('MyDocuments')
+                $safetyDir = Join-Path $env:LOCALAPPDATA ("VDOWNS\PreRestore_" + (Get-Date -Format 'yyyyMMdd_HHmmss'))
+                $currentItems = @(
+                    @{ Zip = "VSCode_User";                      Path = (Join-Path $env:APPDATA "Code\User"); Dir = $true },
+                    @{ Zip = "Cursor_User";                      Path = (Join-Path $env:APPDATA "Cursor\User"); Dir = $true },
+                    @{ Zip = ".gitconfig";                       Path = (Join-Path $env:USERPROFILE ".gitconfig") },
+                    @{ Zip = "Microsoft.PowerShell_profile.ps1"; Path = (Join-Path $docsDirSafe "WindowsPowerShell\Microsoft.PowerShell_profile.ps1") },
+                    @{ Zip = "PowerShell7_profile.ps1";          Path = (Join-Path $docsDirSafe "PowerShell\Microsoft.PowerShell_profile.ps1") },
+                    @{ Zip = "Terminal_settings.json";           Path = (Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json") },
+                    @{ Zip = "NotepadPlusPlus";                  Path = (Join-Path $env:APPDATA "Notepad++"); Dir = $true },
+                    @{ Zip = "SSH_Config";                       Path = (Join-Path $env:USERPROFILE ".ssh\config") }
+                )
+                $saved = 0
+                foreach ($ci in $currentItems) {
+                    if (-not (Test-Path (Join-Path $tempDir $ci.Zip)) -or -not (Test-Path $ci.Path)) { continue }
+                    $dest = Join-Path $safetyDir $ci.Zip
+                    if ($ci.Dir) {
+                        New-Item -ItemType Directory -Path $dest -Force -ErrorAction Stop | Out-Null
+                        Get-ChildItem -Path $ci.Path -Exclude "workspaceStorage", "globalStorage", "History" | Copy-Item -Destination $dest -Recurse -Force -ErrorAction Stop
+                    } else {
+                        New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force -ErrorAction Stop | Out-Null
+                        Copy-Item -Path $ci.Path -Destination $dest -Force -ErrorAction Stop
+                    }
+                    $saved++
+                }
+                if ($saved -gt 0) { Log-Msg "Current settings saved before restore: $safetyDir" "INFO" }
 
                 # Restore VS Code
                 if (Test-Path "$tempDir\VSCode_User") {
@@ -3301,6 +3505,8 @@ if ($btnPingDns) {
 # 13D. STARTUP PROGRAMS OPTIMIZER
 # =============================================================================
 $script:StartupItemsList = [System.Collections.ArrayList]::new()
+$script:StartupStoreV2 = "HKCU:\Software\VDOWNS\DisabledStartupV2"
+$script:StartupStoreLegacy = "HKCU:\Software\VDOWNS\DisabledStartup"
 
 function Scan-StartupPrograms {
     if (-not $startupContainer) { return }
@@ -3308,20 +3514,48 @@ function Scan-StartupPrograms {
     $script:StartupItemsList.Clear()
     Write-AppLog "Scanning Windows startup entries..." "INFO"
     
-    $paths = @(
-        @{ Hive = "HKCU"; Path = "Software\Microsoft\Windows\CurrentVersion\Run"; Disabled = $false },
-        @{ Hive = "HKLM"; Path = "Software\Microsoft\Windows\CurrentVersion\Run"; Disabled = $false },
-        @{ Hive = "HKCU"; Path = "Software\VDOWNS\DisabledStartup"; Disabled = $true }
+    $runSources = @(
+        @{ Label = "HKCU";       Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" },
+        @{ Label = "HKLM";       Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run" },
+        @{ Label = "HKLM 32-bit"; Path = "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run" }
     )
-    
-    foreach ($p in $paths) {
-        $regPath = "$($p.Hive):\$($p.Path)"
-        if (Test-Path $regPath) {
-            $props = (Get-Item -Path $regPath).Property
-            foreach ($prop in $props) {
-                if ($prop -eq "(default)") { continue }
-                $val = (Get-ItemProperty -Path $regPath -Name $prop).$prop
-                
+    $entries = [System.Collections.ArrayList]::new()
+
+    # Active entries: keep the raw (unexpanded) data and its registry type
+    foreach ($src in $runSources) {
+        if (-not (Test-Path $src.Path)) { continue }
+        $key = Get-Item -Path $src.Path
+        foreach ($n in $key.GetValueNames()) {
+            if ([string]::IsNullOrEmpty($n)) { continue }
+            [void]$entries.Add(@{ Name = $n; Raw = $key.GetValue($n, $null, 'DoNotExpandEnvironmentNames'); Kind = $key.GetValueKind($n).ToString()
+                                  RegPath = $src.Path; Source = $src.Label; Disabled = $false; StoreKey = $null; Legacy = $false })
+        }
+    }
+
+    # Disabled entries (v3.3.2+): one subkey per entry remembers where it came from
+    if (Test-Path $script:StartupStoreV2) {
+        foreach ($sub in Get-ChildItem -Path $script:StartupStoreV2) {
+            $entryName = $sub.GetValue("EntryName"); $srcPath = $sub.GetValue("SourcePath")
+            if (-not $entryName -or -not $srcPath) { continue }
+            $label = ($runSources | Where-Object { $_.Path -eq $srcPath } | Select-Object -First 1).Label
+            [void]$entries.Add(@{ Name = $entryName; Raw = $sub.GetValue("Data", $null, 'DoNotExpandEnvironmentNames'); Kind = $sub.GetValueKind("Data").ToString()
+                                  RegPath = $srcPath; Source = $(if ($label) { $label } else { $srcPath }); Disabled = $true; StoreKey = $sub.PSPath; Legacy = $false })
+        }
+    }
+
+    # Disabled entries written by v3.3.1 and earlier (flat values, origin unknown -> HKCU Run)
+    if (Test-Path $script:StartupStoreLegacy) {
+        $lkey = Get-Item -Path $script:StartupStoreLegacy
+        foreach ($n in $lkey.GetValueNames()) {
+            if ([string]::IsNullOrEmpty($n)) { continue }
+            [void]$entries.Add(@{ Name = $n; Raw = $lkey.GetValue($n, $null, 'DoNotExpandEnvironmentNames'); Kind = $lkey.GetValueKind($n).ToString()
+                                  RegPath = $script:StartupStoreLegacy; Source = "HKCU (legacy)"; Disabled = $true; StoreKey = $null; Legacy = $true })
+        }
+    }
+
+    foreach ($entry in $entries) {
+                $prop = $entry.Name
+                $val = "$($entry.Raw)"
                 $card = New-Object System.Windows.Controls.Border
                 $card.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#161B22")
                 $card.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#21262D")
@@ -3344,7 +3578,7 @@ function Scan-StartupPrograms {
 
                 $infoStack = New-Object System.Windows.Controls.StackPanel
                 $lblN = New-Object System.Windows.Controls.TextBlock
-                $lblN.Text = $prop
+                $lblN.Text = "$prop  ($($entry.Source))"
                 $lblN.FontWeight = "Bold"
                 $lblN.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3")
                 $lblN.FontSize = 12.5
@@ -3368,7 +3602,7 @@ function Scan-StartupPrograms {
                 $statusText.FontSize = 10
                 $statusText.FontWeight = "Bold"
 
-                if ($p.Disabled) {
+                if ($entry.Disabled) {
                     $statusBorder.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#3D1F24")
                     $statusText.Text = "DISABLED"
                     $statusText.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#F85149")
@@ -3383,9 +3617,8 @@ function Scan-StartupPrograms {
 
                 $card.Child = $grid
                 [void]$startupContainer.Children.Add($card)
-                [void]$script:StartupItemsList.Add(@{ Check = $cb; Name = $prop; Val = $val; RegPath = $regPath; Disabled = $p.Disabled })
-            }
-        }
+                [void]$script:StartupItemsList.Add(@{ Check = $cb; Name = $prop; Raw = $entry.Raw; Kind = $entry.Kind; RegPath = $entry.RegPath
+                                                      Disabled = $entry.Disabled; StoreKey = $entry.StoreKey; Legacy = $entry.Legacy })
     }
     Write-AppLog "Found $($script:StartupItemsList.Count) startup programs." "SUCCESS"
 }
@@ -3394,33 +3627,57 @@ if ($btnScanStartup) { $btnScanStartup.Add_Click({ Scan-StartupPrograms }) }
 
 if ($btnDisableStartup) {
     $btnDisableStartup.Add_Click({
-        $disPath = "HKCU:\Software\VDOWNS\DisabledStartup"
-        if (-not (Test-Path $disPath)) { New-Item -Path $disPath -Force | Out-Null }
+        $targets = @($script:StartupItemsList | Where-Object { $_.Check.IsChecked -and -not $_.Disabled })
+        if ($targets.Count -eq 0) { [System.Windows.MessageBox]::Show("No enabled startup items selected.", "Info", "OK", "Information"); return }
+        $res = [System.Windows.MessageBox]::Show("Disable $($targets.Count) startup item(s)?`n`nThey are moved to HKCU\Software\VDOWNS\DisabledStartupV2 together with their original location and type, and can be re-enabled at any time.", "Disable Startup Items", "YesNo", "Question")
+        if ($res -ne [System.Windows.MessageBoxResult]::Yes) { return }
+
         $count = 0
-        foreach ($item in $script:StartupItemsList) {
-            if ($item.Check.IsChecked -and -not $item.Disabled) {
-                Set-ItemProperty -Path $disPath -Name $item.Name -Value $item.Val -Force
-                Remove-ItemProperty -Path $item.RegPath -Name $item.Name -Force -EA SilentlyContinue
+        foreach ($item in $targets) {
+            $dst = Join-Path $script:StartupStoreV2 ([guid]::NewGuid().ToString("N"))
+            try {
+                New-Item -Path $dst -Force -ErrorAction Stop | Out-Null
+                New-ItemProperty -Path $dst -Name "EntryName" -Value $item.Name -PropertyType String -Force -ErrorAction Stop | Out-Null
+                New-ItemProperty -Path $dst -Name "SourcePath" -Value $item.RegPath -PropertyType String -Force -ErrorAction Stop | Out-Null
+                New-ItemProperty -Path $dst -Name "Data" -Value $item.Raw -PropertyType $item.Kind -Force -ErrorAction Stop | Out-Null
+                # Only remove the original once the backup copy is safely written
+                Remove-ItemProperty -LiteralPath $item.RegPath -Name $item.Name -Force -ErrorAction Stop
                 $count++
+            } catch {
+                Remove-Item -Path $dst -Recurse -Force -ErrorAction SilentlyContinue
+                Write-AppLog "Could not disable '$($item.Name)': $($_.Exception.Message)" "ERROR"
             }
         }
-        Write-AppLog "Disabled $count startup programs (safely preserved in VDOWNS store)." "SUCCESS"
+        Write-AppLog "Disabled $count startup program(s); originals preserved in the VDOWNS store." "SUCCESS"
         Scan-StartupPrograms
     })
 }
 
 if ($btnEnableStartup) {
     $btnEnableStartup.Add_Click({
-        $runPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+        $hkcuRun = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
         $count = 0
-        foreach ($item in $script:StartupItemsList) {
-            if ($item.Check.IsChecked -and $item.Disabled) {
-                Set-ItemProperty -Path $runPath -Name $item.Name -Value $item.Val -Force
-                Remove-ItemProperty -Path $item.RegPath -Name $item.Name -Force -EA SilentlyContinue
+        foreach ($item in @($script:StartupItemsList | Where-Object { $_.Check.IsChecked -and $_.Disabled })) {
+            try {
+                # Legacy entries never recorded their origin; HKCU Run is the safest place for them
+                $dest = if ($item.Legacy) { $hkcuRun } else { $item.RegPath }
+                if (-not (Test-Path $dest)) { New-Item -Path $dest -Force -ErrorAction Stop | Out-Null }
+                if ((Get-Item -Path $dest).GetValueNames() -contains $item.Name) {
+                    Write-AppLog "Skipped '$($item.Name)': an active entry with the same name already exists." "WARN"
+                    continue
+                }
+                New-ItemProperty -Path $dest -Name $item.Name -Value $item.Raw -PropertyType $item.Kind -Force -ErrorAction Stop | Out-Null
+                if ($item.Legacy) {
+                    Remove-ItemProperty -LiteralPath $script:StartupStoreLegacy -Name $item.Name -Force -ErrorAction SilentlyContinue
+                } else {
+                    Remove-Item -LiteralPath $item.StoreKey -Recurse -Force -ErrorAction SilentlyContinue
+                }
                 $count++
+            } catch {
+                Write-AppLog "Could not re-enable '$($item.Name)': $($_.Exception.Message)" "ERROR"
             }
         }
-        Write-AppLog "Re-enabled $count startup programs." "SUCCESS"
+        Write-AppLog "Re-enabled $count startup program(s) at their original location." "SUCCESS"
         Scan-StartupPrograms
     })
 }
@@ -3659,6 +3916,17 @@ try {
     Write-AppLog "Winget detected: $wv" "INFO"
 } catch { Write-AppLog "Winget not found! App Center may not work." "ERROR" }
 Update-HealthScoreUI
+
+# Elevated with a different (admin) account? Then every HKCU tweak, backup and startup change
+# lands in that account's profile, not in the signed-in user's.
+try {
+    $desktopUser = (Get-CimInstance -ClassName Win32_ComputerSystem -ErrorAction Stop).UserName
+    $runAsUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+    if ($desktopUser -and $runAsUser -and $desktopUser -ne $runAsUser) {
+        Write-AppLog "Running as '$runAsUser' but the signed-in user is '$desktopUser'. Per-user settings will apply to '$runAsUser'." "WARN"
+        [System.Windows.MessageBox]::Show("VDOWNS PRIME is running as '$runAsUser', but the signed-in desktop user is '$desktopUser'.`n`nPer-user changes (dark mode, Explorer options, startup items, developer backups) will apply to '$runAsUser', not to '$desktopUser'.", "Different User Account", "OK", "Warning") | Out-Null
+    }
+} catch {}
 Write-AppLog "System Architect is ready. Select a category from the sidebar to begin." "SUCCESS"
 
 # 15. SHOW WINDOW

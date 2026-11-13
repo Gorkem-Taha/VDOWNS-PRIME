@@ -10,8 +10,13 @@ permissions:
   contents: write
 
 jobs:
+  # A release is only built when the full CI (Pester, real-registry round trip, smoke tests) passes
+  test:
+    uses: ./.github/workflows/ci.yml
+
   build:
     name: Compile Standalone Executable
+    needs: test
     runs-on: windows-latest
     steps:
       # Third-party actions are pinned to full commit SHAs (tag in the comment)

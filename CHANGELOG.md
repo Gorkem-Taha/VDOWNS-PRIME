@@ -51,6 +51,15 @@ did not work; they are fixed here.
 - WSL 2 also enables Virtual Machine Platform; Home edition hint for Hyper-V/Sandbox.
 - Single version source (`$script:VdownsVersion`), used by the UI, generated scripts and the build.
 
+### Development
+- Source split into `src/app` fragments, `src/lib` helper libraries and `src/ui/MainWindow.xaml`;
+  `tools/Merge-Source.ps1` generates the single-file `VDOWNS_PRIME.ps1` (verified byte-identical
+  when introduced) and embeds `apps.json` directly, so the fallback catalog can no longer drift.
+- Pester 5 test suites (catalog, source rules, native runner, winget parser, tweak snapshot/revert,
+  generators, UI filter, WPF load) and a CI workflow on Linux + Windows PowerShell 5.1 with a real
+  registry round trip and smoke tests of the `.ps1` and the compiled exe; releases require CI.
+- `VDOWNS_SMOKE_TEST=1` startup mode for automated testing (no dialogs, writes a report, exits).
+
 ### Removed
 - Compiled exe and duplicate `Source/` copies from the repository (the exe is a release asset).
 - Unreachable handlers for buttons that no longer exist in the UI.

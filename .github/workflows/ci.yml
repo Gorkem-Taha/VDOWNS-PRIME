@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'faz-*']
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  portable:
+    name: Tests (PowerShell 7, Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Pester 5.7.1
+        shell: pwsh
+        run: Install-Module -Name Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force
+
+      - name: Source in sync + build checks
+        shell: pwsh
+        run: |
+          ./tools/Merge-Source.ps1 -Check
+          ./build.ps1 -SkipCompile
+
+      - name: Pester
+        shell: pwsh
+        run: |
+          Import-Module Pester -RequiredVersion 5.7.1
+          $c = New-PesterConfiguration
+          $c.Run.Path = './tests'
+          $c.Run.Exit = $true
+          $c.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $c
+
+  windows:
+    name: Tests + smoke (Windows PowerShell 5.1)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # The inbox Pester 3.4 is Microsoft-signed, so installing 5.x side by side needs
+      # -SkipPublisherCheck. CI only; the app itself never uses that switch.
+      - name: Install Pester 5.7.1 for Windows PowerShell
+        shell: powershell
+        run: |
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Scope CurrentUser -Force | Out-Null
+          Install-Module -Name Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
+
+      # VDOWNS_ALLOW_SYSTEM_TESTS lets the real-registry round trip run on this throwaway VM
+      - name: Pester (incl. real registry/service round trip and WPF load)
+        shell: powershell
+        env:
+          VDOWNS_ALLOW_SYSTEM_TESTS: '1'
+        run: |
+          Import-Module Pester -RequiredVersion 5.7.1
+          $c = New-PesterConfiguration
+          $c.Run.Path = '.\tests'
+          $c.Run.Exit = $true
+          $c.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $c
+
+      - name: Smoke test - full app start from the .ps1 (Windows PowerShell 5.1)
+        shell: powershell
+        timeout-minutes: 6
+        env:
+          VDOWNS_SMOKE_TEST: '1'
+          VDOWNS_SMOKE_REPORT: ${{ runner.temp }}\smoke-ps1.txt
+        run: |
+          $p = Start-Process powershell.exe -ArgumentList '-STA', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "$PWD\VDOWNS_PRIME.ps1" -PassThru
+          if (-not $p.WaitForExit(240000)) { Stop-Process -Id $p.Id -Force; throw 'App did not finish loading within 4 minutes (a dialog may be blocking).' }
+          if (-not (Test-Path $env:VDOWNS_SMOKE_REPORT)) { throw "No smoke report written (exit code $($p.ExitCode))." }
+          Get-Content $env:VDOWNS_SMOKE_REPORT
+          $first = Get-Content $env:VDOWNS_SMOKE_REPORT -TotalCount 1
+          if ($first -notmatch '^SMOKE_OK') { throw $first }
+          if ($first -notmatch ' apps=96 ' -or $first -notmatch ' tweaks=19 ' -or $first -notmatch ' chips=8 ') { throw "UI not fully populated: $first" }
+
+      - name: Build exe (pinned ps2exe)
+        shell: pwsh
+        run: ./build.ps1
+
+      - name: Smoke test - compiled exe
+        shell: powershell
+        timeout-minutes: 6
+        env:
+          VDOWNS_SMOKE_TEST: '1'
+          VDOWNS_SMOKE_REPORT: ${{ runner.temp }}\smoke-exe.txt
+        run: |
+          $p = Start-Process "$PWD\VDOWNS_PRIME.exe" -PassThru
+          if (-not $p.WaitForExit(240000)) { Stop-Process -Id $p.Id -Force; throw 'Exe did not finish loading within 4 minutes (a dialog may be blocking).' }
+          if (-not (Test-Path $env:VDOWNS_SMOKE_REPORT)) { throw "No smoke report written (exit code $($p.ExitCode))." }
+          Get-Content $env:VDOWNS_SMOKE_REPORT
+          $first = Get-Content $env:VDOWNS_SMOKE_REPORT -TotalCount 1
+          if ($first -notmatch '^SMOKE_OK') { throw $first }
+          if ($first -notmatch ' apps=96 ' -or $first -notmatch ' tweaks=19 ') { throw "UI not fully populated: $first" }
+
+      - name: Upload test build
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: VDOWNS_PRIME-ci-build
+          path: |
+            VDOWNS_PRIME.exe
+            apps.json
+            SHA256SUMS
+          retention-days: 14

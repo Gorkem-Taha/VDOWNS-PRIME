@@ -138,14 +138,47 @@ script version.
 
 ```
 VDOWNS-PRIME/
-├── VDOWNS_PRIME.ps1        # The application (WPF UI + logic), UTF-8 with BOM
-├── apps.json               # App catalog (an identical copy is embedded in the script)
+├── VDOWNS_PRIME.ps1        # GENERATED single-file app (do not edit by hand), UTF-8 with BOM
+├── apps.json               # App catalog (also embedded into the script as offline fallback)
+├── src/
+│   ├── app/NN-*.ps1        # Fragments of the app, concatenated in file-name order
+│   ├── lib/*.ps1           # Self-contained helpers loaded into background runspaces
+│   │                       #   (VdNative, TweakState, PSWUBootstrap, DnsBenchmark)
+│   └── ui/MainWindow.xaml  # WPF markup
+├── tools/Merge-Source.ps1  # Builds VDOWNS_PRIME.ps1 from src/ (-Check verifies it is in sync)
+├── tests/*.Tests.ps1       # Pester 5 suites
 ├── build.ps1               # Checks, pinned ps2exe compile, SHA256SUMS
 ├── vdowns.ps1              # Legacy entry point, forwards to VDOWNS_PRIME.ps1
 ├── CHANGELOG.md
-├── .github/workflows/release.yml
+├── .github/workflows/      # ci.yml (tests + smoke), release.yml (tag -> CI -> release)
 └── legacy/                 # v2.0 WinForms script and its screenshot (reference only)
 ```
+
+## Development
+
+The app ships as one script because ps2exe compiles a single file and many users run the `.ps1`
+directly, but it is developed as separate files under `src/`:
+
+```powershell
+# 1. edit files under src/ (or apps.json)
+# 2. regenerate the single-file script
+pwsh ./tools/Merge-Source.ps1
+# 3. run the tests (Pester 5.7.1)
+Invoke-Pester ./tests
+```
+
+- `src/app/` fragments share one script scope; `#@include <path>` lines paste `src/lib`, `src/ui`
+  or `apps.json` verbatim into here-strings.
+- Never use `GetNewClosure` (script functions disappear under `-File`); pass state through `.Tag`
+  and `$this`, and use `Watch-Runspace` for background work. Run console tools through
+  `Invoke-VdNative` (no window flashes, no stdout/stderr deadlock).
+- `tests/TweakState.Windows.Tests.ps1` applies real tweaks to the machine and only runs when
+  `VDOWNS_ALLOW_SYSTEM_TESTS=1`. CI sets it on a throwaway runner — **do not set it on your PC**.
+- CI (`ci.yml`) runs on Linux (PowerShell 7) and Windows (Windows PowerShell 5.1): source sync,
+  build checks, Pester including a real-registry apply/revert round trip and a WPF load test, then
+  starts the full app from the `.ps1` and from the compiled exe in smoke mode
+  (`VDOWNS_SMOKE_TEST=1`: the UI loads, writes a report and closes itself). The CI exe is uploaded
+  as a build artifact. A `v*` tag runs the same CI before publishing a release.
 
 ## Versioning
 

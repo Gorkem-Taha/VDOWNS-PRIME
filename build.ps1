@@ -2,7 +2,8 @@
 .SYNOPSIS
     VDOWNS PRIME build script.
 .DESCRIPTION
-    Verifies the catalog and the script, then compiles VDOWNS_PRIME.ps1 into VDOWNS_PRIME.exe
+    Verifies that VDOWNS_PRIME.ps1 is generated from src/, checks the catalog and the script,
+    then compiles VDOWNS_PRIME.ps1 into VDOWNS_PRIME.exe
     with a pinned ps2exe version and writes SHA256SUMS for the release assets.
     The version is read from $script:VdownsVersion in VDOWNS_PRIME.ps1 (single source of truth).
 .PARAMETER SkipCompile
@@ -30,6 +31,9 @@ Write-Host "==========================================================" -Foregro
 Write-Host "   VDOWNS PRIME - Build v$version" -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
+# Generated file must match src/ (VDOWNS_PRIME.ps1 is built from src/ by tools/Merge-Source.ps1)
+& (Join-Path $rootDir "tools/Merge-Source.ps1") -Check
+
 # 1. Encoding: Windows PowerShell 5.1 needs the BOM to read the non-ASCII UI text correctly
 Write-Host "`n[1/5] Checking file encoding..." -ForegroundColor Yellow
 $head = [System.IO.File]::ReadAllBytes($sourceScript)[0..2]
@@ -53,7 +57,7 @@ Write-Host "  -> $($ids.Count) packages, no duplicates, embedded copy in sync." 
 
 # 3. Syntax
 Write-Host "`n[3/5] Parsing PowerShell scripts..." -ForegroundColor Yellow
-foreach ($f in @($sourceScript, (Join-Path $rootDir "vdowns.ps1"), $PSCommandPath)) {
+foreach ($f in @($sourceScript, (Join-Path $rootDir "vdowns.ps1"), (Join-Path $rootDir "tools/Merge-Source.ps1"), $PSCommandPath)) {
     $parseErrors = $null
     [void][System.Management.Automation.Language.Parser]::ParseFile($f, [ref]$null, [ref]$parseErrors)
     if ($parseErrors) {

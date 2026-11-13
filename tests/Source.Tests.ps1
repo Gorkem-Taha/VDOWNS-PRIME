@@ -28,13 +28,13 @@ Describe 'Generated script' {
 
 Describe 'XAML' {
     It 'is well-formed with unique element names' {
-        $names = Get-VdXamlNames | Where-Object { $_ -ne 'bd' }
+        $names = Get-VdXamlNames -ExcludeTemplates
         @($names | Group-Object | Where-Object Count -gt 1) | Should -BeNullOrEmpty
         $names.Count | Should -BeGreaterThan 80
     }
 
     It 'has no named element the script never uses' {
-        $unused = Get-VdXamlNames | Where-Object { $_ -notin 'bd', 'wingetProgressBar' } |
+        $unused = Get-VdXamlNames -ExcludeTemplates | Where-Object { $_ -ne 'wingetProgressBar' } |
             Where-Object { ([regex]::Matches($text, "\b$_\b")).Count -le 1 }
         $unused | Should -BeNullOrEmpty
     }

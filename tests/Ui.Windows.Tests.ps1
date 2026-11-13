@@ -18,7 +18,9 @@ Describe 'WPF window' -Tag 'Windows' -Skip:(-not $CanRun) {
     }
 
     It 'resolves every named element' {
-        $missing = Get-VdXamlNames | Where-Object { $_ -ne 'bd' } | Where-Object { -not $Window.FindName($_) }
+        $names = Get-VdXamlNames -ExcludeTemplates
+        $names.Count | Should -BeGreaterThan 80
+        $missing = $names | Where-Object { -not $Window.FindName($_) }
         $missing | Should -BeNullOrEmpty
     }
 

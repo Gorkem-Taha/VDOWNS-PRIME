@@ -37,11 +37,14 @@ function Get-VdXaml {
     [xml](Get-Content (Join-Path $script:SrcRoot 'ui/MainWindow.xaml') -Raw -Encoding UTF8)
 }
 
-function Get-VdXamlNames {
+# -ExcludeTemplates: names inside ControlTemplate/Style live in the template's own name scope
+function Get-VdXamlNames([switch]$ExcludeTemplates) {
     $x = Get-VdXaml
     $ns = New-Object System.Xml.XmlNamespaceManager($x.NameTable)
     $ns.AddNamespace('x', 'http://schemas.microsoft.com/winfx/2006/xaml')
-    @($x.SelectNodes('//*[@x:Name]', $ns) | ForEach-Object { $_.GetAttribute('Name', 'http://schemas.microsoft.com/winfx/2006/xaml') })
+    $ns.AddNamespace('w', 'http://schemas.microsoft.com/winfx/2006/xaml/presentation')
+    $xpath = if ($ExcludeTemplates) { '//*[@x:Name][not(ancestor::w:ControlTemplate) and not(ancestor::w:Style)]' } else { '//*[@x:Name]' }
+    @($x.SelectNodes($xpath, $ns) | ForEach-Object { $_.GetAttribute('Name', 'http://schemas.microsoft.com/winfx/2006/xaml') })
 }
 
 function Get-VdCatalogIds([object]$Catalog) {

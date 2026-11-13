@@ -1,9 +1,20 @@
+BeforeDiscovery {
+    $IsWin = ($env:OS -eq 'Windows_NT')   # -Skip values are evaluated during discovery
+}
+
 BeforeAll {
     . (Join-Path $PSScriptRoot 'TestHelpers.ps1')
     . (Join-Path $SrcRoot 'lib/VdNative.ps1')
 }
 
 Describe 'ConvertFrom-VdWingetTable' {
+    It 'handles CRLF output (real winget on Windows)' {
+        $crlf = "Name     Id             Version  Source`r`n---------------------------------------`r`nFirefox  Mozilla.Firefox  133.0  winget`r`n"
+        $r = @(ConvertFrom-VdWingetTable $crlf)
+        $r.Count | Should -Be 1
+        $r[0].Id | Should -Be 'Mozilla.Firefox'
+    }
+
     It 'parses winget list by column offsets, ignoring progress noise and the summary' {
         $list = "   - `r   \ `r" + @'
 Name                                   Id                                Version        Available     Source
@@ -76,17 +87,18 @@ Describe 'Invoke-VdNative' {
     }
 
     It 'does not deadlock when a tool floods stderr' {
-        $cmd = if ($OnWindows) {
-            'powershell -NoProfile -Command "[Console]::Error.Write((''e'' * 262144)); ''done''"'
-        } else { 'head -c 262144 /dev/zero | tr "\0" e 1>&2; echo done' }
         $sw = [Diagnostics.Stopwatch]::StartNew()
-        $r = Invoke-VdNative $shell (& $mk $cmd) 'UTF8'
+        $r = if ($OnWindows) {
+            Invoke-VdNative 'powershell.exe' @('-NoProfile', '-Command', "[Console]::Error.Write(('e' * 262144)); 'done'") 'UTF8'
+        } else {
+            Invoke-VdNative $shell (& $mk 'head -c 262144 /dev/zero | tr "\0" e 1>&2; echo done') 'UTF8'
+        }
         $r.Output.Trim() | Should -Be 'done'
         $r.Error.Length | Should -BeGreaterOrEqual 262144
         $sw.Elapsed.TotalSeconds | Should -BeLessThan 60
     }
 
-    It 'quotes arguments with spaces, quotes and empty strings' -Skip:$OnWindows {
+    It 'quotes arguments with spaces, quotes and empty strings' -Skip:$IsWin {
         $r = Invoke-VdNative '/usr/bin/printf' @('%s|', 'a b', 'say "hi"', '') 'UTF8'
         $r.Output | Should -Be 'a b|say "hi"||'
     }

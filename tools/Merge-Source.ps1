@@ -53,6 +53,7 @@ $merged = ($parts -join "`n") + "`n"
 if ($Check) {
     $current = [System.IO.File]::ReadAllText($target, $utf8)
     if ($current.Length -gt 0 -and $current[0] -eq [char]0xFEFF) { $current = $current.Substring(1) }
+    $current = $current -replace "`r`n", "`n"   # a Windows checkout may have converted LF to CRLF
     if ($current -ne $merged) {
         throw "VDOWNS_PRIME.ps1 is out of date with src/. Run: pwsh ./tools/Merge-Source.ps1"
     }

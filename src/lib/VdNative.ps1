@@ -33,7 +33,8 @@ function powercfg {
 # Parse winget's fixed-width tables (list/search) by the header's column offsets instead of
 # splitting on runs of spaces, which broke on truncated names and adjacent columns.
 function ConvertFrom-VdWingetTable([string]$Text) {
-    $lines = @($Text -split "`n" | ForEach-Object { ($_ -split "`r")[-1] })
+    # Normalize CRLF first; a bare CR inside a line is winget's progress redraw, keep what follows it
+    $lines = @(($Text -replace "`r`n", "`n") -split "`n" | ForEach-Object { ($_ -split "`r")[-1] })
     $sep = -1
     for ($i = 1; $i -lt $lines.Count; $i++) { if ($lines[$i] -match '^\s*-{10,}\s*$') { $sep = $i; break } }
     if ($sep -lt 1) { return }

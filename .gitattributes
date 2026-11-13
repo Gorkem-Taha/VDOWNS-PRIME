@@ -1,0 +1,5 @@
+# Keep sources byte-stable across platforms: the generated VDOWNS_PRIME.ps1 is compared
+# against src/ in CI, and PowerShell is fine with LF on Windows.
+* text=auto eol=lf
+*.png binary
+*.exe binary

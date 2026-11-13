@@ -651,6 +651,8 @@ try {
                 <StackPanel Grid.Row="0" Margin="0,0,0,10">
                     <TextBlock Text="Windows Debloater" FontSize="20" FontWeight="SemiBold" Foreground="#E6EDF3"/>
                     <TextBlock Text="Safely remove pre-installed Windows UWP apps and telemetry packages to free RAM" Foreground="#8B949E" FontSize="12" Margin="0,3,0,0"/>
+                    <CheckBox x:Name="chkDebloatProvisioned" Margin="0,8,0,0" Foreground="#E6EDF3" FontSize="12"
+                              Content="Also remove for new user accounts (provisioned packages - prevents the apps from coming back for new users)"/>
                 </StackPanel>
 
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -1040,12 +1042,98 @@ function Test-WingetAvailable {
     }
 }
 
+# Hidden native-process runner shared by the UI thread and every background runspace.
+# CreateNoWindow keeps console tools (winget, powercfg, code) from flashing a window in the
+# -noConsole exe; stderr is drained asynchronously so a full stderr pipe cannot deadlock stdout.
+$script:VdNativeLib = @'
+function Get-VdProcessEncoding([string]$Encoding) {
+    if ($Encoding -eq 'UTF8') { return (New-Object System.Text.UTF8Encoding($false)) }
+    return [System.Text.Encoding]::GetEncoding([Globalization.CultureInfo]::CurrentCulture.TextInfo.OEMCodePage)
+}
+
+function Invoke-VdNative {
+    param([string]$File, [string[]]$ArgList = @(), [string]$Encoding = '')
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = $File
+    $psi.Arguments = (@($ArgList) | ForEach-Object { if ($_ -eq '' -or $_ -match '[\s"]') { '"' + ($_ -replace '"', '\"') + '"' } else { $_ } }) -join ' '
+    $psi.UseShellExecute = $false
+    $psi.CreateNoWindow = $true
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $enc = Get-VdProcessEncoding $Encoding
+    $psi.StandardOutputEncoding = $enc
+    $psi.StandardErrorEncoding = $enc
+    $proc = [System.Diagnostics.Process]::Start($psi)
+    $errTask = $proc.StandardError.ReadToEndAsync()
+    $out = $proc.StandardOutput.ReadToEnd()
+    $proc.WaitForExit()
+    [pscustomobject]@{ ExitCode = $proc.ExitCode; Output = ($out -replace "`0", ''); Error = ($errTask.Result -replace "`0", '') }
+}
+
+# Inside runspaces that load this library, `powercfg` resolves to this hidden wrapper.
+function powercfg {
+    $r = Invoke-VdNative 'powercfg.exe' ([string[]]$args)
+    $global:LASTEXITCODE = $r.ExitCode
+    if ($r.ExitCode -ne 0 -and $r.Error) { Write-Error ("powercfg: " + $r.Error.Trim()) }
+    $r.Output -split "`r?`n" | Where-Object { $_ -ne '' }
+}
+
+# Parse winget's fixed-width tables (list/search) by the header's column offsets instead of
+# splitting on runs of spaces, which broke on truncated names and adjacent columns.
+function ConvertFrom-VdWingetTable([string]$Text) {
+    $lines = @($Text -split "`n" | ForEach-Object { ($_ -split "`r")[-1] })
+    $sep = -1
+    for ($i = 1; $i -lt $lines.Count; $i++) { if ($lines[$i] -match '^\s*-{10,}\s*$') { $sep = $i; break } }
+    if ($sep -lt 1) { return }
+    $starts = @([regex]::Matches($lines[$sep - 1], '\S+') | ForEach-Object { $_.Index })
+    if ($starts.Count -lt 3) { return }
+    for ($i = $sep + 1; $i -lt $lines.Count; $i++) {
+        $l = $lines[$i]
+        if ([string]::IsNullOrWhiteSpace($l)) { break }   # a blank line ends the table
+        $cells = for ($c = 0; $c -lt $starts.Count; $c++) {
+            $a = $starts[$c]
+            $b = if ($c + 1 -lt $starts.Count) { $starts[$c + 1] } else { $l.Length }
+            if ($a -ge $l.Length) { '' } else { $l.Substring($a, [math]::Min($b, $l.Length) - $a).Trim() }
+        }
+        $cells = @($cells)
+        if (-not $cells[1]) { continue }
+        @{ Name = $cells[0]; Id = $cells[1]; Version = $cells[2]; Source = $(if ($starts.Count -ge 4) { $cells[-1] } else { '' }) }
+    }
+}
+'@
+. ([scriptblock]::Create($script:VdNativeLib))
+
+# Completion watcher for background runspaces. Deliberately no closure: the tick handler and
+# OnComplete run in the script's scope, so script functions (Write-AppLog, Get-UIElement, ...)
+# resolve both in the compiled .exe and when the .ps1 is started with -File.
+function Watch-Runspace {
+    param($PS, $Handle, $Runspace, [scriptblock]$OnComplete)
+    $t = New-Object System.Windows.Threading.DispatcherTimer
+    $t.Interval = [TimeSpan]::FromMilliseconds(400)
+    $t.Tag = @{ PS = $PS; Handle = $Handle; Runspace = $Runspace; OnComplete = $OnComplete }
+    $t.Add_Tick({
+        $st = $this.Tag
+        if (-not $st.Handle.IsCompleted) { return }
+        $this.Stop()
+        $result = $null
+        try { $result = $st.PS.EndInvoke($st.Handle) } catch { Write-AppLog "Background task failed: $($_.Exception.Message)" "ERROR" }
+        foreach ($e in @($st.PS.Streams.Error)) { Write-AppLog "Background task error: $($e.Exception.Message)" "ERROR" }
+        $st.PS.Dispose()
+        $st.Runspace.Close()
+        if ($st.OnComplete) {
+            try { & $st.OnComplete $result } catch { Write-AppLog "Completion handler failed: $($_.Exception.Message)" "ERROR" }
+        }
+    })
+    $t.Start()
+}
+
 function Start-StreamingCommand {
     param([string]$FileName, [string]$Arguments)
 
     $targetLogBox = Get-UIElement "logBox"
     if ($targetLogBox) {
-        $targetLogBox.AppendText("[$(Get-Date -Format 'HH:mm:ss')] [CMD] $FileName $Arguments`r`n")
+        $shown = if ($FileName -eq "powershell.exe" -and $Arguments -match '-EncodedCommand') { "powershell.exe (script)" } else { "$FileName $Arguments" }
+        $targetLogBox.AppendText("[$(Get-Date -Format 'HH:mm:ss')] [CMD] $shown`r`n")
         $targetLogBox.ScrollToEnd()
     }
 
@@ -1062,7 +1150,14 @@ function Start-StreamingCommand {
     $ps.Runspace = $runspace
 
     [void]$ps.AddScript({
-        param($FN, $Args, $SH)
+        param($FN, $Args, $SH, $Lib)
+        . ([scriptblock]::Create($Lib))
+        function Push-Line([string]$text) {
+            if ($SH.LogBox -and $SH.Window) {
+                try { $SH.Window.Dispatcher.Invoke([action]{ $SH.LogBox.AppendText("$text`r`n"); $SH.LogBox.ScrollToEnd() }) } catch {}
+            }
+        }
+        $exitCode = $null
         try {
             $psi = New-Object System.Diagnostics.ProcessStartInfo
             $psi.FileName = $FN
@@ -1071,49 +1166,41 @@ function Start-StreamingCommand {
             $psi.RedirectStandardError = $true
             $psi.UseShellExecute = $false
             $psi.CreateNoWindow = $true
+            # winget writes UTF-8; classic tools use the OEM code page (sfc emits UTF-16, NULs stripped below)
+            $enc = Get-VdProcessEncoding $(if ($FN -match '^winget(\.exe)?$') { 'UTF8' } else { '' })
+            $psi.StandardOutputEncoding = $enc
+            $psi.StandardErrorEncoding = $enc
 
             $proc = New-Object System.Diagnostics.Process
             $proc.StartInfo = $psi
             $proc.Start() | Out-Null
+            $errTask = $proc.StandardError.ReadToEndAsync()
 
-            while (-not $proc.StandardOutput.EndOfStream) {
-                $line = $proc.StandardOutput.ReadLine()
-                if ($null -ne $line -and $SH.LogBox -and $SH.Window) {
-                    try { $SH.Window.Dispatcher.Invoke([action]{ $SH.LogBox.AppendText("$line`r`n"); $SH.LogBox.ScrollToEnd() }) } catch {}
-                }
-            }
-            $errOut = $proc.StandardError.ReadToEnd()
-            if ($errOut -and $SH.LogBox -and $SH.Window) {
-                try { $SH.Window.Dispatcher.Invoke([action]{ $SH.LogBox.AppendText($errOut); $SH.LogBox.ScrollToEnd() }) } catch {}
+            while ($null -ne ($line = $proc.StandardOutput.ReadLine())) {
+                $line = ($line -replace "`0", '').TrimEnd()
+                # drop empty lines and winget/dism progress animation
+                if ($line.Trim() -eq '' -or $line.Trim() -match '^[-\\|/]$' -or $line -match '[▀-▟]') { continue }
+                Push-Line $line
             }
             $proc.WaitForExit()
+            $errOut = ($errTask.Result -replace "`0", '').Trim()
+            if ($errOut) { Push-Line $errOut }
+            $exitCode = $proc.ExitCode
         } catch {
-            $msg = $_.Exception.Message
-            if ($SH.LogBox -and $SH.Window) {
-                try { $SH.Window.Dispatcher.Invoke([action]{ $SH.LogBox.AppendText("ERROR: $msg`r`n"); $SH.LogBox.ScrollToEnd() }) } catch {}
-            }
+            Push-Line "ERROR: $($_.Exception.Message)"
         }
-        if ($SH.LogBox -and $SH.Window) {
-            try { $SH.Window.Dispatcher.Invoke([action]{ $SH.LogBox.AppendText("`r`n--- PROCESS COMPLETED ---`r`n"); $SH.LogBox.ScrollToEnd() }) } catch {}
-        }
+        $status = if ($null -eq $exitCode) { "FAILED TO START" } elseif ($exitCode -eq 0) { "COMPLETED (exit code 0)" } else { "FINISHED WITH ERRORS (exit code $exitCode)" }
+        Push-Line "`r`n--- PROCESS $status ---"
     })
     [void]$ps.AddParameter("FN", $FileName)
     [void]$ps.AddParameter("Args", $Arguments)
     [void]$ps.AddParameter("SH", $syncHash)
+    [void]$ps.AddParameter("Lib", $script:VdNativeLib)
 
     $handle = $ps.BeginInvoke()
-
-    $timer = New-Object System.Windows.Threading.DispatcherTimer
-    $timer.Interval = [TimeSpan]::FromSeconds(1)
-    $timer.Add_Tick({
-        if ($handle.IsCompleted) {
-            $timer.Stop()
-            try { $ps.EndInvoke($handle) } catch {}
-            $ps.Dispose()
-            $runspace.Close()
-        }
-    }.GetNewClosure())
-    $timer.Start()
+    Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+        param($result)
+    }
 }
 
 function Start-PSStreamingCommand {
@@ -1227,10 +1314,13 @@ try {
                     $urlBtn.Cursor = [System.Windows.Input.Cursors]::Hand
                     $urlBtn.HorizontalAlignment = "Left"
                     $urlBtn.Margin = [System.Windows.Thickness]::new(0, 4, 0, 0)
-                    $targetUrl = $app.Url
+                    $urlBtn.Tag = "$($app.Url)"
                     $urlBtn.Add_Click({
-                        try { [System.Diagnostics.Process]::Start($targetUrl) } catch {}
-                    }.GetNewClosure())
+                        # Catalog entries can be user-added: only ever open web links, never local paths/programs
+                        $u = "$($this.Tag)"
+                        if ($u -match '^https?://[^\s"]+$') { try { Start-Process -FilePath $u } catch {} }
+                        else { Write-AppLog "Blocked non-web link: $u" "WARN" }
+                    })
                     [void]$cbContent.Children.Add($urlBtn)
                 }
 
@@ -1238,13 +1328,12 @@ try {
                 $card.Child = $cb
                 
                 # Hover effect on card
-                $card.Add_MouseEnter({ $this.Background = $hoverBrush }.GetNewClosure())
-                $card.Add_MouseLeave({ $this.Background = $surfaceBrush }.GetNewClosure())
+                $card.Add_MouseEnter({ $this.Background = $hoverBrush })
+                $card.Add_MouseLeave({ $this.Background = $surfaceBrush })
                 
-                # Selection border highlight
-                $currentCard = $card
-                $cb.Add_Checked({ $currentCard.BorderBrush = $accentBrush }.GetNewClosure())
-                $cb.Add_Unchecked({ $currentCard.BorderBrush = $borderBrush }.GetNewClosure())
+                # Selection border highlight (the checkbox is the card's direct child)
+                $cb.Add_Checked({ $this.Parent.BorderBrush = $accentBrush })
+                $cb.Add_Unchecked({ $this.Parent.BorderBrush = $borderBrush })
                 
                 [void]$wrapPanel.Children.Add($card)
                 [void]$script:InstallList.Add(@{Check=$cb; Id=$app.Id; Name=$app.Name; Card=$card; WrapPanel=$wrapPanel})
@@ -1313,7 +1402,8 @@ if ($btnInstall) {
         $ps.Runspace = $runspace
 
         [void]$ps.AddScript({
-            param($Apps, $SH)
+            param($Apps, $SH, $Lib)
+            . ([scriptblock]::Create($Lib))
             $current = 0
             foreach ($app in $Apps) {
                 $current++
@@ -1324,12 +1414,12 @@ if ($btnInstall) {
                 }) } catch {}
 
                 try {
-                    $null = & winget install --id $id -e --silent --accept-package-agreements --accept-source-agreements --force 2>&1 | Out-String
-                    $code = $LASTEXITCODE
+                    $r = Invoke-VdNative 'winget.exe' @('install', '--id', $id, '-e', '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity') 'UTF8'
+                    $code = $r.ExitCode
                     try { $SH.Window.Dispatcher.Invoke([action]{
                         $ts = Get-Date -Format 'HH:mm:ss'
                         if ($SH.LogBox) {
-                            if ($code -eq 0 -or $null -eq $code) { $SH.LogBox.AppendText("[$ts] [SUCCESS] Installed: $n`r`n") }
+                            if ($code -eq 0) { $SH.LogBox.AppendText("[$ts] [SUCCESS] Installed: $n`r`n") }
                             elseif ($code -eq -1978335189) { $SH.LogBox.AppendText("[$ts] [INFO] Already installed: $n`r`n") }
                             else { $SH.LogBox.AppendText("[$ts] [ERROR] Failed: $n (Code: $code)`r`n") }
                             $SH.LogBox.ScrollToEnd()
@@ -1356,22 +1446,15 @@ if ($btnInstall) {
         })
         [void]$ps.AddParameter("Apps", $appsData)
         [void]$ps.AddParameter("SH", $syncHash)
+        [void]$ps.AddParameter("Lib", $script:VdNativeLib)
         $handle = $ps.BeginInvoke()
-
-        $timer = New-Object System.Windows.Threading.DispatcherTimer
-        $timer.Interval = [TimeSpan]::FromMilliseconds(500)
-        $timer.Add_Tick({
-            if ($handle.IsCompleted) {
-                $timer.Stop()
-                try { $ps.EndInvoke($handle) } catch {}
-                $ps.Dispose(); $runspace.Close()
-                $curInst = Get-UIElement "btnInstall"
-                $curUninst = Get-UIElement "btnUninstall"
-                if ($curInst) { $curInst.IsEnabled = $true }
-                if ($curUninst) { $curUninst.IsEnabled = $true }
-            }
-        }.GetNewClosure())
-        $timer.Start()
+        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+            param($result)
+            $curInst = Get-UIElement "btnInstall"
+            $curUninst = Get-UIElement "btnUninstall"
+            if ($curInst) { $curInst.IsEnabled = $true }
+            if ($curUninst) { $curUninst.IsEnabled = $true }
+        }
         Write-AppLog "Installation started for $($appsData.Count) apps..." "ACTION"
     })
 }
@@ -1420,7 +1503,8 @@ if ($btnUninstall) {
         $ps.Runspace = $runspace
 
         [void]$ps.AddScript({
-            param($Apps, $SH)
+            param($Apps, $SH, $Lib)
+            . ([scriptblock]::Create($Lib))
             $current = 0
             foreach ($app in $Apps) {
                 $current++
@@ -1431,12 +1515,12 @@ if ($btnUninstall) {
                 }) } catch {}
 
                 try {
-                    $null = & winget uninstall --id $id -e --silent --accept-source-agreements --force 2>&1 | Out-String
-                    $code = $LASTEXITCODE
+                    $r = Invoke-VdNative 'winget.exe' @('uninstall', '--id', $id, '-e', '--silent', '--accept-source-agreements', '--disable-interactivity', '--force') 'UTF8'
+                    $code = $r.ExitCode
                     try { $SH.Window.Dispatcher.Invoke([action]{
                         $ts = Get-Date -Format 'HH:mm:ss'
                         if ($SH.LogBox) {
-                            if ($code -eq 0 -or $null -eq $code) { $SH.LogBox.AppendText("[$ts] [SUCCESS] Uninstalled: $n`r`n") }
+                            if ($code -eq 0) { $SH.LogBox.AppendText("[$ts] [SUCCESS] Uninstalled: $n`r`n") }
                             else { $SH.LogBox.AppendText("[$ts] [ERROR] Failed to uninstall: $n (Code: $code)`r`n") }
                             $SH.LogBox.ScrollToEnd()
                         }
@@ -1462,22 +1546,15 @@ if ($btnUninstall) {
         })
         [void]$ps.AddParameter("Apps", $appsData)
         [void]$ps.AddParameter("SH", $syncHash)
+        [void]$ps.AddParameter("Lib", $script:VdNativeLib)
         $handle = $ps.BeginInvoke()
-
-        $timer = New-Object System.Windows.Threading.DispatcherTimer
-        $timer.Interval = [TimeSpan]::FromMilliseconds(500)
-        $timer.Add_Tick({
-            if ($handle.IsCompleted) {
-                $timer.Stop()
-                try { $ps.EndInvoke($handle) } catch {}
-                $ps.Dispose(); $runspace.Close()
-                $curInst = Get-UIElement "btnInstall"
-                $curUninst = Get-UIElement "btnUninstall"
-                if ($curInst) { $curInst.IsEnabled = $true }
-                if ($curUninst) { $curUninst.IsEnabled = $true }
-            }
-        }.GetNewClosure())
-        $timer.Start()
+        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+            param($result)
+            $curInst = Get-UIElement "btnInstall"
+            $curUninst = Get-UIElement "btnUninstall"
+            if ($curInst) { $curInst.IsEnabled = $true }
+            if ($curUninst) { $curUninst.IsEnabled = $true }
+        }
         Write-AppLog "Uninstallation started for $($appsData.Count) apps..." "WARN"
     })
 }
@@ -1568,24 +1645,30 @@ function Render-WingetCards {
         [void]$btnGrid.Children.Add($uninstCardBtn)
         [void]$cbContent.Children.Add($btnGrid)
 
-        $targetPkgId = $item.Id
-        $targetPkgName = $item.Name
+        $instCardBtn.Tag = @{ Id = "$($item.Id)"; Name = "$($item.Name)" }
+        $uninstCardBtn.Tag = $instCardBtn.Tag
 
         $instCardBtn.Add_Click({
+            $pkg = $this.Tag
             if (-not (Test-WingetAvailable)) { return }
-            Write-AppLog "Installing package: $targetPkgName ($targetPkgId)..." "ACTION"
-            Start-StreamingCommand "winget" "install --id `"$targetPkgId`" -e --silent --accept-package-agreements --accept-source-agreements --force"
-        }.GetNewClosure())
+            if ($pkg.Id -match '"' -or [string]::IsNullOrWhiteSpace($pkg.Id)) { Write-AppLog "Refusing unexpected package id: $($pkg.Id)" "ERROR"; return }
+            Write-AppLog "Installing package: $($pkg.Name) ($($pkg.Id))..." "ACTION"
+            Start-StreamingCommand "winget" "install --id `"$($pkg.Id)`" -e --silent --accept-package-agreements --accept-source-agreements"
+        })
 
         $uninstCardBtn.Add_Click({
+            $pkg = $this.Tag
             if (-not (Test-WingetAvailable)) { return }
-            Write-AppLog "Uninstalling package: $targetPkgName ($targetPkgId)..." "WARN"
-            Start-StreamingCommand "winget" "uninstall --id `"$targetPkgId`" -e --silent --accept-source-agreements --force"
-        }.GetNewClosure())
+            if ($pkg.Id -match '"' -or [string]::IsNullOrWhiteSpace($pkg.Id)) { Write-AppLog "Refusing unexpected package id: $($pkg.Id)" "ERROR"; return }
+            $res = [System.Windows.MessageBox]::Show("Uninstall $($pkg.Name)?`n($($pkg.Id))", "Confirm Uninstall", "YesNo", "Warning")
+            if ($res -ne [System.Windows.MessageBoxResult]::Yes) { return }
+            Write-AppLog "Uninstalling package: $($pkg.Name) ($($pkg.Id))..." "WARN"
+            Start-StreamingCommand "winget" "uninstall --id `"$($pkg.Id)`" -e --silent --accept-source-agreements --force"
+        })
 
         $card.Child = $cbContent
-        $card.Add_MouseEnter({ $this.Background = $hoverBrush; $this.BorderBrush = $accentBrush }.GetNewClosure())
-        $card.Add_MouseLeave({ $this.Background = $surfaceBrush; $this.BorderBrush = $borderBrush }.GetNewClosure())
+        $card.Add_MouseEnter({ $this.Background = $hoverBrush; $this.BorderBrush = $accentBrush })
+        $card.Add_MouseLeave({ $this.Background = $surfaceBrush; $this.BorderBrush = $borderBrush })
 
         [void]$wrapPanel.Children.Add($card)
         [void]$script:WingetList.Add(@{Id=$item.Id; Name=$item.Name; Card=$card})
@@ -1625,43 +1708,21 @@ if ($btnScanWingetInstalled) {
         $ps.Runspace = $runspace
 
         [void]$ps.AddScript({
-            param($SH)
-            $raw = & winget list --accept-source-agreements 2>&1 | Out-String
-            $lines = $raw -split "`r?`n"
-            $start = $false
-            $installed = @()
-            foreach ($l in $lines) {
-                if ($l -like "*---*") { $start = $true; continue }
-                if ($start -and $l.Trim().Length -gt 0) {
-                    $parts = $l -split '\s{2,}'
-                    if ($parts.Count -ge 2) {
-                        $installed += @{
-                            Name = $parts[0].Trim()
-                            Id = $parts[1].Trim()
-                            Version = if ($parts.Count -gt 2) { $parts[2].Trim() } else { "" }
-                            Source = if ($parts.Count -gt 3) { $parts[3].Trim() } else { "" }
-                        }
-                    }
-                }
-            }
-            return $installed
+            param($SH, $Lib)
+            . ([scriptblock]::Create($Lib))
+            $r = Invoke-VdNative 'winget.exe' @('list', '--accept-source-agreements', '--disable-interactivity') 'UTF8'
+            return @(ConvertFrom-VdWingetTable $r.Output)
         })
         [void]$ps.AddParameter("SH", $syncHash)
+        [void]$ps.AddParameter("Lib", $script:VdNativeLib)
         $handle = $ps.BeginInvoke()
-
-        $timer = New-Object System.Windows.Threading.DispatcherTimer
-        $timer.Interval = [TimeSpan]::FromMilliseconds(500)
-        $timer.Add_Tick({
-            if ($handle.IsCompleted) {
-                $timer.Stop()
-                $results = try { $ps.EndInvoke($handle) } catch { @() }
-                $ps.Dispose(); $runspace.Close()
-                $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-                Render-WingetCards $results
-                Write-AppLog "Winget Scan complete: $($results.Count) packages found." "SUCCESS"
-            }
-        }.GetNewClosure())
-        $timer.Start()
+        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+            param($result)
+            $results = @($result)
+            $window.Cursor = [System.Windows.Input.Cursors]::Arrow
+            Render-WingetCards $results
+            Write-AppLog "Winget Scan complete: $($results.Count) packages found." "SUCCESS"
+        }
     })
 }
 
@@ -1684,43 +1745,21 @@ if ($btnSearchWingetRepo) {
         $ps.Runspace = $runspace
 
         [void]$ps.AddScript({
-            param($Q)
-            $raw = & winget search "$Q" --accept-source-agreements 2>&1 | Out-String
-            $lines = $raw -split "`r?`n"
-            $start = $false
-            $results = @()
-            foreach ($l in $lines) {
-                if ($l -like "*---*") { $start = $true; continue }
-                if ($start -and $l.Trim().Length -gt 0) {
-                    $parts = $l -split '\s{2,}'
-                    if ($parts.Count -ge 2) {
-                        $results += @{
-                            Name = $parts[0].Trim()
-                            Id = $parts[1].Trim()
-                            Version = if ($parts.Count -gt 2) { $parts[2].Trim() } else { "" }
-                            Source = if ($parts.Count -gt 3) { $parts[3].Trim() } else { "" }
-                        }
-                    }
-                }
-            }
-            return $results
+            param($Q, $Lib)
+            . ([scriptblock]::Create($Lib))
+            $r = Invoke-VdNative 'winget.exe' @('search', $Q, '--accept-source-agreements', '--disable-interactivity') 'UTF8'
+            return @(ConvertFrom-VdWingetTable $r.Output)
         })
         [void]$ps.AddParameter("Q", $query)
+        [void]$ps.AddParameter("Lib", $script:VdNativeLib)
         $handle = $ps.BeginInvoke()
-
-        $timer = New-Object System.Windows.Threading.DispatcherTimer
-        $timer.Interval = [TimeSpan]::FromMilliseconds(500)
-        $timer.Add_Tick({
-            if ($handle.IsCompleted) {
-                $timer.Stop()
-                $results = try { $ps.EndInvoke($handle) } catch { @() }
-                $ps.Dispose(); $runspace.Close()
-                $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-                Render-WingetCards $results
-                Write-AppLog "Winget Online Search complete: $($results.Count) matching packages found." "SUCCESS"
-            }
-        }.GetNewClosure())
-        $timer.Start()
+        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+            param($result)
+            $results = @($result)
+            $window.Cursor = [System.Windows.Input.Cursors]::Arrow
+            Render-WingetCards $results
+            Write-AppLog "Winget Online Search complete: $($results.Count) matching packages found." "SUCCESS"
+        }
     })
 }
 
@@ -1759,15 +1798,16 @@ if ($btnInstallSelectedWinget) {
         $ps.Runspace = $runspace
 
         [void]$ps.AddScript({
-            param($Apps, $SH)
+            param($Apps, $SH, $Lib)
+            . ([scriptblock]::Create($Lib))
             foreach ($app in $Apps) {
                 $n = $app.Name; $id = $app.Id
                 try {
-                    $null = & winget install --id $id -e --silent --accept-package-agreements --accept-source-agreements --force 2>&1 | Out-String
-                    $code = $LASTEXITCODE
+                    $r = Invoke-VdNative 'winget.exe' @('install', '--id', $id, '-e', '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity') 'UTF8'
+                    $code = $r.ExitCode
                     try { $SH.Window.Dispatcher.Invoke([action]{
                         $ts = Get-Date -Format 'HH:mm:ss'
-                        if ($code -eq 0 -or $null -eq $code) { $SH.LogBox.AppendText("[$ts] [SUCCESS] Installed Winget Package: $n ($id)`r`n") }
+                        if ($code -eq 0) { $SH.LogBox.AppendText("[$ts] [SUCCESS] Installed Winget Package: $n ($id)`r`n") }
                         else { $SH.LogBox.AppendText("[$ts] [ERROR] Failed to install: $n (Code: $code)`r`n") }
                         $SH.LogBox.ScrollToEnd()
                     }) } catch {}
@@ -1779,19 +1819,12 @@ if ($btnInstallSelectedWinget) {
         })
         [void]$ps.AddParameter("Apps", $appsData)
         [void]$ps.AddParameter("SH", $syncHash)
+        [void]$ps.AddParameter("Lib", $script:VdNativeLib)
         $handle = $ps.BeginInvoke()
-
-        $timer = New-Object System.Windows.Threading.DispatcherTimer
-        $timer.Interval = [TimeSpan]::FromMilliseconds(500)
-        $timer.Add_Tick({
-            if ($handle.IsCompleted) {
-                $timer.Stop()
-                try { $ps.EndInvoke($handle) } catch {}
-                $ps.Dispose(); $runspace.Close()
-                Write-AppLog "Winget Package Installation Cycle Complete." "INFO"
-            }
-        }.GetNewClosure())
-        $timer.Start()
+        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+            param($result)
+            Write-AppLog "Winget Package Installation Cycle Complete." "INFO"
+        }
     })
 }
 
@@ -1822,15 +1855,16 @@ if ($btnRemoveSelectedWinget) {
         $ps.Runspace = $runspace
 
         [void]$ps.AddScript({
-            param($Apps, $SH)
+            param($Apps, $SH, $Lib)
+            . ([scriptblock]::Create($Lib))
             foreach ($app in $Apps) {
                 $n = $app.Name; $id = $app.Id
                 try {
-                    $null = & winget uninstall --id $id -e --silent --accept-source-agreements --force 2>&1 | Out-String
-                    $code = $LASTEXITCODE
+                    $r = Invoke-VdNative 'winget.exe' @('uninstall', '--id', $id, '-e', '--silent', '--accept-source-agreements', '--disable-interactivity', '--force') 'UTF8'
+                    $code = $r.ExitCode
                     try { $SH.Window.Dispatcher.Invoke([action]{
                         $ts = Get-Date -Format 'HH:mm:ss'
-                        if ($code -eq 0 -or $null -eq $code) { $SH.LogBox.AppendText("[$ts] [SUCCESS] Uninstalled Winget Package: $n ($id)`r`n") }
+                        if ($code -eq 0) { $SH.LogBox.AppendText("[$ts] [SUCCESS] Uninstalled Winget Package: $n ($id)`r`n") }
                         else { $SH.LogBox.AppendText("[$ts] [ERROR] Failed to uninstall: $n (Code: $code)`r`n") }
                         $SH.LogBox.ScrollToEnd()
                     }) } catch {}
@@ -1842,19 +1876,12 @@ if ($btnRemoveSelectedWinget) {
         })
         [void]$ps.AddParameter("Apps", $appsData)
         [void]$ps.AddParameter("SH", $syncHash)
+        [void]$ps.AddParameter("Lib", $script:VdNativeLib)
         $handle = $ps.BeginInvoke()
-
-        $timer = New-Object System.Windows.Threading.DispatcherTimer
-        $timer.Interval = [TimeSpan]::FromMilliseconds(500)
-        $timer.Add_Tick({
-            if ($handle.IsCompleted) {
-                $timer.Stop()
-                try { $ps.EndInvoke($handle) } catch {}
-                $ps.Dispose(); $runspace.Close()
-                Write-AppLog "Winget Package Removal Cycle Complete." "INFO"
-            }
-        }.GetNewClosure())
-        $timer.Start()
+        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+            param($result)
+            Write-AppLog "Winget Package Removal Cycle Complete." "INFO"
+        }
     })
 }
 
@@ -1868,7 +1895,7 @@ if ($btnAddCustomWingetApp) {
         $result = [System.Windows.MessageBox]::Show("Install package '$pkgId' now?", "Confirm Install", "YesNo", "Question")
         if ($result -eq "Yes") {
             Write-AppLog "Installing custom package ID: $pkgId..." "ACTION"
-            Start-StreamingCommand "winget" "install --id `"$pkgId`" -e --silent --accept-package-agreements --accept-source-agreements --force"
+            Start-StreamingCommand "winget" "install --id `"$pkgId`" -e --silent --accept-package-agreements --accept-source-agreements"
         }
     })
 }
@@ -2031,10 +2058,10 @@ function Restore-VdTweakState([string]$TweakName) {
 $essentialTweaks = @(
     @{Name="Create Restore Point"; Tag="Essential"; 
       Do={ Checkpoint-Computer -Description "VDOWNSPrimeRestore" -RestorePointType "MODIFY_SETTINGS" }; 
-      Undo={ Write-Host "Restore points cannot be deleted from here." } },
+      Undo={ throw "Restore points are not removed automatically; use System Protection to manage them." } },
     @{Name="Run OO ShutUp10"; Tag="Essential"; 
       Do={ $url = "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe"; $dir = Join-Path $env:TEMP ("VDOWNS_OOSU_" + [guid]::NewGuid().ToString("N")); New-Item -ItemType Directory -Path $dir -Force | Out-Null; $exe = Join-Path $dir "OOSU10.exe"; Invoke-WebRequest -Uri $url -OutFile $exe -UseBasicParsing -ErrorAction Stop; $sig = Get-AuthenticodeSignature -FilePath $exe; if ($sig.Status -ne "Valid" -or $sig.SignerCertificate.Subject -notmatch "O&O Software") { Remove-Item $dir -Recurse -Force -ErrorAction SilentlyContinue; throw "OOSU10.exe signature check failed ($($sig.Status)); file deleted, not executed." }; Start-Process -FilePath $exe }; 
-      Undo={ Write-Host "Open O&O ShutUp10 manually to revert." } },
+      Undo={ throw "Open O&O ShutUp10 and use its own undo to revert its settings." } },
     @{Name="Disable Telemetry"; Tag="Essential"; State=@(@{Svc="DiagTrack"});
       Do={ Set-Service DiagTrack -StartupType Disabled -EA SilentlyContinue; Stop-Service DiagTrack -EA SilentlyContinue }; 
       Undo={ Set-Service DiagTrack -StartupType Automatic; Start-Service DiagTrack } },
@@ -2060,8 +2087,8 @@ $uiTweaks = @(
       Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "LaunchTo" 1 }; 
       Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "LaunchTo" 2 } },
     @{Name="Classic Context Menu"; Tag="UI"; State=@(@{Key="HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}"});
-      Do={ reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve 2>$null }; 
-      Undo={ reg delete "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}" /f 2>$null } },
+      Do={ $k = "HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32"; New-Item -Path $k -Force | Out-Null; Set-Item -Path $k -Value "" }; 
+      Undo={ Remove-Item -Path "HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}" -Recurse -Force -ErrorAction SilentlyContinue } },
     @{Name="Align Taskbar Left"; Tag="UI"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="TaskbarAl"});
       Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarAl" 0 }; 
       Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarAl" 1 } },
@@ -2136,6 +2163,8 @@ $btnApplyTweaks.Add_Click({
     [void]$ps.AddScript({
         param($Tweaks, $SH, $Lib)
         . ([scriptblock]::Create($Lib))
+        # Any error inside a tweak is a failure (it used to be logged as SUCCESS)
+        $ErrorActionPreference = 'Stop'
         $applied = 0
         foreach ($item in $Tweaks) {
             $tName = $item.Name
@@ -2143,7 +2172,11 @@ $btnApplyTweaks.Add_Click({
             try {
                 # Snapshot first; if that fails the tweak is skipped so Revert can always restore
                 Save-VdTweakState $tName $item.State
+                # Registry tweaks write into keys that may not exist yet on a fresh profile
+                foreach ($e in @($item.State)) { if ($e -and $e.Reg -and -not (Test-Path -LiteralPath $e.Reg)) { New-Item -Path $e.Reg -Force | Out-Null } }
+                $global:LASTEXITCODE = 0
                 $null = & $sBlock
+                if ($LASTEXITCODE -ne 0) { throw "command exited with code $LASTEXITCODE" }
                 $applied++
                 try { $SH.Window.Dispatcher.Invoke([action]{
                     $ts = Get-Date -Format 'HH:mm:ss'
@@ -2173,23 +2206,16 @@ $btnApplyTweaks.Add_Click({
     })
     [void]$ps.AddParameter("Tweaks", $tweakData)
     [void]$ps.AddParameter("SH", $syncHash)
-    [void]$ps.AddParameter("Lib", $script:TweakStateLib)
+    [void]$ps.AddParameter("Lib", ($script:VdNativeLib + "`r`n" + $script:TweakStateLib))
     $handle = $ps.BeginInvoke()
-
-    $timer = New-Object System.Windows.Threading.DispatcherTimer
-    $timer.Interval = [TimeSpan]::FromMilliseconds(500)
-    $timer.Add_Tick({
-        if ($handle.IsCompleted) {
-            $timer.Stop()
-            $count = try { $ps.EndInvoke($handle) } catch { 0 }
-            $ps.Dispose(); $runspace.Close()
-            $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-            if ($btnApplyTweaks) { $btnApplyTweaks.IsEnabled = $true }
-            if ($btnRevertTweaks) { $btnRevertTweaks.IsEnabled = $true }
-            Write-AppLog "Tweak deployment completed ($count applied)." "SUCCESS"
-        }
-    }.GetNewClosure())
-    $timer.Start()
+    Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+        param($result)
+        $count = @($result) | Select-Object -Last 1
+        $window.Cursor = [System.Windows.Input.Cursors]::Arrow
+        if ($btnApplyTweaks) { $btnApplyTweaks.IsEnabled = $true }
+        if ($btnRevertTweaks) { $btnRevertTweaks.IsEnabled = $true }
+        Write-AppLog "Tweak deployment completed ($count applied)." "SUCCESS"
+    }
 })
 
 # Revert Tweaks (Async Runspace to prevent UI freezing)
@@ -2225,13 +2251,16 @@ $btnRevertTweaks.Add_Click({
     [void]$ps.AddScript({
         param($Tweaks, $SH, $Lib)
         . ([scriptblock]::Create($Lib))
+        $ErrorActionPreference = 'Stop'
         $reverted = 0
         foreach ($item in $Tweaks) {
             $tName = $item.Name
             $sBlock = [scriptblock]::Create($item.ScriptStr)
             try {
                 # Prefer the exact pre-tweak snapshot; fall back to the generic Undo block
+                $global:LASTEXITCODE = 0
                 $how = if (Restore-VdTweakState $tName) { "original state restored" } else { $null = & $sBlock; "default undo applied (no snapshot)" }
+                if ($LASTEXITCODE -ne 0) { throw "command exited with code $LASTEXITCODE" }
                 $reverted++
                 try { $SH.Window.Dispatcher.Invoke([action]{
                     $ts = Get-Date -Format 'HH:mm:ss'
@@ -2256,23 +2285,16 @@ $btnRevertTweaks.Add_Click({
     })
     [void]$ps.AddParameter("Tweaks", $tweakData)
     [void]$ps.AddParameter("SH", $syncHash)
-    [void]$ps.AddParameter("Lib", $script:TweakStateLib)
+    [void]$ps.AddParameter("Lib", ($script:VdNativeLib + "`r`n" + $script:TweakStateLib))
     $handle = $ps.BeginInvoke()
-
-    $timer = New-Object System.Windows.Threading.DispatcherTimer
-    $timer.Interval = [TimeSpan]::FromMilliseconds(500)
-    $timer.Add_Tick({
-        if ($handle.IsCompleted) {
-            $timer.Stop()
-            $count = try { $ps.EndInvoke($handle) } catch { 0 }
-            $ps.Dispose(); $runspace.Close()
-            $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-            if ($btnApplyTweaks) { $btnApplyTweaks.IsEnabled = $true }
-            if ($btnRevertTweaks) { $btnRevertTweaks.IsEnabled = $true }
-            Write-AppLog "Tweak reversion completed ($count reverted)." "INFO"
-        }
-    }.GetNewClosure())
-    $timer.Start()
+    Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+        param($result)
+        $count = @($result) | Select-Object -Last 1
+        $window.Cursor = [System.Windows.Input.Cursors]::Arrow
+        if ($btnApplyTweaks) { $btnApplyTweaks.IsEnabled = $true }
+        if ($btnRevertTweaks) { $btnRevertTweaks.IsEnabled = $true }
+        Write-AppLog "Tweak reversion completed ($count reverted)." "INFO"
+    }
 })
 
 # =============================================================================
@@ -2330,9 +2352,9 @@ $featHeader.Foreground = $accentBrush
 $featHeader.Margin = [System.Windows.Thickness]::new(0, 5, 0, 15)
 if ($targetConfigBox) { [void]$targetConfigBox.Children.Add($featHeader) }
 
-Add-FeatureCard "Hyper-V Platform" "Microsoft-Hyper-V-All" "Hardware virtualization for VMs and Docker"
-Add-FeatureCard "WSL 2 (Linux)" "Microsoft-Windows-Subsystem-Linux" "Windows Subsystem for Linux"
-Add-FeatureCard "Windows Sandbox" "Containers-DisposableClientVM" "Isolated desktop environment for safe testing"
+Add-FeatureCard "Hyper-V Platform" "Microsoft-Hyper-V-All" "Hardware virtualization for VMs and Docker (Pro/Enterprise/Education)"
+Add-FeatureCard "WSL 2 (Linux)" "Microsoft-Windows-Subsystem-Linux,VirtualMachinePlatform" "Windows Subsystem for Linux + Virtual Machine Platform (required for WSL 2)"
+Add-FeatureCard "Windows Sandbox" "Containers-DisposableClientVM" "Isolated desktop environment for safe testing (Pro/Enterprise/Education)"
 Add-FeatureCard ".NET Framework 3.5" "NetFx3" "Required by legacy applications and games"
 
 # Maintenance header
@@ -2353,19 +2375,28 @@ $maintDesc.Margin = [System.Windows.Thickness]::new(0, 0, 0, 5)
 if ($targetConfigBox) { [void]$targetConfigBox.Children.Add($maintDesc) }
 
 if ($btnEnableFeatures) { $btnEnableFeatures.Add_Click({
-    Write-AppLog "Enabling features..." "ACTION"
-    $window.Cursor = [System.Windows.Input.Cursors]::Wait
-    foreach ($f in $script:FeatureList) {
-        if ($f.Check.IsChecked) {
-            try {
-                Write-AppLog "Enabling: $($f.Name)..." "INFO"
-                Enable-WindowsOptionalFeature -Online -FeatureName $f.WinName -All -NoRestart -ErrorAction Stop
-                Write-AppLog "Enabled: $($f.Name)" "SUCCESS"
-            } catch { Write-AppLog "Failed: $($f.Name) - $($_.Exception.Message)" "ERROR" }
-        }
+    # DISM can take minutes: run it in a separate process and stream the output instead of freezing the UI
+    $names = @($script:FeatureList | Where-Object { $_.Check.IsChecked } | ForEach-Object { $_.WinName -split ',' } | Where-Object { $_ -match '^[A-Za-z0-9\-\.]+$' })
+    if ($names.Count -eq 0) { [System.Windows.MessageBox]::Show("No features selected.", "Info", "OK", "Information"); return }
+    $list = ($names | ForEach-Object { "'$_'" }) -join ', '
+    $featureScript = @"
+`$edition = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name EditionID -ErrorAction SilentlyContinue).EditionID
+if (`$edition -match 'Core') { Write-Output "Note: Windows `$edition (Home) does not include Hyper-V or Windows Sandbox." }
+`$restart = `$false
+foreach (`$f in @($list)) {
+    Write-Output "Enabling `$f ..."
+    try {
+        `$r = Enable-WindowsOptionalFeature -Online -FeatureName `$f -All -NoRestart -ErrorAction Stop
+        if (`$r.RestartNeeded) { `$restart = `$true }
+        Write-Output "  OK: `$f"
+    } catch {
+        Write-Output "  FAILED: `$f - `$(`$_.Exception.Message)"
     }
-    $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-    Write-AppLog "Feature changes may require a RESTART." "WARN"
+}
+if (`$restart) { Write-Output 'A RESTART is required to finish enabling the selected features.' }
+"@
+    Write-AppLog "Enabling $($names.Count) Windows feature(s) in the background..." "ACTION"
+    Start-PSStreamingCommand $featureScript
 }) }
 
 if ($btnDisableFeatures) { $btnDisableFeatures.Add_Click({
@@ -2484,8 +2515,8 @@ foreach ($k in $bloatItems.Keys) {
     $cb.Content = $cbContent
     $card.Child = $cb
     
-    $card.Add_MouseEnter({ $this.Background = $hoverBrush }.GetNewClosure())
-    $card.Add_MouseLeave({ $this.Background = $surfaceBrush }.GetNewClosure())
+    $card.Add_MouseEnter({ $this.Background = $hoverBrush })
+    $card.Add_MouseLeave({ $this.Background = $surfaceBrush })
     
     [void]$debloatContainer.Children.Add($card)
     [void]$script:DebloatList.Add(@{Check=$cb; Pat=$patterns; Name=$k; Recommended=[bool]$defaultChecked})
@@ -2512,11 +2543,14 @@ if ($btnDebloat) { $btnDebloat.Add_Click({
     foreach ($item in $selected) {
         $debloatData += @{ Name = $item.Name; Patterns = $item.Pat }
     }
+    $chkProv = Get-UIElement "chkDebloatProvisioned"
+    $alsoProvisioned = [bool]($chkProv -and $chkProv.IsChecked)
 
     $syncHash = [hashtable]::Synchronized(@{
         Window = $window
         LogBox = $logBox
         BtnDebloat = $btnDebloat
+        Provisioned = $alsoProvisioned
     })
 
     $runspace = [runspacefactory]::CreateRunspace()
@@ -2527,10 +2561,13 @@ if ($btnDebloat) { $btnDebloat.Add_Click({
     [void]$ps.AddScript({
         param($Items, $SH)
         $removedCount = 0
+        # Enumerate once instead of once per pattern
+        $allPkgs = @(Get-AppxPackage)
+        $allProv = if ($SH.Provisioned) { @(Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue) } else { @() }
         foreach ($item in $Items) {
             foreach ($p in $item.Patterns) {
                 try {
-                    $pkgs = Get-AppxPackage | Where-Object { $_.Name -like $p }
+                    $pkgs = $allPkgs | Where-Object { $_.Name -like $p }
                     foreach ($pkg in $pkgs) {
                         $pName = $pkg.Name
                         try {
@@ -2558,6 +2595,21 @@ if ($btnDebloat) { $btnDebloat.Add_Click({
                         $SH.LogBox.ScrollToEnd()
                     }) } catch {}
                 }
+                if ($SH.Provisioned) {
+                    try {
+                        foreach ($prov in @($allProv | Where-Object { $_.DisplayName -like $p })) {
+                            $pvName = $prov.DisplayName
+                            try {
+                                Remove-AppxProvisionedPackage -Online -PackageName $prov.PackageName -ErrorAction Stop | Out-Null
+                                $removedCount++
+                                $msg = "[SUCCESS] Removed provisioned package (new users): $pvName"
+                            } catch { $msg = "[WARN] Could not remove provisioned $pvName : $($_.Exception.Message)" }
+                            try { $SH.Window.Dispatcher.Invoke([action]{
+                                $SH.LogBox.AppendText("[$(Get-Date -Format 'HH:mm:ss')] $msg`r`n"); $SH.LogBox.ScrollToEnd()
+                            }) } catch {}
+                        }
+                    } catch {}
+                }
             }
         }
         return $removedCount
@@ -2565,21 +2617,14 @@ if ($btnDebloat) { $btnDebloat.Add_Click({
     [void]$ps.AddParameter("Items", $debloatData)
     [void]$ps.AddParameter("SH", $syncHash)
     $handle = $ps.BeginInvoke()
-
-    $timer = New-Object System.Windows.Threading.DispatcherTimer
-    $timer.Interval = [TimeSpan]::FromMilliseconds(500)
-    $timer.Add_Tick({
-        if ($handle.IsCompleted) {
-            $timer.Stop()
-            $totalRemoved = try { $ps.EndInvoke($handle) } catch { 0 }
-            $ps.Dispose(); $runspace.Close()
-            $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-            if ($btnDebloat) { $btnDebloat.IsEnabled = $true }
-            Write-AppLog "Debloat sequence completed ($totalRemoved packages removed)!" "SUCCESS"
-            [System.Windows.MessageBox]::Show("Cleanup operation complete! Total removed: $totalRemoved packages.", "Done", "OK", "Information")
-        }
-    }.GetNewClosure())
-    $timer.Start()
+    Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+        param($result)
+        $totalRemoved = @($result) | Select-Object -Last 1
+        $window.Cursor = [System.Windows.Input.Cursors]::Arrow
+        if ($btnDebloat) { $btnDebloat.IsEnabled = $true }
+        Write-AppLog "Debloat sequence completed ($totalRemoved packages removed)!" "SUCCESS"
+        [System.Windows.MessageBox]::Show("Cleanup operation complete! Total removed: $totalRemoved packages.", "Done", "OK", "Information")
+    }
 }) }
 
 # =============================================================================
@@ -2863,9 +2908,11 @@ if ($btnBackupConfig) {
         $runspace.SessionStateProxy.SetVariable("destZip", $destZip)
         $runspace.SessionStateProxy.SetVariable("btnBackupConfig", $btnBackupConfig)
 
+        $runspace.SessionStateProxy.SetVariable("VdNativeLib", $script:VdNativeLib)
         $ps = [powershell]::Create()
         $ps.Runspace = $runspace
         $ps.AddScript({
+            . ([scriptblock]::Create($VdNativeLib))
             function Log-Msg($txt, $type="INFO") {
                 if ($window -and $logBox) {
                     $window.Dispatcher.Invoke([Action]{
@@ -2892,7 +2939,8 @@ if ($btnBackupConfig) {
                 try {
                     $codeCmd = Get-Command code -ErrorAction SilentlyContinue
                     if ($codeCmd) {
-                        & code --list-extensions > (Join-Path $tempDir "vscode_extensions.txt")
+                        $r = Invoke-VdNative 'cmd.exe' @('/d', '/c', 'code', '--list-extensions') 'UTF8'
+                        Set-Content -Path (Join-Path $tempDir "vscode_extensions.txt") -Value $r.Output -Encoding UTF8
                         Log-Msg "Exported VS Code extensions manifest." "INFO"
                     }
                 } catch {}
@@ -2971,20 +3019,9 @@ if ($btnBackupConfig) {
         })
 
         $handle = $ps.BeginInvoke()
-        $timer = New-Object System.Windows.Threading.DispatcherTimer
-        $timer.Interval = [TimeSpan]::FromMilliseconds(500)
-        # State rides on the timer itself: this handler runs after the click scope is gone
-        $timer.Tag = @{ Handle = $handle; PS = $ps; Runspace = $runspace }
-        $timer.Add_Tick({
-            $st = $this.Tag
-            if ($st.Handle.IsCompleted) {
-                $this.Stop()
-                try { $st.PS.EndInvoke($st.Handle) } catch {}
-                $st.PS.Dispose()
-                $st.Runspace.Close()
-            }
-        })
-        $timer.Start()
+        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+            param($result)
+        }
     })
 }
 
@@ -3036,9 +3073,11 @@ if ($btnRestoreConfig) {
         $runspace.SessionStateProxy.SetVariable("srcZip", $srcZip)
         $runspace.SessionStateProxy.SetVariable("btnRestoreConfig", $btnRestoreConfig)
 
+        $runspace.SessionStateProxy.SetVariable("VdNativeLib", $script:VdNativeLib)
         $ps = [powershell]::Create()
         $ps.Runspace = $runspace
         $ps.AddScript({
+            . ([scriptblock]::Create($VdNativeLib))
             function Log-Msg($txt, $type="INFO") {
                 if ($window -and $logBox) {
                     $window.Dispatcher.Invoke([Action]{
@@ -3171,7 +3210,8 @@ if ($btnRestoreConfig) {
                         $exts = Get-Content $extFile | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
                         foreach ($ext in $exts) {
                             Log-Msg "Installing extension: $ext" "INFO"
-                            & code --install-extension $ext --force 2>$null
+                            if ($ext -notmatch '^[A-Za-z0-9][\w\-]*\.[\w\-\.]+$') { Log-Msg "Skipped invalid extension id: $ext" "WARN"; continue }
+                            $null = Invoke-VdNative 'cmd.exe' @('/d', '/c', 'code', '--install-extension', $ext, '--force') 'UTF8'
                         }
                     }
                 }
@@ -3193,20 +3233,9 @@ if ($btnRestoreConfig) {
         })
 
         $handle = $ps.BeginInvoke()
-        $timer = New-Object System.Windows.Threading.DispatcherTimer
-        $timer.Interval = [TimeSpan]::FromMilliseconds(500)
-        # State rides on the timer itself: this handler runs after the click scope is gone
-        $timer.Tag = @{ Handle = $handle; PS = $ps; Runspace = $runspace }
-        $timer.Add_Tick({
-            $st = $this.Tag
-            if ($st.Handle.IsCompleted) {
-                $this.Stop()
-                try { $st.PS.EndInvoke($st.Handle) } catch {}
-                $st.PS.Dispose()
-                $st.Runspace.Close()
-            }
-        })
-        $timer.Start()
+        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+            param($result)
+        }
     })
 }
 
@@ -3339,9 +3368,11 @@ if ($btnPrimeBoost) {
         $runspace.SessionStateProxy.SetVariable("logBox", $script:logBox)
         $runspace.SessionStateProxy.SetVariable("btnPrimeBoost", $btnPrimeBoost)
 
+        $runspace.SessionStateProxy.SetVariable("VdNativeLib", $script:VdNativeLib)
         $ps = [powershell]::Create()
         $ps.Runspace = $runspace
         $ps.AddScript({
+            . ([scriptblock]::Create($VdNativeLib))
             function Log-Msg($txt, $type="INFO") {
                 if ($window -and $logBox) {
                     $window.Dispatcher.Invoke([Action]{
@@ -3398,37 +3429,27 @@ if ($btnPrimeBoost) {
         })
 
         $handle = $ps.BeginInvoke()
-        $timer = New-Object System.Windows.Threading.DispatcherTimer
-        $timer.Interval = [TimeSpan]::FromMilliseconds(500)
-        # State rides on the timer itself: this handler runs after the click scope is gone
-        $timer.Tag = @{ Handle = $handle; PS = $ps; Runspace = $runspace }
-        $timer.Add_Tick({
-            $st = $this.Tag
-            if ($st.Handle.IsCompleted) {
-                $this.Stop()
-                try { $st.PS.EndInvoke($st.Handle) } catch {}
-                $st.PS.Dispose()
-                $st.Runspace.Close()
-                Update-HealthScoreUI
-                Write-AppLog "Health score refreshed after Prime Optimization." "INFO"
-            }
-        })
-        $timer.Start()
+        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+            param($result)
+            Update-HealthScoreUI
+            Write-AppLog "Health score refreshed after Prime Optimization." "INFO"
+        }
     })
 }
 
 # =============================================================================
 # 13C. DNS OPTIMIZER & LATENCY BENCHMARK
 # =============================================================================
-function Get-ActivePhysicalAdapter {
-    return Get-NetAdapter | Where-Object { $_.Status -eq "Up" -and $_.InterfaceDescription -notmatch "Virtual|Hyper-V|Loopback|WSL|VPN|TAP|PANGP" } | Select-Object -First 1
+function Get-ActivePhysicalAdapters {
+    @(Get-NetAdapter | Where-Object { $_.Status -eq "Up" -and $_.InterfaceDescription -notmatch "Virtual|Hyper-V|Loopback|WSL|VPN|TAP|PANGP|WireGuard|Tailscale|ZeroTier" })
 }
 
+# IPv4 + IPv6 pairs: setting only IPv4 left the router's IPv6 resolver in use on dual-stack networks
 $script:DnsProviders = [ordered]@{
-    "Cloudflare (1.1.1.1 / 1.0.0.1) - Privacy & Low Latency" = @("1.1.1.1", "1.0.0.1")
-    "Google Public DNS (8.8.8.8 / 8.8.4.4) - Fast & Reliable" = @("8.8.8.8", "8.8.4.4")
-    "AdGuard DNS (94.140.14.14 / 94.140.15.15) - Ad & Tracker Block" = @("94.140.14.14", "94.140.15.15")
-    "Quad9 (9.9.9.9 / 149.112.112.112) - Malware Threat Protection" = @("9.9.9.9", "149.112.112.112")
+    "Cloudflare (1.1.1.1 / 1.0.0.1) - Privacy & Low Latency"        = @("1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001")
+    "Google Public DNS (8.8.8.8 / 8.8.4.4) - Fast & Reliable"        = @("8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844")
+    "AdGuard DNS (94.140.14.14 / 94.140.15.15) - Ad & Tracker Block" = @("94.140.14.14", "94.140.15.15", "2a10:50c0::ad1:ff", "2a10:50c0::ad2:ff")
+    "Quad9 (9.9.9.9 / 149.112.112.112) - Malware Threat Protection"  = @("9.9.9.9", "149.112.112.112", "2620:fe::fe", "2620:fe::9")
 }
 
 if ($cbDnsProvider) {
@@ -3438,66 +3459,83 @@ if ($cbDnsProvider) {
 }
 
 try {
-    $actAdapter = Get-ActivePhysicalAdapter
-    if ($actAdapter -and $lblActiveDnsAdapter) {
-        $lblActiveDnsAdapter.Text = "Active: $($actAdapter.Name) ($($actAdapter.InterfaceDescription))"
+    $actAdapters = Get-ActivePhysicalAdapters
+    if ($actAdapters.Count -gt 0 -and $lblActiveDnsAdapter) {
+        $lblActiveDnsAdapter.Text = "Active: " + (($actAdapters | ForEach-Object { $_.Name }) -join ", ")
     }
 } catch {}
 
 if ($btnApplyDns) {
     $btnApplyDns.Add_Click({
-        $adapter = Get-ActivePhysicalAdapter
-        if (-not $adapter) {
+        $adapters = Get-ActivePhysicalAdapters
+        if ($adapters.Count -eq 0) {
             Write-AppLog "No active physical network adapter detected." "ERROR"
             return
         }
         $selectedKey = $cbDnsProvider.SelectedItem
         $servers = $script:DnsProviders[$selectedKey]
-        if ($servers) {
-            Write-AppLog "Applying DNS $($servers -join ', ') to adapter '$($adapter.Name)'..." "ACTION"
-            Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses $servers -ErrorAction SilentlyContinue
-            Clear-DnsClientCache
-            Write-AppLog "DNS successfully set to $selectedKey." "SUCCESS"
-            [System.Windows.MessageBox]::Show("DNS updated to:`n$($servers -join ', ')`nAdapter: $($adapter.Name)", "DNS Updated", "OK", "Information")
+        if (-not $servers) { return }
+        $ok = @(); $failed = @()
+        foreach ($a in $adapters) {
+            try {
+                Set-DnsClientServerAddress -InterfaceIndex $a.InterfaceIndex -ServerAddresses $servers -ErrorAction Stop
+                $ok += $a.Name
+            } catch {
+                $failed += "$($a.Name): $($_.Exception.Message)"
+            }
         }
+        try { Clear-DnsClientCache -ErrorAction Stop } catch {}
+        if ($ok.Count -gt 0) { Write-AppLog "DNS set to $selectedKey on: $($ok -join ', ') (IPv4 + IPv6)." "SUCCESS" }
+        foreach ($f in $failed) { Write-AppLog "DNS change failed on $f" "ERROR" }
+        $summary = if ($failed.Count -eq 0) { "DNS updated on: $($ok -join ', ')" } else { "Updated: $($ok -join ', ')`nFailed: $($failed.Count) adapter(s) - see the log." }
+        [System.Windows.MessageBox]::Show("$summary`n`nServers:`n$($servers -join "`n")", "DNS", "OK", $(if ($failed.Count -eq 0) { "Information" } else { "Warning" })) | Out-Null
     })
 }
 
 if ($btnResetDns) {
     $btnResetDns.Add_Click({
-        $adapter = Get-ActivePhysicalAdapter
-        if (-not $adapter) { return }
-        Write-AppLog "Resetting DNS on adapter '$($adapter.Name)' to DHCP..." "ACTION"
-        Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ResetServerAddresses -ErrorAction SilentlyContinue
-        Clear-DnsClientCache
-        Write-AppLog "DNS reset to automatic DHCP." "SUCCESS"
-        [System.Windows.MessageBox]::Show("DNS reset to DHCP (automatic) on adapter $($adapter.Name)", "DNS Reset", "OK", "Information")
+        $adapters = Get-ActivePhysicalAdapters
+        if ($adapters.Count -eq 0) { Write-AppLog "No active physical network adapter detected." "ERROR"; return }
+        foreach ($a in $adapters) {
+            try {
+                Set-DnsClientServerAddress -InterfaceIndex $a.InterfaceIndex -ResetServerAddresses -ErrorAction Stop
+                Write-AppLog "DNS on '$($a.Name)' reset to automatic (DHCP)." "SUCCESS"
+            } catch {
+                Write-AppLog "DNS reset failed on '$($a.Name)': $($_.Exception.Message)" "ERROR"
+            }
+        }
+        try { Clear-DnsClientCache -ErrorAction Stop } catch {}
     })
 }
 
 if ($btnPingDns) {
     $btnPingDns.Add_Click({
-        Write-AppLog "Starting DNS Latency Benchmark (Ping)..." "ACTION"
-        $targets = @(
-            @{ Name = "Cloudflare"; IP = "1.1.1.1" },
-            @{ Name = "Google"; IP = "8.8.8.8" },
-            @{ Name = "Quad9"; IP = "9.9.9.9" },
-            @{ Name = "AdGuard"; IP = "94.140.14.14" }
-        )
-        foreach ($t in $targets) {
-            try {
-                $ping = Test-Connection -ComputerName $t.IP -Count 2 -ErrorAction SilentlyContinue
-                if ($ping) {
-                    $avgMs = [math]::Round(($ping | Measure-Object -Property ResponseTime -Average).Average, 1)
-                    Write-AppLog "$($t.Name) ($($t.IP)): $avgMs ms" "INFO"
-                } else {
-                    Write-AppLog "$($t.Name) ($($t.IP)): Request timed out" "WARN"
-                }
-            } catch {
-                Write-AppLog "$($t.Name): Ping test failed" "WARN"
-            }
-        }
-        Write-AppLog "DNS Latency Benchmark completed." "SUCCESS"
+        # Measures real DNS lookups against each resolver (ping only measured ICMP round-trip) and
+        # runs in a separate process so slow or blocked resolvers cannot freeze the window.
+        Write-AppLog "Starting DNS lookup benchmark in the background..." "ACTION"
+        Start-PSStreamingCommand @'
+$targets = [ordered]@{ 'Cloudflare' = '1.1.1.1'; 'Google' = '8.8.8.8'; 'Quad9' = '9.9.9.9'; 'AdGuard' = '94.140.14.14' }
+$names = @('example.com', 'microsoft.com', 'wikipedia.org', 'github.com')
+$rows = foreach ($k in $targets.Keys) {
+    $ip = $targets[$k]; $times = @()
+    foreach ($n in $names) {
+        try {
+            $sw = [Diagnostics.Stopwatch]::StartNew()
+            $null = Resolve-DnsName -Name $n -Server $ip -Type A -DnsOnly -NoHostsFile -QuickTimeout -ErrorAction Stop
+            $sw.Stop(); $times += $sw.Elapsed.TotalMilliseconds
+        } catch {}
+    }
+    if ($times.Count -gt 0) {
+        $avg = [math]::Round(($times | Measure-Object -Average).Average, 1)
+        Write-Host ("{0,-11} {1,-15} {2,7} ms  ({3}/{4} lookups ok)" -f $k, $ip, $avg, $times.Count, $names.Count)
+        [pscustomobject]@{ Name = $k; Avg = $avg }
+    } else {
+        Write-Host ("{0,-11} {1,-15}  no response" -f $k, $ip)
+    }
+}
+$best = $rows | Sort-Object Avg | Select-Object -First 1
+if ($best) { Write-Output "Fastest resolver from this network: $($best.Name)" }
+'@
     })
 }
 
@@ -3761,6 +3799,11 @@ if ($btnAddCustomApp) {
                 return
             }
 
+            if (-not [string]::IsNullOrWhiteSpace($urlVal) -and $urlVal -notmatch '^https?://[^\s"]+$') {
+                [System.Windows.MessageBox]::Show("The URL must start with http:// or https://.", "Invalid URL", "OK", "Warning")
+                return
+            }
+
             if ([string]::IsNullOrWhiteSpace($catVal)) {
                 [System.Windows.MessageBox]::Show("Please choose a category.", "Validation Error", "OK", "Warning")
                 return
@@ -3797,17 +3840,22 @@ if ($btnAddCustomApp) {
 if ($btnPauseUpdates) {
     $btnPauseUpdates.Add_Click({
         $res = [System.Windows.MessageBox]::Show("Do you want to pause Windows Updates for 35 days?`n(Registry: PauseQualityUpdates & PauseFeatureUpdates)", "Pause Updates", "YesNo", "Question")
-        if ($res -eq "Yes" -or $res -eq [System.Windows.Forms.DialogResult]::Yes) {
+        if ($res -eq [System.Windows.MessageBoxResult]::Yes) {
             $now = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
             $end = (Get-Date).AddDays(35).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
             $wuPath = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
-            Set-ItemProperty -Path $wuPath -Name "PauseFeatureUpdatesStartTime" -Value $now -Force -EA SilentlyContinue
-            Set-ItemProperty -Path $wuPath -Name "PauseFeatureUpdatesEndTime" -Value $end -Force -EA SilentlyContinue
-            Set-ItemProperty -Path $wuPath -Name "PauseQualityUpdatesStartTime" -Value $now -Force -EA SilentlyContinue
-            Set-ItemProperty -Path $wuPath -Name "PauseQualityUpdatesEndTime" -Value $end -Force -EA SilentlyContinue
-            Set-ItemProperty -Path $wuPath -Name "PauseUpdatesExpiryTime" -Value $end -Force -EA SilentlyContinue
-            Write-AppLog "Windows Updates paused for 35 days until: $end" "SUCCESS"
-            [System.Windows.MessageBox]::Show("Windows Updates paused until:`n$end", "Updates Paused", "OK", "Information")
+            try {
+                if (-not (Test-Path $wuPath)) { New-Item -Path $wuPath -Force -ErrorAction Stop | Out-Null }
+                foreach ($pair in @(@("PauseFeatureUpdatesStartTime", $now), @("PauseFeatureUpdatesEndTime", $end),
+                                    @("PauseQualityUpdatesStartTime", $now), @("PauseQualityUpdatesEndTime", $end),
+                                    @("PauseUpdatesExpiryTime", $end))) {
+                    New-ItemProperty -Path $wuPath -Name $pair[0] -Value $pair[1] -PropertyType String -Force -ErrorAction Stop | Out-Null
+                }
+                Write-AppLog "Windows Updates paused for 35 days until: $end" "SUCCESS"
+                [System.Windows.MessageBox]::Show("Windows Updates paused until:`n$end", "Updates Paused", "OK", "Information")
+            } catch {
+                Write-AppLog "Could not pause Windows Updates: $($_.Exception.Message)" "ERROR"
+            }
         }
     })
 }
@@ -3912,7 +3960,7 @@ $script:telemetryTimer.Start()
 Write-AppLog "VDOWNS PRIME v3.3.2 (Fluent UI Edition) initialized." "INFO"
 Write-AppLog "Hardware-accelerated WPF subsystem online." "SUCCESS"
 try {
-    $wv = & winget --version 2>$null
+    $wv = (Invoke-VdNative 'winget.exe' @('--version') 'UTF8').Output.Trim()
     Write-AppLog "Winget detected: $wv" "INFO"
 } catch { Write-AppLog "Winget not found! App Center may not work." "ERROR" }
 Update-HealthScoreUI

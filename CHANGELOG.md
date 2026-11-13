@@ -3,7 +3,7 @@
 All notable changes to VDOWNS PRIME. Format based on [Keep a Changelog](https://keepachangelog.com/),
 versions follow [Semantic Versioning](https://semver.org/).
 
-## [3.4.0] - unreleased
+## [3.4.0] - 2026-11-13
 
 A reliability and safety release based on a full code review. Several features advertised in 3.3.x
 did not work; they are fixed here.

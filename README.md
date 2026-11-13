@@ -4,6 +4,7 @@
 [![Language](https://img.shields.io/badge/PowerShell%205.1%20%2B%20WPF-5391FE?style=for-the-badge&logo=powershell)](https://github.com/Gorkem-Taha/VDOWNS-PRIME)
 [![Version](https://img.shields.io/badge/Version-v3.4.0-2ECC71?style=for-the-badge)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/License-MIT-F39C12?style=for-the-badge)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/Gorkem-Taha/VDOWNS-PRIME/ci.yml?branch=main&style=for-the-badge&label=CI)](https://github.com/Gorkem-Taha/VDOWNS-PRIME/actions/workflows/ci.yml)
 
 VDOWNS PRIME is a portable Windows 10/11 post-install tool written in PowerShell with a WPF interface.
 It installs software through **winget**, applies **reversible** system tweaks, removes pre-installed
@@ -128,8 +129,8 @@ Administrator rights.
 .\build.ps1 -SkipCompile  # checks only
 ```
 
-`build.ps1` reads the version from `$script:VdownsVersion` in `VDOWNS_PRIME.ps1`, verifies the UTF-8
-BOM, checks `apps.json` (duplicates, ID format, embedded copy in sync), parses all scripts and compiles
+`build.ps1` verifies that `VDOWNS_PRIME.ps1` is in sync with `src/`, reads the version from
+`$script:VdownsVersion` (set in `src/app/00-bootstrap.ps1`), verifies the UTF-8 BOM, checks `apps.json` (duplicates, ID format, embedded copy in sync), parses all scripts and compiles
 with **ps2exe 1.0.18**. Pushing a `v*` tag runs the same build in GitHub Actions (actions pinned to
 commit SHAs) and publishes `VDOWNS_PRIME.exe`, `apps.json` and `SHA256SUMS`; the tag must match the
 script version.

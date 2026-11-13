@@ -7,7 +7,7 @@ $rows = foreach ($k in $targets.Keys) {
             $sw = [Diagnostics.Stopwatch]::StartNew()
             $null = Resolve-DnsName -Name $n -Server $ip -Type A -DnsOnly -NoHostsFile -QuickTimeout -ErrorAction Stop
             $sw.Stop(); $times += $sw.Elapsed.TotalMilliseconds
-        } catch {}
+        } catch { Write-Verbose "Lookup of $n via $ip failed: $($_.Exception.Message)" }
     }
     if ($times.Count -gt 0) {
         $avg = [math]::Round(($times | Measure-Object -Average).Average, 1)

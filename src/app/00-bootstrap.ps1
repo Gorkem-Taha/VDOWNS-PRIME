@@ -4,7 +4,7 @@
 .DESCRIPTION
     Advanced System Configuration Tool built with PowerShell + WPF.
     Features: App Center, System Tweaks, Windows Features, Debloater, Update & Repair Center, Backup & Restore Center, Winget Manager.
-    
+
     Build the standalone exe with .\build.ps1 (pinned ps2exe, checks, SHA256SUMS).
 #>
 

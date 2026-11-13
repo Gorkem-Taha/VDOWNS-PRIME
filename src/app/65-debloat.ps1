@@ -35,7 +35,7 @@ $bloatItems = [ordered]@{
 foreach ($k in $bloatItems.Keys) {
     $data = $bloatItems[$k]
     $patterns = $data[0]; $desc = $data[1]; $defaultChecked = $data[2]
-    
+
     $card = New-Object System.Windows.Controls.Border
     $card.CornerRadius = [System.Windows.CornerRadius]::new(8)
     $card.Background = $surfaceBrush
@@ -45,13 +45,13 @@ foreach ($k in $bloatItems.Keys) {
     $card.Margin = [System.Windows.Thickness]::new(4)
     $card.Width = 280
     $card.Cursor = [System.Windows.Input.Cursors]::Hand
-    
+
     $cb = New-Object System.Windows.Controls.CheckBox
     $cb.IsChecked = $defaultChecked
     $cb.Foreground = $textBrush
     $cb.FontSize = 13
     $cb.VerticalContentAlignment = "Top"
-    
+
     $cbContent = New-Object System.Windows.Controls.StackPanel
     $nameText = New-Object System.Windows.Controls.TextBlock
     $nameText.Text = $k
@@ -66,18 +66,18 @@ foreach ($k in $bloatItems.Keys) {
     [void]$cbContent.Children.Add($descText)
     $cb.Content = $cbContent
     $card.Child = $cb
-    
+
     $card.Add_MouseEnter({ $this.Background = $hoverBrush })
     $card.Add_MouseLeave({ $this.Background = $surfaceBrush })
-    
+
     [void]$debloatContainer.Children.Add($card)
     [void]$script:DebloatList.Add(@{Check=$cb; Pat=$patterns; Name=$k; Recommended=[bool]$defaultChecked})
 }
 
-if ($btnSelectAll) { $btnSelectAll.Add_Click({ foreach ($i in $script:DebloatList) { $i.Check.IsChecked = $i.Recommended } }) }
-if ($btnDeselectAll) { $btnDeselectAll.Add_Click({ foreach ($i in $script:DebloatList) { $i.Check.IsChecked = $false } }) }
+if ($btnDebloatSelectAll) { $btnDebloatSelectAll.Add_Click({ foreach ($i in $script:DebloatList) { $i.Check.IsChecked = $i.Recommended } }) }
+if ($btnDebloatClear) { $btnDebloatClear.Add_Click({ foreach ($i in $script:DebloatList) { $i.Check.IsChecked = $false } }) }
 
-if ($btnDebloat) { $btnDebloat.Add_Click({
+if ($btnRemoveBloat) { $btnRemoveBloat.Add_Click({
     $selected = @($script:DebloatList | Where-Object { $_.Check.IsChecked -eq $true })
     if ($selected.Count -eq 0) {
         [System.Windows.MessageBox]::Show("No items selected.", "Info", "OK", "Information"); return
@@ -85,11 +85,11 @@ if ($btnDebloat) { $btnDebloat.Add_Click({
     $result = [System.Windows.MessageBox]::Show(
         "Selected apps will be PERMANENTLY removed from your user profile.`nSome system apps cannot be easily restored without PowerShell.`n`nAre you sure?",
         "Confirm Debloat", "YesNo", "Warning")
-    if ($result -ne "Yes") { return }
+    if ($result -ne [System.Windows.MessageBoxResult]::Yes) { return }
 
     Write-AppLog "Starting Debloat Process asynchronously..." "ACTION"
     $window.Cursor = [System.Windows.Input.Cursors]::Wait
-    if ($btnDebloat) { $btnDebloat.IsEnabled = $false }
+    if ($btnRemoveBloat) { $btnRemoveBloat.IsEnabled = $false }
 
     $debloatData = @()
     foreach ($item in $selected) {
@@ -98,82 +98,11 @@ if ($btnDebloat) { $btnDebloat.Add_Click({
     $chkProv = Get-UIElement "chkDebloatProvisioned"
     $alsoProvisioned = [bool]($chkProv -and $chkProv.IsChecked)
 
-    $syncHash = [hashtable]::Synchronized(@{
-        Window = $window
-        LogBox = $logBox
-        BtnDebloat = $btnDebloat
-        Provisioned = $alsoProvisioned
-    })
-
-    $runspace = [runspacefactory]::CreateRunspace()
-    $runspace.Open()
-    $ps = [powershell]::Create()
-    $ps.Runspace = $runspace
-
-    [void]$ps.AddScript({
-        param($Items, $SH)
-        $removedCount = 0
-        # Enumerate once instead of once per pattern
-        $allPkgs = @(Get-AppxPackage)
-        $allProv = if ($SH.Provisioned) { @(Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue) } else { @() }
-        foreach ($item in $Items) {
-            foreach ($p in $item.Patterns) {
-                try {
-                    $pkgs = $allPkgs | Where-Object { $_.Name -like $p }
-                    foreach ($pkg in $pkgs) {
-                        $pName = $pkg.Name
-                        try {
-                            Remove-AppxPackage -Package $pkg.PackageFullName -ErrorAction Stop
-                            $removedCount++
-                            try { $SH.Window.Dispatcher.Invoke([action]{
-                                $ts = Get-Date -Format 'HH:mm:ss'
-                                $SH.LogBox.AppendText("[$ts] [SUCCESS] Removed Bloatware: $pName`r`n")
-                                $SH.LogBox.ScrollToEnd()
-                            }) } catch {}
-                        } catch {
-                            $m = $_.Exception.Message
-                            try { $SH.Window.Dispatcher.Invoke([action]{
-                                $ts = Get-Date -Format 'HH:mm:ss'
-                                $SH.LogBox.AppendText("[$ts] [WARN] Could not remove $pName : $m`r`n")
-                                $SH.LogBox.ScrollToEnd()
-                            }) } catch {}
-                        }
-                    }
-                } catch {
-                    $m = $_.Exception.Message
-                    try { $SH.Window.Dispatcher.Invoke([action]{
-                        $ts = Get-Date -Format 'HH:mm:ss'
-                        $SH.LogBox.AppendText("[$ts] [ERROR] Scan error for $p : $m`r`n")
-                        $SH.LogBox.ScrollToEnd()
-                    }) } catch {}
-                }
-                if ($SH.Provisioned) {
-                    try {
-                        foreach ($prov in @($allProv | Where-Object { $_.DisplayName -like $p })) {
-                            $pvName = $prov.DisplayName
-                            try {
-                                Remove-AppxProvisionedPackage -Online -PackageName $prov.PackageName -ErrorAction Stop | Out-Null
-                                $removedCount++
-                                $msg = "[SUCCESS] Removed provisioned package (new users): $pvName"
-                            } catch { $msg = "[WARN] Could not remove provisioned $pvName : $($_.Exception.Message)" }
-                            try { $SH.Window.Dispatcher.Invoke([action]{
-                                $SH.LogBox.AppendText("[$(Get-Date -Format 'HH:mm:ss')] $msg`r`n"); $SH.LogBox.ScrollToEnd()
-                            }) } catch {}
-                        }
-                    } catch {}
-                }
-            }
-        }
-        return $removedCount
-    })
-    [void]$ps.AddParameter("Items", $debloatData)
-    [void]$ps.AddParameter("SH", $syncHash)
-    $handle = $ps.BeginInvoke()
-    Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+    Start-VdTask 'Invoke-VdDebloat' @{ Items = $debloatData; Provisioned = $alsoProvisioned; SH = (New-VdTaskContext) } -OnComplete {
         param($result)
         $totalRemoved = @($result) | Select-Object -Last 1
         $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-        if ($btnDebloat) { $btnDebloat.IsEnabled = $true }
+        $btnRemoveBloat.IsEnabled = $true
         Write-AppLog "Debloat sequence completed ($totalRemoved packages removed)!" "SUCCESS"
         [System.Windows.MessageBox]::Show("Cleanup operation complete! Total removed: $totalRemoved packages.", "Done", "OK", "Information")
     }

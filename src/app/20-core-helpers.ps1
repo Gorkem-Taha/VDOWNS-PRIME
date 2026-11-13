@@ -14,8 +14,8 @@ $script:WingetList   = [System.Collections.ArrayList]::new()
 function Write-AppLog {
     param([string]$Text, [string]$Type = "INFO")
     $timestamp = Get-Date -Format 'HH:mm:ss'
-    $script:logBox.AppendText("[$timestamp] [$Type] $Text`r`n")
-    $script:logBox.ScrollToEnd()
+    $logBox.AppendText("[$timestamp] [$Type] $Text`r`n")
+    $logBox.ScrollToEnd()
 }
 
 function Switch-AppTab {
@@ -116,80 +116,37 @@ function Watch-Runspace {
     $t.Start()
 }
 
-function Start-StreamingCommand {
-    param([string]$FileName, [string]$Arguments)
+# Background task library (src/lib/Tasks.ps1), loaded into every task runspace.
+$script:VdTasksLib = @'
+#@include lib/Tasks.ps1
+'@
 
-    $targetLogBox = Get-UIElement "logBox"
-    if ($targetLogBox) {
-        $shown = if ($FileName -eq "powershell.exe" -and $Arguments -match '-EncodedCommand') { "powershell.exe (script)" } else { "$FileName $Arguments" }
-        $targetLogBox.AppendText("[$(Get-Date -Format 'HH:mm:ss')] [CMD] $shown`r`n")
-        $targetLogBox.ScrollToEnd()
-    }
+# Context handed to a task: the window (for its Dispatcher) and the controls it may update.
+function New-VdTaskContext {
+    param($ProgressBar, $ProgressText)
+    [hashtable]::Synchronized(@{ Window = $window; LogBox = $logBox; ProgressBar = $ProgressBar; ProgressText = $ProgressText })
+}
 
-    $targetWin = if ($window) { $window } elseif ($script:window) { $script:window } else { $global:window }
-
-    $syncHash = [hashtable]::Synchronized(@{
-        Window = $targetWin
-        LogBox = $targetLogBox
-    })
-
+# Runs one function from the task library in a fresh runspace; OnComplete gets its output on
+# the UI thread (see Watch-Runspace). The only place that creates runspaces.
+function Start-VdTask {
+    param([string]$Command, [hashtable]$Parameters = @{}, [scriptblock]$OnComplete)
     $runspace = [runspacefactory]::CreateRunspace()
     $runspace.Open()
     $ps = [powershell]::Create()
     $ps.Runspace = $runspace
-
-    [void]$ps.AddScript({
-        param($FN, $Args, $SH, $Lib)
-        . ([scriptblock]::Create($Lib))
-        function Push-Line([string]$text) {
-            if ($SH.LogBox -and $SH.Window) {
-                try { $SH.Window.Dispatcher.Invoke([action]{ $SH.LogBox.AppendText("$text`r`n"); $SH.LogBox.ScrollToEnd() }) } catch {}
-            }
-        }
-        $exitCode = $null
-        try {
-            $psi = New-Object System.Diagnostics.ProcessStartInfo
-            $psi.FileName = $FN
-            $psi.Arguments = $Args
-            $psi.RedirectStandardOutput = $true
-            $psi.RedirectStandardError = $true
-            $psi.UseShellExecute = $false
-            $psi.CreateNoWindow = $true
-            # winget writes UTF-8; classic tools use the OEM code page (sfc emits UTF-16, NULs stripped below)
-            $enc = Get-VdProcessEncoding $(if ($FN -match '^winget(\.exe)?$') { 'UTF8' } else { '' })
-            $psi.StandardOutputEncoding = $enc
-            $psi.StandardErrorEncoding = $enc
-
-            $proc = New-Object System.Diagnostics.Process
-            $proc.StartInfo = $psi
-            $proc.Start() | Out-Null
-            $errTask = $proc.StandardError.ReadToEndAsync()
-
-            while ($null -ne ($line = $proc.StandardOutput.ReadLine())) {
-                $line = ($line -replace "`0", '').TrimEnd()
-                # drop empty lines and winget/dism progress animation
-                if ($line.Trim() -eq '' -or $line.Trim() -match '^[-\\|/]$' -or $line -match '[▀-▟]') { continue }
-                Push-Line $line
-            }
-            $proc.WaitForExit()
-            $errOut = ($errTask.Result -replace "`0", '').Trim()
-            if ($errOut) { Push-Line $errOut }
-            $exitCode = $proc.ExitCode
-        } catch {
-            Push-Line "ERROR: $($_.Exception.Message)"
-        }
-        $status = if ($null -eq $exitCode) { "FAILED TO START" } elseif ($exitCode -eq 0) { "COMPLETED (exit code 0)" } else { "FINISHED WITH ERRORS (exit code $exitCode)" }
-        Push-Line "`r`n--- PROCESS $status ---"
-    })
-    [void]$ps.AddParameter("FN", $FileName)
-    [void]$ps.AddParameter("Args", $Arguments)
-    [void]$ps.AddParameter("SH", $syncHash)
-    [void]$ps.AddParameter("Lib", $script:VdNativeLib)
-
+    [void]$ps.AddScript((@($script:VdNativeLib, $script:TweakStateLib, $script:VdTasksLib) -join "`n"))
+    [void]$ps.AddStatement().AddCommand($Command)
+    foreach ($k in $Parameters.Keys) { [void]$ps.AddParameter($k, $Parameters[$k]) }
     $handle = $ps.BeginInvoke()
-    Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-        param($result)
-    }
+    Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete $OnComplete
+}
+
+function Start-StreamingCommand {
+    param([string]$FileName, [string]$Arguments)
+    $shown = if ($FileName -eq "powershell.exe" -and $Arguments -match '-EncodedCommand') { "powershell.exe (script)" } else { "$FileName $Arguments" }
+    Write-AppLog $shown "CMD"
+    Start-VdTask 'Invoke-VdStream' @{ FileName = $FileName; Arguments = $Arguments; SH = (New-VdTaskContext) }
 }
 
 function Start-PSStreamingCommand {

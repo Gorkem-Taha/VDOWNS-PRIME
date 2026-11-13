@@ -143,9 +143,10 @@ VDOWNS-PRIME/
 ├── src/
 │   ├── app/NN-*.ps1        # Fragments of the app, concatenated in file-name order
 │   ├── lib/*.ps1           # Self-contained helpers loaded into background runspaces
-│   │                       #   (VdNative, TweakState, PSWUBootstrap, DnsBenchmark)
+│   │                       #   (VdNative, TweakState, Tasks, PSWUBootstrap, DnsBenchmark)
 │   └── ui/MainWindow.xaml  # WPF markup
 ├── tools/Merge-Source.ps1  # Builds VDOWNS_PRIME.ps1 from src/ (-Check verifies it is in sync)
+├── tools/Invoke-Lint.ps1   # PSScriptAnalyzer with PSScriptAnalyzerSettings.psd1
 ├── tests/*.Tests.ps1       # Pester 5 suites
 ├── build.ps1               # Checks, pinned ps2exe compile, SHA256SUMS
 ├── vdowns.ps1              # Legacy entry point, forwards to VDOWNS_PRIME.ps1
@@ -163,15 +164,19 @@ directly, but it is developed as separate files under `src/`:
 # 1. edit files under src/ (or apps.json)
 # 2. regenerate the single-file script
 pwsh ./tools/Merge-Source.ps1
-# 3. run the tests (Pester 5.7.1)
+# 3. run the tests (Pester 5.7.1) and the linter (PSScriptAnalyzer 1.25.0)
 Invoke-Pester ./tests
+./tools/Invoke-Lint.ps1
 ```
 
 - `src/app/` fragments share one script scope; `#@include <path>` lines paste `src/lib`, `src/ui`
   or `apps.json` verbatim into here-strings.
+- Background work goes through `Start-VdTask '<function>' @{ ... } -OnComplete { ... }`: the function
+  lives in `src/lib/Tasks.ps1` (unit-testable, no WPF access) and reports through
+  `Write-VdTaskLog` / `Set-VdTaskProgress` / `Show-VdTaskMessage`; `OnComplete` runs on the UI thread.
 - Never use `GetNewClosure` (script functions disappear under `-File`); pass state through `.Tag`
-  and `$this`, and use `Watch-Runspace` for background work. Run console tools through
-  `Invoke-VdNative` (no window flashes, no stdout/stderr deadlock).
+  and `$this`. Controls live in script scope only (`$btnInstall`, `Get-UIElement 'name'`).
+  Run console tools through `Invoke-VdNative` (no window flashes, no stdout/stderr deadlock).
 - `tests/TweakState.Windows.Tests.ps1` applies real tweaks to the machine and only runs when
   `VDOWNS_ALLOW_SYSTEM_TESTS=1`. CI sets it on a throwaway runner — **do not set it on your PC**.
 - CI (`ci.yml`) runs on Linux (PowerShell 7) and Windows (Windows PowerShell 5.1): source sync,

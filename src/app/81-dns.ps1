@@ -1,7 +1,7 @@
 # =============================================================================
 # 13C. DNS OPTIMIZER & LATENCY BENCHMARK
 # =============================================================================
-function Get-ActivePhysicalAdapters {
+function Get-ActivePhysicalAdapter {
     @(Get-NetAdapter | Where-Object { $_.Status -eq "Up" -and $_.InterfaceDescription -notmatch "Virtual|Hyper-V|Loopback|WSL|VPN|TAP|PANGP|WireGuard|Tailscale|ZeroTier" })
 }
 
@@ -20,15 +20,15 @@ if ($cbDnsProvider) {
 }
 
 try {
-    $actAdapters = Get-ActivePhysicalAdapters
+    $actAdapters = Get-ActivePhysicalAdapter
     if ($actAdapters.Count -gt 0 -and $lblActiveDnsAdapter) {
         $lblActiveDnsAdapter.Text = "Active: " + (($actAdapters | ForEach-Object { $_.Name }) -join ", ")
     }
-} catch {}
+} catch { Write-Verbose "Active adapter label not updated: $($_.Exception.Message)" }
 
 if ($btnApplyDns) {
     $btnApplyDns.Add_Click({
-        $adapters = Get-ActivePhysicalAdapters
+        $adapters = Get-ActivePhysicalAdapter
         if ($adapters.Count -eq 0) {
             Write-AppLog "No active physical network adapter detected." "ERROR"
             return
@@ -45,7 +45,7 @@ if ($btnApplyDns) {
                 $failed += "$($a.Name): $($_.Exception.Message)"
             }
         }
-        try { Clear-DnsClientCache -ErrorAction Stop } catch {}
+        try { Clear-DnsClientCache -ErrorAction Stop } catch { Write-AppLog "Could not flush the DNS cache: $($_.Exception.Message)" "WARN" }
         if ($ok.Count -gt 0) { Write-AppLog "DNS set to $selectedKey on: $($ok -join ', ') (IPv4 + IPv6)." "SUCCESS" }
         foreach ($f in $failed) { Write-AppLog "DNS change failed on $f" "ERROR" }
         $summary = if ($failed.Count -eq 0) { "DNS updated on: $($ok -join ', ')" } else { "Updated: $($ok -join ', ')`nFailed: $($failed.Count) adapter(s) - see the log." }
@@ -55,7 +55,7 @@ if ($btnApplyDns) {
 
 if ($btnResetDns) {
     $btnResetDns.Add_Click({
-        $adapters = Get-ActivePhysicalAdapters
+        $adapters = Get-ActivePhysicalAdapter
         if ($adapters.Count -eq 0) { Write-AppLog "No active physical network adapter detected." "ERROR"; return }
         foreach ($a in $adapters) {
             try {
@@ -65,7 +65,7 @@ if ($btnResetDns) {
                 Write-AppLog "DNS reset failed on '$($a.Name)': $($_.Exception.Message)" "ERROR"
             }
         }
-        try { Clear-DnsClientCache -ErrorAction Stop } catch {}
+        try { Clear-DnsClientCache -ErrorAction Stop } catch { Write-AppLog "Could not flush the DNS cache: $($_.Exception.Message)" "WARN" }
     })
 }
 

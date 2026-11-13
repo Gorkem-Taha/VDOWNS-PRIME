@@ -41,9 +41,10 @@ Describe 'XAML' {
 
     It 'has no script handler for a button that does not exist' {
         $names = Get-VdXamlNames
-        $aliases = 'btnDebloat', 'btnSelectAll', 'btnDeselectAll', 'btnEnableFeatures', 'btnSfc', 'btnDism', 'btnNetReset', 'btnFixWU', 'btnSearchWingetRepo'
-        $handled = [regex]::Matches($text, '(?m)^\s*if \(\$(btn\w+)\)') | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
-        $handled | Where-Object { $_ -notin $names -and $_ -notin $aliases } | Should -BeNullOrEmpty
+        $handled = [regex]::Matches($text, '(?m)^\s*(?:if \()?\$(btn\w+)(?:\)|\.Add_Click)') | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+        $handled.Count | Should -BeGreaterThan 30
+        $codeCreated = [regex]::Matches($text, '\$(btn\w+) = New-Object') | ForEach-Object { $_.Groups[1].Value }
+        $handled | Where-Object { $_ -notin $names -and $_ -notin $codeCreated } | Should -BeNullOrEmpty
     }
 }
 
@@ -59,7 +60,13 @@ Describe 'Code rules' {
         $text | Should -Not -Match "(?<!un)'install',[^\r\n]*'--force'"
     }
     It 'tweaks run with ErrorAction Stop' {
-        $text | Should -Match "\`$ErrorActionPreference = 'Stop'\r?\n\s+\`$applied = 0"
+        Get-Content (Join-Path $SrcRoot 'lib/Tasks.ps1') -Raw | Should -Match "function Invoke-VdTweakBatch \{[^}]*\`$ErrorActionPreference = 'Stop'"
+    }
+    It 'creates runspaces in exactly one place (Start-VdTask)' {
+        ([regex]::Matches($text, 'runspacefactory\]::CreateRunspace')).Count | Should -Be 1
+    }
+    It 'keeps controls in script scope only (no globals)' {
+        ($text -replace '\$global:LASTEXITCODE', '') | Should -Not -Match '\$global:'
     }
     It 'has no -SkipPublisherCheck in the app' {
         $text | Should -Not -Match 'SkipPublisherCheck'

@@ -4,7 +4,7 @@
 .DESCRIPTION
     Advanced System Configuration Tool built with PowerShell + WPF.
     Features: App Center, System Tweaks, Windows Features, Debloater, Update & Repair Center, Backup & Restore Center, Winget Manager.
-    
+
     Build the standalone exe with .\build.ps1 (pinned ps2exe, checks, SHA256SUMS).
 #>
 
@@ -117,7 +117,7 @@ try {
 # 3. XAML INTERFACE DEFINITION
 # =============================================================================
 [xml]$xaml = @'
-<Window 
+<Window
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="VDOWNS PRIME | Fluent System Architect"
@@ -146,8 +146,8 @@ try {
                             <Border x:Name="bd" Background="Transparent" CornerRadius="8" Padding="12,10">
                                 <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
                             </Border>
-                            <Border x:Name="activeIndicator" Width="3" Height="20" Background="#58A6FF" 
-                                    CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                            <Border x:Name="activeIndicator" Width="3" Height="20" Background="#58A6FF"
+                                    CornerRadius="1.5" HorizontalAlignment="Left" VerticalAlignment="Center"
                                     Margin="2,0,0,0" Visibility="Collapsed"/>
                         </Grid>
                         <ControlTemplate.Triggers>
@@ -176,10 +176,10 @@ try {
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Grid>
-                            <Border x:Name="bg" Background="{TemplateBinding Background}" 
+                            <Border x:Name="bg" Background="{TemplateBinding Background}"
                                     CornerRadius="8" Padding="{TemplateBinding Padding}"/>
                             <Border x:Name="hoverOverlay" Background="White" CornerRadius="8" Opacity="0"/>
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" 
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
                                               Margin="{TemplateBinding Padding}"/>
                         </Grid>
                         <ControlTemplate.Triggers>
@@ -210,8 +210,8 @@ try {
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="bd" Background="{TemplateBinding Background}" 
-                                CornerRadius="6" BorderBrush="#30363D" BorderThickness="1" 
+                        <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                CornerRadius="6" BorderBrush="#30363D" BorderThickness="1"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
@@ -453,19 +453,19 @@ try {
 
                             <Grid Grid.Column="0">
                                 <Border Background="#161B22" CornerRadius="8" BorderBrush="#30363D" BorderThickness="1" Padding="2">
-                                    <TextBox x:Name="searchBox" Background="Transparent" Foreground="#E6EDF3" 
+                                    <TextBox x:Name="searchBox" Background="Transparent" Foreground="#E6EDF3"
                                              BorderThickness="0" FontSize="13" Padding="12,7" CaretBrush="#E6EDF3"/>
                                 </Border>
-                                <TextBlock x:Name="searchPlaceholder" Text="  🔍  Search 96 software packages by name, keyword, or Winget ID..." 
-                                           Foreground="#484F58" FontSize="12" VerticalAlignment="Center" 
+                                <TextBlock x:Name="searchPlaceholder" Text="  🔍  Search 96 software packages by name, keyword, or Winget ID..."
+                                           Foreground="#484F58" FontSize="12" VerticalAlignment="Center"
                                            Margin="12,0" IsHitTestVisible="False"/>
                             </Grid>
 
-                            <Button x:Name="btnAddCustomApp" Grid.Column="2" Content="➕ Add App" 
+                            <Button x:Name="btnAddCustomApp" Grid.Column="2" Content="➕ Add App"
                                     Background="#1F6FEB" Foreground="White" FontSize="12" FontWeight="SemiBold" Padding="14,7" Style="{StaticResource RoundedBtn}"/>
-                            <Button x:Name="btnAppSelectAll" Grid.Column="4" Content="Select All" 
+                            <Button x:Name="btnAppSelectAll" Grid.Column="4" Content="Select All"
                                     Background="#21262D" Foreground="#E6EDF3" FontSize="12" Padding="14,7" Style="{StaticResource RoundedBtn}"/>
-                            <Button x:Name="btnAppDeselectAll" Grid.Column="6" Content="Deselect All" 
+                            <Button x:Name="btnAppDeselectAll" Grid.Column="6" Content="Deselect All"
                                     Background="#21262D" Foreground="#E6EDF3" FontSize="12" Padding="14,7" Style="{StaticResource RoundedBtn}"/>
                         </Grid>
 
@@ -480,12 +480,12 @@ try {
                         </ScrollViewer>
 
                         <!-- Progress Panel -->
-                        <Border x:Name="progressPanel" Grid.Row="3" Visibility="Collapsed" 
-                                Background="#161B22" CornerRadius="8" Padding="12" Margin="0,10,0,0" 
+                        <Border x:Name="progressPanel" Grid.Row="3" Visibility="Collapsed"
+                                Background="#161B22" CornerRadius="8" Padding="12" Margin="0,10,0,0"
                                 BorderBrush="#30363D" BorderThickness="1">
                             <StackPanel>
                                 <TextBlock x:Name="progressText" Text="" Foreground="#E6EDF3" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                                <ProgressBar x:Name="progressBar" Height="6" Minimum="0" Maximum="100" Value="0" 
+                                <ProgressBar x:Name="progressBar" Height="6" Minimum="0" Maximum="100" Value="0"
                                              Foreground="#58A6FF" Background="#21262D" BorderThickness="0"/>
                             </StackPanel>
                         </Border>
@@ -497,9 +497,9 @@ try {
                                 <ColumnDefinition Width="12"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Button x:Name="btnInstall" Grid.Column="0" Content="Install Selected" 
+                            <Button x:Name="btnInstall" Grid.Column="0" Content="Install Selected"
                                     Background="#238636" FontSize="14" Padding="0,11" Style="{StaticResource RoundedBtn}"/>
-                            <Button x:Name="btnUninstall" Grid.Column="2" Content="Uninstall Selected" 
+                            <Button x:Name="btnUninstall" Grid.Column="2" Content="Uninstall Selected"
                                     Background="#DA3633" FontSize="14" Padding="0,11" Style="{StaticResource RoundedBtn}"/>
                         </Grid>
                     </Grid>
@@ -526,19 +526,19 @@ try {
 
                             <Grid Grid.Column="0">
                                 <Border Background="#161B22" CornerRadius="8" BorderBrush="#30363D" BorderThickness="1" Padding="2">
-                                    <TextBox x:Name="wingetSearchBox" Background="Transparent" Foreground="#E6EDF3" 
+                                    <TextBox x:Name="wingetSearchBox" Background="Transparent" Foreground="#E6EDF3"
                                              BorderThickness="0" FontSize="13" Padding="12,7" CaretBrush="#E6EDF3"/>
                                 </Border>
-                                <TextBlock x:Name="wingetSearchPlaceholder" Text="  🔍  Search thousands of packages on Microsoft Winget repo..." 
-                                           Foreground="#484F58" FontSize="12" VerticalAlignment="Center" 
+                                <TextBlock x:Name="wingetSearchPlaceholder" Text="  🔍  Search thousands of packages on Microsoft Winget repo..."
+                                           Foreground="#484F58" FontSize="12" VerticalAlignment="Center"
                                            Margin="12,0" IsHitTestVisible="False"/>
                             </Grid>
 
-                            <Button x:Name="btnWingetSearch" Grid.Column="2" Content="Search Online" 
+                            <Button x:Name="btnWingetSearch" Grid.Column="2" Content="Search Online"
                                     Background="#1F6FEB" Foreground="White" FontSize="12" Padding="14,7" Style="{StaticResource RoundedBtn}"/>
-                            <Button x:Name="btnScanWingetInstalled" Grid.Column="4" Content="Scan Installed" 
+                            <Button x:Name="btnScanWingetInstalled" Grid.Column="4" Content="Scan Installed"
                                     Background="#21262D" Foreground="#E6EDF3" FontSize="12" Padding="14,7" Style="{StaticResource RoundedBtn}"/>
-                            <Button x:Name="btnWingetUpgradeAll" Grid.Column="6" Content="Upgrade All" 
+                            <Button x:Name="btnWingetUpgradeAll" Grid.Column="6" Content="Upgrade All"
                                     Background="#238636" Foreground="White" FontSize="12" Padding="14,7" Style="{StaticResource RoundedBtn}"/>
                         </Grid>
 
@@ -546,12 +546,12 @@ try {
                             <StackPanel x:Name="wingetResultsContainer"/>
                         </ScrollViewer>
 
-                        <Border x:Name="wingetProgressPanel" Grid.Row="2" Visibility="Collapsed" 
-                                Background="#161B22" CornerRadius="8" Padding="12" Margin="0,10,0,0" 
+                        <Border x:Name="wingetProgressPanel" Grid.Row="2" Visibility="Collapsed"
+                                Background="#161B22" CornerRadius="8" Padding="12" Margin="0,10,0,0"
                                 BorderBrush="#30363D" BorderThickness="1">
                             <StackPanel>
                                 <TextBlock x:Name="wingetProgressText" Text="Loading Winget Data..." Foreground="#E6EDF3" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                                <ProgressBar x:Name="wingetProgressBar" Height="6" IsIndeterminate="True" 
+                                <ProgressBar x:Name="wingetProgressBar" Height="6" IsIndeterminate="True"
                                              Foreground="#58A6FF" Background="#21262D" BorderThickness="0"/>
                             </StackPanel>
                         </Border>
@@ -585,9 +585,9 @@ try {
                         <ColumnDefinition Width="12"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Button x:Name="btnApplyTweaks" Grid.Column="0" Content="Apply Selected Tweaks" 
+                    <Button x:Name="btnApplyTweaks" Grid.Column="0" Content="Apply Selected Tweaks"
                             Background="#238636" FontSize="14" Padding="0,11" Style="{StaticResource RoundedBtn}"/>
-                    <Button x:Name="btnRevertTweaks" Grid.Column="2" Content="Revert Selected Tweaks" 
+                    <Button x:Name="btnRevertTweaks" Grid.Column="2" Content="Revert Selected Tweaks"
                             Background="#DA3633" FontSize="14" Padding="0,11" Style="{StaticResource RoundedBtn}"/>
                 </Grid>
             </Grid>
@@ -640,9 +640,9 @@ try {
                         <ColumnDefinition Width="12"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Button x:Name="btnInstallFeatures" Grid.Column="0" Content="Enable Selected Features" 
+                    <Button x:Name="btnInstallFeatures" Grid.Column="0" Content="Enable Selected Features"
                             Background="#238636" FontSize="14" Padding="0,11" Style="{StaticResource RoundedBtn}"/>
-                    <Button x:Name="btnDeepClean" Grid.Column="2" Content="Clean System Junk" 
+                    <Button x:Name="btnDeepClean" Grid.Column="2" Content="Clean System Junk"
                             Background="#58A6FF" FontSize="14" Padding="0,11" Style="{StaticResource RoundedBtn}"/>
                 </Grid>
             </Grid>
@@ -678,12 +678,12 @@ try {
                             <ColumnDefinition Width="8"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Button x:Name="btnDebloatSelectAll" Grid.Column="0" Content="Select Recommended" 
+                        <Button x:Name="btnDebloatSelectAll" Grid.Column="0" Content="Select Recommended"
                                 Background="#21262D" FontSize="13.5" Padding="0,11" Style="{StaticResource RoundedBtn}"/>
-                        <Button x:Name="btnDebloatClear" Grid.Column="2" Content="Clear Selection" 
+                        <Button x:Name="btnDebloatClear" Grid.Column="2" Content="Clear Selection"
                                 Background="#21262D" FontSize="13.5" Padding="0,11" Style="{StaticResource RoundedBtn}"/>
                     </Grid>
-                    <Button x:Name="btnRemoveBloat" Grid.Column="2" Content="Remove Selected Bloat" 
+                    <Button x:Name="btnRemoveBloat" Grid.Column="2" Content="Remove Selected Bloat"
                             Background="#DA3633" FontSize="13.5" Padding="0,11" Style="{StaticResource RoundedBtn}"/>
                 </Grid>
             </Grid>
@@ -881,8 +881,8 @@ try {
                         </StackPanel>
                     </Grid>
 
-                    <TextBox x:Name="logBox" Grid.Row="1" IsReadOnly="True" TextWrapping="Wrap" 
-                             VerticalScrollBarVisibility="Auto" Background="#090D13" Foreground="#8B949E" 
+                    <TextBox x:Name="logBox" Grid.Row="1" IsReadOnly="True" TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto" Background="#090D13" Foreground="#8B949E"
                              FontFamily="Consolas" FontSize="11" BorderThickness="0" Padding="14,4"
                              AcceptsReturn="True" Visibility="Collapsed"/>
                 </Grid>
@@ -897,69 +897,44 @@ try {
 # =============================================================================
 $reader = [System.Xml.XmlNodeReader]::new($xaml)
 $window = [System.Windows.Markup.XamlReader]::Load($reader)
-$script:window = $window
 $window.Title = "VDOWNS PRIME v$($script:VdownsVersion) | Fluent System Architect"
 
-# Auto-discover all named elements and register globally across scopes
-$global:window = $window
-$script:window = $window
-$global:Controls = @{}
+# Every x:Name becomes a script-scope variable ($btnInstall, $logBox, ...) and an entry in
+# $script:Controls. Event handlers run in this scope, so nothing needs to be global.
 $script:Controls = @{}
-
 $nsmgr = New-Object System.Xml.XmlNamespaceManager($xaml.NameTable)
 $nsmgr.AddNamespace('x', 'http://schemas.microsoft.com/winfx/2006/xaml')
-$nodes = $xaml.SelectNodes('//*[@x:Name]', $nsmgr)
-foreach ($node in $nodes) {
+foreach ($node in $xaml.SelectNodes('//*[@x:Name]', $nsmgr)) {
     $elName = $node.GetAttribute('Name', 'http://schemas.microsoft.com/winfx/2006/xaml')
-    if ($elName) {
-        $el = $window.FindName($elName)
-        if ($el) {
-            Set-Variable -Name $elName -Value $el -Scope Script -Force
-            Set-Variable -Name $elName -Value $el -Scope Global -Force
-            Set-Variable -Name $elName -Value $el -Force
-            $global:Controls[$elName] = $el
-            $script:Controls[$elName] = $el
-        }
+    $el = if ($elName) { $window.FindName($elName) }
+    if ($el) {
+        Set-Variable -Name $elName -Value $el -Scope Script -Force
+        $script:Controls[$elName] = $el
     }
 }
 
 function Get-UIElement {
     param([string]$Name)
-    if ($global:Controls -and $global:Controls.ContainsKey($Name) -and $global:Controls[$Name]) { return $global:Controls[$Name] }
-    if ($script:Controls -and $script:Controls.ContainsKey($Name) -and $script:Controls[$Name]) { return $script:Controls[$Name] }
-    if ($window) { $c = $window.FindName($Name); if ($c) { return $c } }
-    if ($script:window) { $c = $script:window.FindName($Name); if ($c) { return $c } }
-    if ($global:window) { $c = $global:window.FindName($Name); if ($c) { return $c } }
-    $v = Get-Variable -Name $Name -Scope Script -ErrorAction SilentlyContinue
-    if ($v -and $v.Value) { return $v.Value }
-    $v = Get-Variable -Name $Name -Scope Global -ErrorAction SilentlyContinue
-    if ($v -and $v.Value) { return $v.Value }
-    return $null
+    if ($script:Controls.ContainsKey($Name)) { return $script:Controls[$Name] }
+    return $window.FindName($Name)
 }
 
 if ($lblVersionBadge) { $lblVersionBadge.Text = "v$($script:VdownsVersion)" }
 
-# Explicit aliases for XAML to script element compatibility
-$script:tweaksContainer = $script:tweakContainer; $tweaksContainer = $tweakContainer; $global:tweaksContainer = $tweakContainer
-$script:configContainer = $script:featureContainer; $configContainer = $featureContainer; $global:configContainer = $featureContainer
-$script:wingetItemsContainer = $script:wingetResultsContainer; $wingetItemsContainer = $wingetResultsContainer; $global:wingetItemsContainer = $wingetResultsContainer
-$script:btnDebloat = $script:btnRemoveBloat; $btnDebloat = $btnRemoveBloat; $global:btnDebloat = $btnRemoveBloat
-$script:btnSelectAll = $script:btnDebloatSelectAll; $btnSelectAll = $btnDebloatSelectAll; $global:btnSelectAll = $btnDebloatSelectAll
-$script:btnDeselectAll = $script:btnDebloatClear; $btnDeselectAll = $btnDebloatClear; $global:btnDeselectAll = $btnDebloatClear
-$script:btnEnableFeatures = $script:btnInstallFeatures; $btnEnableFeatures = $btnInstallFeatures; $global:btnEnableFeatures = $btnInstallFeatures
-$script:btnSfc = $script:btnRepairSfc; $btnSfc = $btnRepairSfc; $global:btnSfc = $btnRepairSfc
-$script:btnDism = $script:btnRepairDism; $btnDism = $btnRepairDism; $global:btnDism = $btnRepairDism
-$script:btnNetReset = $script:btnResetNetwork; $btnNetReset = $btnResetNetwork; $global:btnNetReset = $btnResetNetwork
-$script:btnFixWU = $script:btnFixUpdates; $btnFixWU = $btnFixUpdates; $global:btnFixWU = $btnFixUpdates
-$script:btnSearchWingetRepo = $script:btnWingetSearch; $btnSearchWingetRepo = $btnWingetSearch; $global:btnSearchWingetRepo = $btnWingetSearch
-$script:outputBox = $script:logBox; $outputBox = $logBox; $global:outputBox = $logBox
-
-# Brush references
+# Brushes: one frozen instance per colour, shared by every card and dialog
 $converter = New-Object System.Windows.Media.BrushConverter
+$script:BrushCache = @{}
+function Get-VdBrush([string]$Hex) {
+    if (-not $script:BrushCache.ContainsKey($Hex)) {
+        $b = $converter.ConvertFrom($Hex)
+        if ($b.CanFreeze) { $b.Freeze() }
+        $script:BrushCache[$Hex] = $b
+    }
+    $script:BrushCache[$Hex]
+}
 $accentBrush  = $converter.ConvertFrom("#58A6FF")
 $successBrush = $converter.ConvertFrom("#3FB950")
 $dangerBrush  = $converter.ConvertFrom("#F85149")
-$warningBrush = $converter.ConvertFrom("#D29922")
 $textBrush    = $converter.ConvertFrom("#E6EDF3")
 $textDimBrush = $converter.ConvertFrom("#8B949E")
 $surfaceBrush = $converter.ConvertFrom("#161B22")
@@ -1093,8 +1068,8 @@ $script:WingetList   = [System.Collections.ArrayList]::new()
 function Write-AppLog {
     param([string]$Text, [string]$Type = "INFO")
     $timestamp = Get-Date -Format 'HH:mm:ss'
-    $script:logBox.AppendText("[$timestamp] [$Type] $Text`r`n")
-    $script:logBox.ScrollToEnd()
+    $logBox.AppendText("[$timestamp] [$Type] $Text`r`n")
+    $logBox.ScrollToEnd()
 }
 
 function Switch-AppTab {
@@ -1249,80 +1224,500 @@ function Watch-Runspace {
     $t.Start()
 }
 
-function Start-StreamingCommand {
-    param([string]$FileName, [string]$Arguments)
+# Background task library (src/lib/Tasks.ps1), loaded into every task runspace.
+$script:VdTasksLib = @'
+# Background task library. Loaded (together with VdNative.ps1 and TweakState.ps1) into every
+# runspace started by Start-VdTask, and dot-sourced directly by the Pester tests.
+#
+# $SH is a synchronized hashtable from New-VdTaskContext: Window (for its Dispatcher), LogBox and
+# optionally ProgressBar/ProgressText. Every UI update is marshalled to the UI thread here, so the
+# task functions themselves never touch WPF objects. All UI helpers are no-ops without a window.
 
-    $targetLogBox = Get-UIElement "logBox"
-    if ($targetLogBox) {
-        $shown = if ($FileName -eq "powershell.exe" -and $Arguments -match '-EncodedCommand') { "powershell.exe (script)" } else { "$FileName $Arguments" }
-        $targetLogBox.AppendText("[$(Get-Date -Format 'HH:mm:ss')] [CMD] $shown`r`n")
-        $targetLogBox.ScrollToEnd()
+# Each helper calls Dispatcher.Invoke itself, with the [action] literal next to the values it
+# uses (the same pattern as the original handlers). UI errors never abort a background task.
+function Write-VdTaskLog {
+    param($SH, [string]$Text, [string]$Type = 'INFO')
+    if (-not ($SH -and $SH.Window -and $SH.LogBox)) { return }
+    $line = "[$(Get-Date -Format 'HH:mm:ss')] [$Type] $Text`r`n"
+    try { $SH.Window.Dispatcher.Invoke([action]{ $SH.LogBox.AppendText($line); $SH.LogBox.ScrollToEnd() }) }
+    catch { Write-Verbose "Log line dropped: $($_.Exception.Message)" }
+}
+
+function Write-VdTaskRaw {
+    param($SH, [string]$Text)
+    if (-not ($SH -and $SH.Window -and $SH.LogBox)) { return }
+    $line = "$Text`r`n"
+    try { $SH.Window.Dispatcher.Invoke([action]{ $SH.LogBox.AppendText($line); $SH.LogBox.ScrollToEnd() }) }
+    catch { Write-Verbose "Output line dropped: $($_.Exception.Message)" }
+}
+
+function Set-VdTaskProgress {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '', Justification = 'Used inside the Dispatcher [action] block')]
+    param($SH, [string]$Text, [int]$Percent)
+    if (-not ($SH -and $SH.Window)) { return }
+    try {
+        $SH.Window.Dispatcher.Invoke([action]{
+            if ($SH.ProgressText) { $SH.ProgressText.Text = $Text }
+            if ($SH.ProgressBar) { $SH.ProgressBar.Value = $Percent }
+        })
+    } catch { Write-Verbose "Progress update dropped: $($_.Exception.Message)" }
+}
+
+function Show-VdTaskMessage {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '', Justification = 'Used inside the Dispatcher [action] block')]
+    param($SH, [string]$Text, [string]$Title, [string]$Buttons = 'OK', [string]$Icon = 'Information')
+    if (-not ($SH -and $SH.Window)) { return }
+    try { $SH.Window.Dispatcher.Invoke([action]{ [void][System.Windows.MessageBox]::Show($Text, $Title, $Buttons, $Icon) }) }
+    catch { Write-Verbose "Message box skipped: $($_.Exception.Message)" }
+}
+
+# ---- winget -------------------------------------------------------------------------------
+
+$script:VdWingetAlreadyInstalled = -1978335189   # APPINSTALLER_CLI_ERROR_PACKAGE_ALREADY_INSTALLED
+
+function Invoke-VdWingetBatch {
+    param([object[]]$Apps, [ValidateSet('install', 'uninstall')][string]$Action, $SH)
+    $verb = if ($Action -eq 'install') { 'Installing' } else { 'Uninstalling' }
+    $done = 0; $failed = 0; $i = 0; $total = @($Apps).Count
+    foreach ($app in $Apps) {
+        $i++
+        Set-VdTaskProgress -SH $SH -Text "${verb}: $($app.Name) ($i / $total)" -Percent ([math]::Round(($i / $total) * 100))
+        $wgArgs = if ($Action -eq 'install') {
+            @('install', '--id', $app.Id, '-e', '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
+        } else {
+            @('uninstall', '--id', $app.Id, '-e', '--silent', '--accept-source-agreements', '--disable-interactivity', '--force')
+        }
+        try {
+            $code = (Invoke-VdNative 'winget.exe' $wgArgs 'UTF8').ExitCode
+            if ($code -eq 0) {
+                $done++
+                Write-VdTaskLog -SH $SH -Text "$(if ($Action -eq 'install') { 'Installed' } else { 'Uninstalled' }): $($app.Name)" -Type 'SUCCESS'
+            } elseif ($Action -eq 'install' -and $code -eq $script:VdWingetAlreadyInstalled) {
+                Write-VdTaskLog -SH $SH -Text "Already installed: $($app.Name)" -Type 'INFO'
+            } else {
+                $failed++
+                Write-VdTaskLog -SH $SH -Text "Failed to $Action $($app.Name) (winget exit code $code)" -Type 'ERROR'
+            }
+        } catch {
+            $failed++
+            Write-VdTaskLog -SH $SH -Text "$($app.Name) - $($_.Exception.Message)" -Type 'ERROR'
+        }
     }
+    Set-VdTaskProgress -SH $SH -Text "All ${Action}s completed!" -Percent 100
+    Write-VdTaskLog -SH $SH -Text "$verb finished: $done succeeded, $failed failed, $($total - $done - $failed) skipped." -Type 'INFO'
+}
 
-    $targetWin = if ($window) { $window } elseif ($script:window) { $script:window } else { $global:window }
+function Invoke-VdWingetQuery {
+    param([ValidateSet('list', 'search')][string]$Kind, [string]$Query)
+    $wgArgs = if ($Kind -eq 'list') { @('list') } else { @('search', $Query) }
+    $r = Invoke-VdNative 'winget.exe' ($wgArgs + @('--accept-source-agreements', '--disable-interactivity')) 'UTF8'
+    @(ConvertFrom-VdWingetTable $r.Output)
+}
 
-    $syncHash = [hashtable]::Synchronized(@{
-        Window = $targetWin
-        LogBox = $targetLogBox
-    })
+# ---- tweaks -------------------------------------------------------------------------------
 
+# Apply: snapshot first (skip the tweak if that fails, so Revert can always restore), create
+# missing registry keys, run the Do block with ErrorAction Stop and check native exit codes.
+# Revert: restore the exact snapshot, or fall back to the generic Undo block.
+function Invoke-VdTweakBatch {
+    param([object[]]$Tweaks, [ValidateSet('Apply', 'Revert')][string]$Mode, $SH)
+    $ErrorActionPreference = 'Stop'
+    $count = 0
+    foreach ($item in $Tweaks) {
+        $tName = $item.Name
+        try {
+            $global:LASTEXITCODE = 0
+            if ($Mode -eq 'Apply') {
+                Save-VdTweakState $tName $item.State
+                foreach ($e in @($item.State)) { if ($e -and $e.Reg -and -not (Test-Path -LiteralPath $e.Reg)) { New-Item -Path $e.Reg -Force | Out-Null } }
+                $null = & ([scriptblock]::Create($item.ScriptStr))
+                $how = ''
+            } else {
+                $how = if (Restore-VdTweakState $tName) { ' - original state restored' } else { $null = & ([scriptblock]::Create($item.ScriptStr)); ' - default undo applied (no snapshot)' }
+            }
+            if ($LASTEXITCODE -ne 0) { throw "command exited with code $LASTEXITCODE" }
+            $count++
+            Write-VdTaskLog -SH $SH -Text "$(if ($Mode -eq 'Apply') { 'Applied' } else { 'Reverted' }): $tName$how" -Type 'SUCCESS'
+        } catch {
+            Write-VdTaskLog -SH $SH -Text "Failed to $($Mode.ToLower()): $tName - $($_.Exception.Message)" -Type 'ERROR'
+        }
+    }
+    if ($count -gt 0) {
+        Write-VdTaskLog -SH $SH -Text 'Refreshing Windows Explorer...' -Type 'INFO'
+        Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+    }
+    return $count
+}
+
+# ---- debloat ------------------------------------------------------------------------------
+
+function Invoke-VdDebloat {
+    param([object[]]$Items, [bool]$Provisioned, $SH)
+    $removed = 0
+    $allPkgs = @(Get-AppxPackage)   # enumerate once, not once per pattern
+    $allProv = if ($Provisioned) { @(Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue) } else { @() }
+    foreach ($item in $Items) {
+        foreach ($p in $item.Patterns) {
+            foreach ($pkg in @($allPkgs | Where-Object { $_.Name -like $p })) {
+                try {
+                    Remove-AppxPackage -Package $pkg.PackageFullName -ErrorAction Stop
+                    $removed++
+                    Write-VdTaskLog -SH $SH -Text "Removed: $($pkg.Name)" -Type 'SUCCESS'
+                } catch {
+                    Write-VdTaskLog -SH $SH -Text "Could not remove $($pkg.Name): $($_.Exception.Message)" -Type 'WARN'
+                }
+            }
+            foreach ($prov in @($allProv | Where-Object { $_.DisplayName -like $p })) {
+                try {
+                    Remove-AppxProvisionedPackage -Online -PackageName $prov.PackageName -ErrorAction Stop | Out-Null
+                    $removed++
+                    Write-VdTaskLog -SH $SH -Text "Removed provisioned package (new users): $($prov.DisplayName)" -Type 'SUCCESS'
+                } catch {
+                    Write-VdTaskLog -SH $SH -Text "Could not remove provisioned $($prov.DisplayName): $($_.Exception.Message)" -Type 'WARN'
+                }
+            }
+        }
+    }
+    return $removed
+}
+
+# ---- live console -------------------------------------------------------------------------
+
+# Streams a process' stdout into the log line by line; stderr is drained asynchronously.
+function Invoke-VdStream {
+    param([string]$FileName, [string]$Arguments, $SH)
+    $exitCode = $null
+    try {
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = $FileName
+        $psi.Arguments = $Arguments
+        $psi.RedirectStandardOutput = $true
+        $psi.RedirectStandardError = $true
+        $psi.UseShellExecute = $false
+        $psi.CreateNoWindow = $true
+        # winget writes UTF-8; classic tools use the OEM code page (sfc emits UTF-16, NULs stripped below)
+        $enc = Get-VdProcessEncoding $(if ($FileName -match '^winget(\.exe)?$') { 'UTF8' } else { '' })
+        $psi.StandardOutputEncoding = $enc
+        $psi.StandardErrorEncoding = $enc
+        $proc = [System.Diagnostics.Process]::Start($psi)
+        $errTask = $proc.StandardError.ReadToEndAsync()
+        while ($null -ne ($line = $proc.StandardOutput.ReadLine())) {
+            $line = ($line -replace "`0", '').TrimEnd()
+            # drop empty lines and winget/dism progress animation
+            if ($line.Trim() -eq '' -or $line.Trim() -match '^[-\\|/]$' -or $line -match '[\u2580-\u259F]') { continue }
+            Write-VdTaskRaw -SH $SH -Text $line
+        }
+        $proc.WaitForExit()
+        $errOut = ($errTask.Result -replace "`0", '').Trim()
+        if ($errOut) { Write-VdTaskRaw -SH $SH -Text $errOut }
+        $exitCode = $proc.ExitCode
+    } catch {
+        Write-VdTaskRaw -SH $SH -Text "ERROR: $($_.Exception.Message)"
+    }
+    $status = if ($null -eq $exitCode) { 'FAILED TO START' } elseif ($exitCode -eq 0) { 'COMPLETED (exit code 0)' } else { "FINISHED WITH ERRORS (exit code $exitCode)" }
+    Write-VdTaskRaw -SH $SH -Text "`r`n--- PROCESS $status ---"
+    return $exitCode
+}
+
+
+
+# ---- backup / restore / Quick Boost (bodies moved verbatim from the click handlers) -------
+
+function Invoke-VdConfigBackup {
+    param([string]$DestZip, $SH)
+    try {
+        $tempDir = Join-Path $env:TEMP "VDOWNS_Backup_Temp"
+        if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue }
+        New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+
+        # 1. VS Code Settings & Extensions Manifest
+        $vscodePath = Join-Path $env:APPDATA "Code\User"
+        if (Test-Path $vscodePath) {
+            $vsTarget = Join-Path $tempDir "VSCode_User"
+            New-Item -ItemType Directory -Path $vsTarget -Force | Out-Null
+            Get-ChildItem -Path $vscodePath -Exclude "workspaceStorage", "globalStorage", "History" | Copy-Item -Destination $vsTarget -Recurse -Force -EA SilentlyContinue
+            Write-VdTaskLog -SH $SH -Text "Backed up VS Code user configurations." -Type "INFO"
+        }
+        try {
+            $codeCmd = Get-Command code -ErrorAction SilentlyContinue
+            if ($codeCmd) {
+                $r = Invoke-VdNative 'cmd.exe' @('/d', '/c', 'code', '--list-extensions') 'UTF8'
+                Set-Content -Path (Join-Path $tempDir "vscode_extensions.txt") -Value $r.Output -Encoding UTF8
+                Write-VdTaskLog -SH $SH -Text "Exported VS Code extensions manifest." -Type "INFO"
+            }
+        } catch { Write-VdTaskLog -SH $SH -Text "Could not export the VS Code extension list: $($_.Exception.Message)" -Type "WARN" }
+
+        # 2. Cursor Settings
+        $cursorPath = Join-Path $env:APPDATA "Cursor\User"
+        if (Test-Path $cursorPath) {
+            $curTarget = Join-Path $tempDir "Cursor_User"
+            New-Item -ItemType Directory -Path $curTarget -Force | Out-Null
+            Get-ChildItem -Path $cursorPath -Exclude "workspaceStorage", "globalStorage", "History" | Copy-Item -Destination $curTarget -Recurse -Force -EA SilentlyContinue
+            Write-VdTaskLog -SH $SH -Text "Backed up Cursor user configurations." -Type "INFO"
+        }
+
+        # 3. Git Config
+        $gitConfig = Join-Path $env:USERPROFILE ".gitconfig"
+        if (Test-Path $gitConfig) {
+            Copy-Item $gitConfig -Destination (Join-Path $tempDir ".gitconfig") -Force -EA SilentlyContinue
+            Write-VdTaskLog -SH $SH -Text "Backed up Git configuration (.gitconfig)." -Type "INFO"
+        }
+
+        # 4. PowerShell Profiles ($PROFILE is not set inside a background runspace)
+        $docsDir = [Environment]::GetFolderPath('MyDocuments')
+        $winPsProfile = Join-Path $docsDir "WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+        $pwshProfile  = Join-Path $docsDir "PowerShell\Microsoft.PowerShell_profile.ps1"
+        if (Test-Path $winPsProfile) {
+            Copy-Item $winPsProfile -Destination (Join-Path $tempDir "Microsoft.PowerShell_profile.ps1") -Force -EA SilentlyContinue
+            Write-VdTaskLog -SH $SH -Text "Backed up Windows PowerShell profile." -Type "INFO"
+        }
+        if (Test-Path $pwshProfile) {
+            Copy-Item $pwshProfile -Destination (Join-Path $tempDir "PowerShell7_profile.ps1") -Force -EA SilentlyContinue
+            Write-VdTaskLog -SH $SH -Text "Backed up PowerShell 7 profile." -Type "INFO"
+        }
+
+        # 5. Windows Terminal
+        $wtPath = Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
+        if (Test-Path $wtPath) {
+            Copy-Item $wtPath -Destination (Join-Path $tempDir "Terminal_settings.json") -Force -EA SilentlyContinue
+            Write-VdTaskLog -SH $SH -Text "Backed up Windows Terminal settings." -Type "INFO"
+        }
+
+        # 6. Notepad++
+        $nppPath = Join-Path $env:APPDATA "Notepad++"
+        if (Test-Path $nppPath) {
+            Copy-Item $nppPath -Destination (Join-Path $tempDir "NotepadPlusPlus") -Recurse -Force -EA SilentlyContinue
+            Write-VdTaskLog -SH $SH -Text "Backed up Notepad++ settings." -Type "INFO"
+        }
+
+        # 7. SSH Config (host mappings only, keys excluded for safety)
+        $sshConfig = Join-Path $env:USERPROFILE ".ssh\config"
+        if (Test-Path $sshConfig) {
+            $sshTarget = Join-Path $tempDir "SSH_Config"
+            New-Item -ItemType Directory -Path $sshTarget -Force | Out-Null
+            Copy-Item $sshConfig -Destination (Join-Path $sshTarget "config") -Force -EA SilentlyContinue
+            Write-VdTaskLog -SH $SH -Text "Backed up SSH host mappings." -Type "INFO"
+        }
+
+        # Compress
+        Write-VdTaskLog -SH $SH -Text "Compressing developer backup snapshot into ZIP..." -Type "ACTION"
+        if (Test-Path $destZip) { Remove-Item $destZip -Force }
+        Compress-Archive -Path "$tempDir\*" -DestinationPath $destZip -Force
+        Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+
+        Write-VdTaskLog -SH $SH -Text "AppData Developer Backup completed successfully: $destZip" -Type "SUCCESS"
+        Show-VdTaskMessage -SH $SH -Text "AppData configurations backup complete!`nFile: $destZip" -Title "Backup Complete" -Buttons "OK" -Icon "Information"
+    } catch {
+        Write-VdTaskLog -SH $SH -Text "Backup failed: $($_.Exception.Message)" -Type "ERROR"
+    }
+}
+
+function Invoke-VdConfigRestore {
+    param([string]$SrcZip, $SH)
+    try {
+        $tempDir = Join-Path $env:TEMP "VDOWNS_Restore_Temp"
+        if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue }
+        # Extract manually so no entry can escape the temp folder (zip-slip)
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+        $rootFull = [System.IO.Path]::GetFullPath($tempDir).TrimEnd('\') + '\'
+        $zip = [System.IO.Compression.ZipFile]::OpenRead($srcZip)
+        try {
+            foreach ($entry in $zip.Entries) {
+                $target = [System.IO.Path]::GetFullPath((Join-Path $tempDir $entry.FullName))
+                if (-not $target.StartsWith($rootFull, [System.StringComparison]::OrdinalIgnoreCase)) {
+                    throw "Unsafe path in archive, restore aborted: $($entry.FullName)"
+                }
+                if ($entry.FullName.EndsWith('/') -or $entry.FullName.EndsWith('\')) {
+                    New-Item -ItemType Directory -Path $target -Force | Out-Null
+                    continue
+                }
+                New-Item -ItemType Directory -Path (Split-Path $target -Parent) -Force | Out-Null
+                [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $target, $true)
+            }
+        } finally { $zip.Dispose() }
+
+        # Save everything that is about to be overwritten; abort if that fails
+        $docsDirSafe = [Environment]::GetFolderPath('MyDocuments')
+        $safetyDir = Join-Path $env:LOCALAPPDATA ("VDOWNS\PreRestore_" + (Get-Date -Format 'yyyyMMdd_HHmmss'))
+        $currentItems = @(
+            @{ Zip = "VSCode_User";                      Path = (Join-Path $env:APPDATA "Code\User"); Dir = $true },
+            @{ Zip = "Cursor_User";                      Path = (Join-Path $env:APPDATA "Cursor\User"); Dir = $true },
+            @{ Zip = ".gitconfig";                       Path = (Join-Path $env:USERPROFILE ".gitconfig") },
+            @{ Zip = "Microsoft.PowerShell_profile.ps1"; Path = (Join-Path $docsDirSafe "WindowsPowerShell\Microsoft.PowerShell_profile.ps1") },
+            @{ Zip = "PowerShell7_profile.ps1";          Path = (Join-Path $docsDirSafe "PowerShell\Microsoft.PowerShell_profile.ps1") },
+            @{ Zip = "Terminal_settings.json";           Path = (Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json") },
+            @{ Zip = "NotepadPlusPlus";                  Path = (Join-Path $env:APPDATA "Notepad++"); Dir = $true },
+            @{ Zip = "SSH_Config";                       Path = (Join-Path $env:USERPROFILE ".ssh\config") }
+        )
+        $saved = 0
+        foreach ($ci in $currentItems) {
+            if (-not (Test-Path (Join-Path $tempDir $ci.Zip)) -or -not (Test-Path $ci.Path)) { continue }
+            $dest = Join-Path $safetyDir $ci.Zip
+            if ($ci.Dir) {
+                New-Item -ItemType Directory -Path $dest -Force -ErrorAction Stop | Out-Null
+                Get-ChildItem -Path $ci.Path -Exclude "workspaceStorage", "globalStorage", "History" | Copy-Item -Destination $dest -Recurse -Force -ErrorAction Stop
+            } else {
+                New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force -ErrorAction Stop | Out-Null
+                Copy-Item -Path $ci.Path -Destination $dest -Force -ErrorAction Stop
+            }
+            $saved++
+        }
+        if ($saved -gt 0) { Write-VdTaskLog -SH $SH -Text "Current settings saved before restore: $safetyDir" -Type "INFO" }
+
+        # Restore VS Code
+        if (Test-Path "$tempDir\VSCode_User") {
+            $vscodeDest = Join-Path $env:APPDATA "Code\User"
+            New-Item -ItemType Directory -Path $vscodeDest -Force | Out-Null
+            Copy-Item "$tempDir\VSCode_User\*" -Destination $vscodeDest -Recurse -Force
+            Write-VdTaskLog -SH $SH -Text "Restored VS Code configurations." -Type "SUCCESS"
+        }
+
+        # Restore Git Config
+        if (Test-Path "$tempDir\.gitconfig") {
+            Copy-Item "$tempDir\.gitconfig" -Destination (Join-Path $env:USERPROFILE ".gitconfig") -Force
+            Write-VdTaskLog -SH $SH -Text "Restored Git configuration." -Type "SUCCESS"
+        }
+
+        # Restore Cursor
+        if (Test-Path "$tempDir\Cursor_User") {
+            $cursorDest = Join-Path $env:APPDATA "Cursor\User"
+            New-Item -ItemType Directory -Path $cursorDest -Force | Out-Null
+            Copy-Item "$tempDir\Cursor_User\*" -Destination $cursorDest -Recurse -Force
+            Write-VdTaskLog -SH $SH -Text "Restored Cursor configurations." -Type "SUCCESS"
+        }
+
+        # Restore PowerShell Profiles ($PROFILE is not set inside a background runspace)
+        $docsDir = [Environment]::GetFolderPath('MyDocuments')
+        $profileMap = @(
+            @{ Src = "Microsoft.PowerShell_profile.ps1"; Dest = Join-Path $docsDir "WindowsPowerShell\Microsoft.PowerShell_profile.ps1"; Label = "Windows PowerShell" },
+            @{ Src = "PowerShell7_profile.ps1";          Dest = Join-Path $docsDir "PowerShell\Microsoft.PowerShell_profile.ps1";        Label = "PowerShell 7" }
+        )
+        foreach ($pm in $profileMap) {
+            $srcFile = Join-Path $tempDir $pm.Src
+            if (Test-Path $srcFile) {
+                New-Item -ItemType Directory -Path (Split-Path $pm.Dest -Parent) -Force | Out-Null
+                Copy-Item $srcFile -Destination $pm.Dest -Force
+                Write-VdTaskLog -SH $SH -Text "Restored $($pm.Label) profile." -Type "SUCCESS"
+            }
+        }
+
+        # Restore Windows Terminal
+        if (Test-Path "$tempDir\Terminal_settings.json") {
+            $wtDest = Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState"
+            if (Test-Path $wtDest) {
+                Copy-Item "$tempDir\Terminal_settings.json" -Destination (Join-Path $wtDest "settings.json") -Force
+                Write-VdTaskLog -SH $SH -Text "Restored Windows Terminal settings." -Type "SUCCESS"
+            }
+        }
+
+        # Restore Notepad++
+        if (Test-Path "$tempDir\NotepadPlusPlus") {
+            $nppDest = Join-Path $env:APPDATA "Notepad++"
+            New-Item -ItemType Directory -Path $nppDest -Force | Out-Null
+            Copy-Item "$tempDir\NotepadPlusPlus\*" -Destination $nppDest -Recurse -Force
+            Write-VdTaskLog -SH $SH -Text "Restored Notepad++ settings." -Type "SUCCESS"
+        }
+
+        # Restore SSH Config
+        if (Test-Path "$tempDir\SSH_Config\config") {
+            $sshDir = Join-Path $env:USERPROFILE ".ssh"
+            New-Item -ItemType Directory -Path $sshDir -Force | Out-Null
+            Copy-Item "$tempDir\SSH_Config\config" -Destination (Join-Path $sshDir "config") -Force
+            Write-VdTaskLog -SH $SH -Text "Restored SSH host configurations." -Type "SUCCESS"
+        }
+
+        # Optional VS Code Extension Reinstall
+        $extFile = Join-Path $tempDir "vscode_extensions.txt"
+        if (Test-Path $extFile) {
+            $codeCmd = Get-Command code -ErrorAction SilentlyContinue
+            if ($codeCmd) {
+                Write-VdTaskLog -SH $SH -Text "Reinstalling backed up VS Code extensions..." -Type "ACTION"
+                $exts = Get-Content $extFile | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+                foreach ($ext in $exts) {
+                    Write-VdTaskLog -SH $SH -Text "Installing extension: $ext" -Type "INFO"
+                    if ($ext -notmatch '^[A-Za-z0-9][\w\-]*\.[\w\-\.]+$') { Write-VdTaskLog -SH $SH -Text "Skipped invalid extension id: $ext" -Type "WARN"; continue }
+                    $null = Invoke-VdNative 'cmd.exe' @('/d', '/c', 'code', '--install-extension', $ext, '--force') 'UTF8'
+                }
+            }
+        }
+
+        Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+        Write-VdTaskLog -SH $SH -Text "AppData Developer Restore completed successfully!" -Type "SUCCESS"
+        Show-VdTaskMessage -SH $SH -Text "Developer configurations restored successfully!" -Title "Restore Complete" -Buttons "OK" -Icon "Information"
+    } catch {
+        Write-VdTaskLog -SH $SH -Text "Restore failed: $($_.Exception.Message)" -Type "ERROR"
+    }
+}
+
+function Invoke-VdPrimeBoost {
+    param($SH)
+    try {
+        Write-VdTaskLog -SH $SH -Text "[1/6] Creating System Restore Point..." -Type "ACTION"
+        try {
+            Enable-ComputerRestore -Drive "C:\" -EA SilentlyContinue
+            Checkpoint-Computer -Description "VDOWNS_PrimeBoost" -RestorePointType "MODIFY_SETTINGS" -EA SilentlyContinue
+            Write-VdTaskLog -SH $SH -Text "System Restore Point created." -Type "SUCCESS"
+        } catch { Write-VdTaskLog -SH $SH -Text "Restore Point skipped: $($_.Exception.Message)" -Type "WARN" }
+
+        Write-VdTaskLog -SH $SH -Text "[2/6] Disabling Windows Telemetry & Advertising ID..." -Type "ACTION"
+        foreach ($k in @("HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection", "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR", "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo")) {
+            if (-not (Test-Path $k)) { New-Item -Path $k -Force -EA SilentlyContinue | Out-Null }
+        }
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Value 0 -Type DWord -Force -EA SilentlyContinue
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Value 0 -Type DWord -Force -EA SilentlyContinue
+        Stop-Service -Name "DiagTrack" -Force -EA SilentlyContinue
+        Set-Service -Name "DiagTrack" -StartupType Disabled -EA SilentlyContinue
+
+        Write-VdTaskLog -SH $SH -Text "[3/6] Disabling Xbox GameDVR background recording..." -Type "ACTION"
+        Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Value 0 -Type DWord -Force -EA SilentlyContinue
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" -Name "AllowGameDVR" -Value 0 -Type DWord -Force -EA SilentlyContinue
+
+        Write-VdTaskLog -SH $SH -Text "[4/6] Disabling SysMain Superfetch..." -Type "ACTION"
+        Stop-Service -Name "SysMain" -Force -EA SilentlyContinue
+        Set-Service -Name "SysMain" -StartupType Disabled -EA SilentlyContinue
+
+        Write-VdTaskLog -SH $SH -Text "[5/6] Applying Dark Mode & Showing File Extensions..." -Type "ACTION"
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0 -Type DWord -Force -EA SilentlyContinue
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0 -Type DWord -Force -EA SilentlyContinue
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -Value 0 -Type DWord -Force -EA SilentlyContinue
+
+        Write-VdTaskLog -SH $SH -Text "[6/6] Purging Temporary File Caches..." -Type "ACTION"
+        Remove-Item "$env:TEMP\*" -Recurse -Force -EA SilentlyContinue
+
+        Write-VdTaskLog -SH $SH -Text "Prime 1-Click Optimization finished. Review the log above for any skipped steps." -Type "SUCCESS"
+    } catch {
+        Write-VdTaskLog -SH $SH -Text "Optimization error: $($_.Exception.Message)" -Type "ERROR"
+    }
+}
+'@
+
+# Context handed to a task: the window (for its Dispatcher) and the controls it may update.
+function New-VdTaskContext {
+    param($ProgressBar, $ProgressText)
+    [hashtable]::Synchronized(@{ Window = $window; LogBox = $logBox; ProgressBar = $ProgressBar; ProgressText = $ProgressText })
+}
+
+# Runs one function from the task library in a fresh runspace; OnComplete gets its output on
+# the UI thread (see Watch-Runspace). The only place that creates runspaces.
+function Start-VdTask {
+    param([string]$Command, [hashtable]$Parameters = @{}, [scriptblock]$OnComplete)
     $runspace = [runspacefactory]::CreateRunspace()
     $runspace.Open()
     $ps = [powershell]::Create()
     $ps.Runspace = $runspace
-
-    [void]$ps.AddScript({
-        param($FN, $Args, $SH, $Lib)
-        . ([scriptblock]::Create($Lib))
-        function Push-Line([string]$text) {
-            if ($SH.LogBox -and $SH.Window) {
-                try { $SH.Window.Dispatcher.Invoke([action]{ $SH.LogBox.AppendText("$text`r`n"); $SH.LogBox.ScrollToEnd() }) } catch {}
-            }
-        }
-        $exitCode = $null
-        try {
-            $psi = New-Object System.Diagnostics.ProcessStartInfo
-            $psi.FileName = $FN
-            $psi.Arguments = $Args
-            $psi.RedirectStandardOutput = $true
-            $psi.RedirectStandardError = $true
-            $psi.UseShellExecute = $false
-            $psi.CreateNoWindow = $true
-            # winget writes UTF-8; classic tools use the OEM code page (sfc emits UTF-16, NULs stripped below)
-            $enc = Get-VdProcessEncoding $(if ($FN -match '^winget(\.exe)?$') { 'UTF8' } else { '' })
-            $psi.StandardOutputEncoding = $enc
-            $psi.StandardErrorEncoding = $enc
-
-            $proc = New-Object System.Diagnostics.Process
-            $proc.StartInfo = $psi
-            $proc.Start() | Out-Null
-            $errTask = $proc.StandardError.ReadToEndAsync()
-
-            while ($null -ne ($line = $proc.StandardOutput.ReadLine())) {
-                $line = ($line -replace "`0", '').TrimEnd()
-                # drop empty lines and winget/dism progress animation
-                if ($line.Trim() -eq '' -or $line.Trim() -match '^[-\\|/]$' -or $line -match '[▀-▟]') { continue }
-                Push-Line $line
-            }
-            $proc.WaitForExit()
-            $errOut = ($errTask.Result -replace "`0", '').Trim()
-            if ($errOut) { Push-Line $errOut }
-            $exitCode = $proc.ExitCode
-        } catch {
-            Push-Line "ERROR: $($_.Exception.Message)"
-        }
-        $status = if ($null -eq $exitCode) { "FAILED TO START" } elseif ($exitCode -eq 0) { "COMPLETED (exit code 0)" } else { "FINISHED WITH ERRORS (exit code $exitCode)" }
-        Push-Line "`r`n--- PROCESS $status ---"
-    })
-    [void]$ps.AddParameter("FN", $FileName)
-    [void]$ps.AddParameter("Args", $Arguments)
-    [void]$ps.AddParameter("SH", $syncHash)
-    [void]$ps.AddParameter("Lib", $script:VdNativeLib)
-
+    [void]$ps.AddScript((@($script:VdNativeLib, $script:TweakStateLib, $script:VdTasksLib) -join "`n"))
+    [void]$ps.AddStatement().AddCommand($Command)
+    foreach ($k in $Parameters.Keys) { [void]$ps.AddParameter($k, $Parameters[$k]) }
     $handle = $ps.BeginInvoke()
-    Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-        param($result)
-    }
+    Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete $OnComplete
+}
+
+function Start-StreamingCommand {
+    param([string]$FileName, [string]$Arguments)
+    $shown = if ($FileName -eq "powershell.exe" -and $Arguments -match '-EncodedCommand') { "powershell.exe (script)" } else { "$FileName $Arguments" }
+    Write-AppLog $shown "CMD"
+    Start-VdTask 'Invoke-VdStream' @{ FileName = $FileName; Arguments = $Arguments; SH = (New-VdTaskContext) }
 }
 
 function Start-PSStreamingCommand {
@@ -1372,14 +1767,14 @@ try {
         $jsonContent = $script:DefaultAppsJson | ConvertFrom-Json
         try {
             $targetSave = Join-Path $ScriptPath "apps.json"
-            Set-Content -Path $targetSave -Value $script:DefaultAppsJson -Encoding UTF8 -Force -ErrorAction SilentlyContinue
+            Set-Content -Path $targetSave -Value $script:DefaultAppsJson -Encoding UTF8 -Force -ErrorAction Stop
             Write-AppLog "Restored default apps.json to: $targetSave" "SUCCESS"
-        } catch {}
+        } catch { Write-AppLog "Could not write apps.json (using the built-in catalog): $($_.Exception.Message)" "WARN" }
     }
     if ($jsonContent) {
         $script:CatalogCategories = @($jsonContent.PSObject.Properties.Name)
         $script:CategorySections = [ordered]@{}
-        
+
         foreach ($categoryName in $jsonContent.PSObject.Properties.Name) {
             # Category header
             $catHeader = New-Object System.Windows.Controls.TextBlock
@@ -1389,10 +1784,10 @@ try {
             $catHeader.Foreground = $accentBrush
             $catHeader.Margin = [System.Windows.Thickness]::new(5, 20, 0, 8)
             [void]$appContainer.Children.Add($catHeader)
-            
+
             $wrapPanel = New-Object System.Windows.Controls.WrapPanel
             $apps = $jsonContent.$categoryName
-            
+
             foreach ($app in $apps) {
                 $card = New-Object System.Windows.Controls.Border
                 $card.CornerRadius = [System.Windows.CornerRadius]::new(8)
@@ -1403,29 +1798,29 @@ try {
                 $card.Padding = [System.Windows.Thickness]::new(12, 10, 12, 10)
                 $card.Width = 220
                 $card.Cursor = [System.Windows.Input.Cursors]::Hand
-                
+
                 # CheckBox with name + description + URL content
                 $cb = New-Object System.Windows.Controls.CheckBox
                 $cb.Foreground = $textBrush
                 $cb.FontSize = 13
                 $cb.VerticalContentAlignment = "Top"
-                
+
                 $cbContent = New-Object System.Windows.Controls.StackPanel
                 $nameText = New-Object System.Windows.Controls.TextBlock
                 $nameText.Text = $app.Name
                 $nameText.FontWeight = "SemiBold"
                 $nameText.FontSize = 13
-                
+
                 $descText = New-Object System.Windows.Controls.TextBlock
                 $descText.Text = if ($app.Desc) { $app.Desc } else { $app.Id }
                 $descText.Foreground = $textDimBrush
                 $descText.FontSize = 11
                 $descText.Margin = [System.Windows.Thickness]::new(0, 2, 0, 0)
                 $descText.TextTrimming = "CharacterEllipsis"
-                
+
                 [void]$cbContent.Children.Add($nameText)
                 [void]$cbContent.Children.Add($descText)
-                
+
                 # Web / GitHub Link Button
                 if ($app.Url) {
                     $urlBtn = New-Object System.Windows.Controls.Button
@@ -1441,7 +1836,7 @@ try {
                     $urlBtn.Add_Click({
                         # Catalog entries can be user-added: only ever open web links, never local paths/programs
                         $u = "$($this.Tag)"
-                        if ($u -match '^https?://[^\s"]+$') { try { Start-Process -FilePath $u } catch {} }
+                        if ($u -match '^https?://[^\s"]+$') { try { Start-Process -FilePath $u } catch { Write-AppLog "Could not open $u : $($_.Exception.Message)" "WARN" } }
                         else { Write-AppLog "Blocked non-web link: $u" "WARN" }
                     })
                     [void]$cbContent.Children.Add($urlBtn)
@@ -1449,15 +1844,15 @@ try {
 
                 $cb.Content = $cbContent
                 $card.Child = $cb
-                
+
                 # Hover effect on card
                 $card.Add_MouseEnter({ $this.Background = $hoverBrush })
                 $card.Add_MouseLeave({ $this.Background = $surfaceBrush })
-                
+
                 # Selection border highlight (the checkbox is the card's direct child)
                 $cb.Add_Checked({ $this.Parent.BorderBrush = $accentBrush })
                 $cb.Add_Unchecked({ $this.Parent.BorderBrush = $borderBrush })
-                
+
                 [void]$wrapPanel.Children.Add($card)
                 [void]$script:InstallList.Add(@{Check=$cb; Id=$app.Id; Name=$app.Name; Card=$card; WrapPanel=$wrapPanel; Category=$categoryName})
             }
@@ -1519,204 +1914,36 @@ if ($chipPanel -and $script:CategorySections) {
     }
 }
 
-# INSTALL (Async with Runspace)
-if ($btnInstall) {
-    $btnInstall.Add_Click({
-        if (-not (Test-WingetAvailable)) { return }
-
-        $selected = @($script:InstallList | Where-Object { $_.Check.IsChecked -eq $true -and $_.Id -ne "" })
-        if ($selected.Count -eq 0) {
-            [System.Windows.MessageBox]::Show("No applications selected.", "Info", "OK", "Information")
-            return
-        }
-
-        $bInst = Get-UIElement "btnInstall"
-        $bUninst = Get-UIElement "btnUninstall"
-        $pPanel = Get-UIElement "progressPanel"
-        $pBar = Get-UIElement "progressBar"
-        $pText = Get-UIElement "progressText"
-        $lBox = Get-UIElement "logBox"
-        $targetWin = if ($window) { $window } elseif ($script:window) { $script:window } else { $global:window }
-
-        if ($bInst) { $bInst.IsEnabled = $false }
-        if ($bUninst) { $bUninst.IsEnabled = $false }
-        if ($pPanel) { $pPanel.Visibility = "Visible" }
-        if ($pBar) { $pBar.Value = 0 }
-
-        $appsData = @()
-        foreach ($s in $selected) { $appsData += @{Id=$s.Id; Name=$s.Name} }
-
-        $syncHash = [hashtable]::Synchronized(@{
-            Window = $targetWin
-            ProgressBar = $pBar
-            ProgressText = $pText
-            LogBox = $lBox
-            Total = $appsData.Count
-        })
-
-        $runspace = [runspacefactory]::CreateRunspace()
-        $runspace.Open()
-        $ps = [powershell]::Create()
-        $ps.Runspace = $runspace
-
-        [void]$ps.AddScript({
-            param($Apps, $SH, $Lib)
-            . ([scriptblock]::Create($Lib))
-            $current = 0
-            foreach ($app in $Apps) {
-                $current++
-                $n = $app.Name; $id = $app.Id; $t = $SH.Total
-                try { $SH.Window.Dispatcher.Invoke([action]{
-                    if ($SH.ProgressText) { $SH.ProgressText.Text = "Installing: $n ($current / $t)" }
-                    if ($SH.ProgressBar) { $SH.ProgressBar.Value = [math]::Round(($current / $t) * 100) }
-                }) } catch {}
-
-                try {
-                    $r = Invoke-VdNative 'winget.exe' @('install', '--id', $id, '-e', '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity') 'UTF8'
-                    $code = $r.ExitCode
-                    try { $SH.Window.Dispatcher.Invoke([action]{
-                        $ts = Get-Date -Format 'HH:mm:ss'
-                        if ($SH.LogBox) {
-                            if ($code -eq 0) { $SH.LogBox.AppendText("[$ts] [SUCCESS] Installed: $n`r`n") }
-                            elseif ($code -eq -1978335189) { $SH.LogBox.AppendText("[$ts] [INFO] Already installed: $n`r`n") }
-                            else { $SH.LogBox.AppendText("[$ts] [ERROR] Failed: $n (Code: $code)`r`n") }
-                            $SH.LogBox.ScrollToEnd()
-                        }
-                    }) } catch {}
-                } catch {
-                    $msg = $_.Exception.Message
-                    try { $SH.Window.Dispatcher.Invoke([action]{
-                        if ($SH.LogBox) {
-                            $SH.LogBox.AppendText("[$(Get-Date -Format 'HH:mm:ss')] [ERROR] $n - $msg`r`n")
-                            $SH.LogBox.ScrollToEnd()
-                        }
-                    }) } catch {}
-                }
-            }
-            try { $SH.Window.Dispatcher.Invoke([action]{
-                if ($SH.ProgressText) { $SH.ProgressText.Text = "All installations completed!" }
-                if ($SH.ProgressBar) { $SH.ProgressBar.Value = 100 }
-                if ($SH.LogBox) {
-                    $SH.LogBox.AppendText("[$(Get-Date -Format 'HH:mm:ss')] [INFO] Installation cycle complete.`r`n")
-                    $SH.LogBox.ScrollToEnd()
-                }
-            }) } catch {}
-        })
-        [void]$ps.AddParameter("Apps", $appsData)
-        [void]$ps.AddParameter("SH", $syncHash)
-        [void]$ps.AddParameter("Lib", $script:VdNativeLib)
-        $handle = $ps.BeginInvoke()
-        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-            param($result)
-            $curInst = Get-UIElement "btnInstall"
-            $curUninst = Get-UIElement "btnUninstall"
-            if ($curInst) { $curInst.IsEnabled = $true }
-            if ($curUninst) { $curUninst.IsEnabled = $true }
-        }
-        Write-AppLog "Installation started for $($appsData.Count) apps..." "ACTION"
-    })
-}
-
-# UNINSTALL (Async with Runspace)
-if ($btnUninstall) {
-    $btnUninstall.Add_Click({
-        if (-not (Test-WingetAvailable)) { return }
-
-        $selected = @($script:InstallList | Where-Object { $_.Check.IsChecked -eq $true -and $_.Id -ne "" })
-        if ($selected.Count -eq 0) {
-            [System.Windows.MessageBox]::Show("No applications selected.", "Info", "OK", "Information")
-            return
-        }
-
+# INSTALL / UNINSTALL selected catalog apps (background task)
+function Start-AppBatch {
+    param([ValidateSet('install', 'uninstall')][string]$Action)
+    if (-not (Test-WingetAvailable)) { return }
+    $selected = @($script:InstallList | Where-Object { $_.Check.IsChecked -eq $true -and $_.Id -ne "" })
+    if ($selected.Count -eq 0) {
+        [System.Windows.MessageBox]::Show("No applications selected.", "Info", "OK", "Information")
+        return
+    }
+    if ($Action -eq 'uninstall') {
         $result = [System.Windows.MessageBox]::Show("Selected apps will be REMOVED. Continue?", "Confirm Uninstall", "YesNo", "Warning")
-        if ($result -ne "Yes") { return }
+        if ($result -ne [System.Windows.MessageBoxResult]::Yes) { return }
+    }
 
-        $bInst = Get-UIElement "btnInstall"
-        $bUninst = Get-UIElement "btnUninstall"
-        $pPanel = Get-UIElement "progressPanel"
-        $pBar = Get-UIElement "progressBar"
-        $pText = Get-UIElement "progressText"
-        $lBox = Get-UIElement "logBox"
-        $targetWin = if ($window) { $window } elseif ($script:window) { $script:window } else { $global:window }
+    $btnInstall.IsEnabled = $false
+    $btnUninstall.IsEnabled = $false
+    $panel = Get-UIElement "progressPanel"; if ($panel) { $panel.Visibility = "Visible" }
+    $bar = Get-UIElement "progressBar"; if ($bar) { $bar.Value = 0 }
 
-        if ($bInst) { $bInst.IsEnabled = $false }
-        if ($bUninst) { $bUninst.IsEnabled = $false }
-        if ($pPanel) { $pPanel.Visibility = "Visible" }
-        if ($pBar) { $pBar.Value = 0 }
-
-        $appsData = @()
-        foreach ($s in $selected) { $appsData += @{Id=$s.Id; Name=$s.Name} }
-
-        $syncHash = [hashtable]::Synchronized(@{
-            Window = $targetWin
-            ProgressBar = $pBar
-            ProgressText = $pText
-            LogBox = $lBox
-            Total = $appsData.Count
-        })
-
-        $runspace = [runspacefactory]::CreateRunspace()
-        $runspace.Open()
-        $ps = [powershell]::Create()
-        $ps.Runspace = $runspace
-
-        [void]$ps.AddScript({
-            param($Apps, $SH, $Lib)
-            . ([scriptblock]::Create($Lib))
-            $current = 0
-            foreach ($app in $Apps) {
-                $current++
-                $n = $app.Name; $id = $app.Id; $t = $SH.Total
-                try { $SH.Window.Dispatcher.Invoke([action]{
-                    if ($SH.ProgressText) { $SH.ProgressText.Text = "Uninstalling: $n ($current / $t)" }
-                    if ($SH.ProgressBar) { $SH.ProgressBar.Value = [math]::Round(($current / $t) * 100) }
-                }) } catch {}
-
-                try {
-                    $r = Invoke-VdNative 'winget.exe' @('uninstall', '--id', $id, '-e', '--silent', '--accept-source-agreements', '--disable-interactivity', '--force') 'UTF8'
-                    $code = $r.ExitCode
-                    try { $SH.Window.Dispatcher.Invoke([action]{
-                        $ts = Get-Date -Format 'HH:mm:ss'
-                        if ($SH.LogBox) {
-                            if ($code -eq 0) { $SH.LogBox.AppendText("[$ts] [SUCCESS] Uninstalled: $n`r`n") }
-                            else { $SH.LogBox.AppendText("[$ts] [ERROR] Failed to uninstall: $n (Code: $code)`r`n") }
-                            $SH.LogBox.ScrollToEnd()
-                        }
-                    }) } catch {}
-                } catch {
-                    $msg = $_.Exception.Message
-                    try { $SH.Window.Dispatcher.Invoke([action]{
-                        if ($SH.LogBox) {
-                            $SH.LogBox.AppendText("[$(Get-Date -Format 'HH:mm:ss')] [ERROR] $n - $msg`r`n")
-                            $SH.LogBox.ScrollToEnd()
-                        }
-                    }) } catch {}
-                }
-            }
-            try { $SH.Window.Dispatcher.Invoke([action]{
-                if ($SH.ProgressText) { $SH.ProgressText.Text = "All uninstallations completed!" }
-                if ($SH.ProgressBar) { $SH.ProgressBar.Value = 100 }
-                if ($SH.LogBox) {
-                    $SH.LogBox.AppendText("[$(Get-Date -Format 'HH:mm:ss')] [INFO] Uninstallation cycle complete.`r`n")
-                    $SH.LogBox.ScrollToEnd()
-                }
-            }) } catch {}
-        })
-        [void]$ps.AddParameter("Apps", $appsData)
-        [void]$ps.AddParameter("SH", $syncHash)
-        [void]$ps.AddParameter("Lib", $script:VdNativeLib)
-        $handle = $ps.BeginInvoke()
-        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-            param($result)
-            $curInst = Get-UIElement "btnInstall"
-            $curUninst = Get-UIElement "btnUninstall"
-            if ($curInst) { $curInst.IsEnabled = $true }
-            if ($curUninst) { $curUninst.IsEnabled = $true }
-        }
-        Write-AppLog "Uninstallation started for $($appsData.Count) apps..." "WARN"
-    })
+    $apps = @(foreach ($s in $selected) { @{ Id = $s.Id; Name = $s.Name } })
+    $ctx = New-VdTaskContext -ProgressBar $bar -ProgressText (Get-UIElement "progressText")
+    Start-VdTask 'Invoke-VdWingetBatch' @{ Apps = $apps; Action = $Action; SH = $ctx } -OnComplete {
+        $btnInstall.IsEnabled = $true
+        $btnUninstall.IsEnabled = $true
+    }
+    Write-AppLog "$(if ($Action -eq 'install') { 'Installation' } else { 'Uninstallation' }) started for $($apps.Count) apps..." "ACTION"
 }
 
+if ($btnInstall) { $btnInstall.Add_Click({ Start-AppBatch 'install' }) }
+if ($btnUninstall) { $btnUninstall.Add_Click({ Start-AppBatch 'uninstall' }) }
 # =============================================================================
 # 8. WINGET MANAGER MODULE
 # =============================================================================
@@ -1729,10 +1956,10 @@ function Set-WingetBusy([string]$Message) {
     } elseif ($panel) { $panel.Visibility = "Collapsed" }
 }
 
-function Render-WingetCards {
+function Show-WingetPackageList {
     param([array]$Items)
-    if (-not $wingetItemsContainer) { return }
-    $wingetItemsContainer.Children.Clear()
+    if (-not $wingetResultsContainer) { return }
+    $wingetResultsContainer.Children.Clear()
     [void]$script:WingetList.Clear()
 
     $wrapPanel = New-Object System.Windows.Controls.WrapPanel
@@ -1749,7 +1976,7 @@ function Render-WingetCards {
         $card.Cursor = [System.Windows.Input.Cursors]::Hand
 
         $cbContent = New-Object System.Windows.Controls.StackPanel
-        
+
         $nameText = New-Object System.Windows.Controls.TextBlock
         $nameText.Text = $item.Name
         $nameText.FontWeight = "SemiBold"
@@ -1840,7 +2067,7 @@ function Render-WingetCards {
         [void]$wrapPanel.Children.Add($card)
         [void]$script:WingetList.Add(@{Id=$item.Id; Name=$item.Name; Card=$card})
     }
-    [void]$wingetItemsContainer.Children.Add($wrapPanel)
+    [void]$wingetResultsContainer.Children.Add($wrapPanel)
 }
 
 # Search Installed Filter
@@ -1857,80 +2084,36 @@ if ($wingetSearchBox) {
     })
 }
 
-# Scan Installed Packages
-if ($btnScanWingetInstalled) {
-    $btnScanWingetInstalled.Add_Click({
-        if (-not (Test-WingetAvailable)) { return }
-        $window.Cursor = [System.Windows.Input.Cursors]::Wait
+# Scan installed packages / search the repository (background task, results rendered as cards)
+function Start-WingetQuery {
+    param([ValidateSet('list', 'search')][string]$Kind, [string]$Query)
+    if (-not (Test-WingetAvailable)) { return }
+    $window.Cursor = [System.Windows.Input.Cursors]::Wait
+    if ($Kind -eq 'list') {
         Write-AppLog "Scanning installed packages via Winget..." "ACTION"
         Set-WingetBusy "Scanning installed packages..."
-        
-        $syncHash = [hashtable]::Synchronized(@{
-            Window = $window
-            LogBox = $logBox
-        })
-
-        $runspace = [runspacefactory]::CreateRunspace()
-        $runspace.Open()
-        $ps = [powershell]::Create()
-        $ps.Runspace = $runspace
-
-        [void]$ps.AddScript({
-            param($SH, $Lib)
-            . ([scriptblock]::Create($Lib))
-            $r = Invoke-VdNative 'winget.exe' @('list', '--accept-source-agreements', '--disable-interactivity') 'UTF8'
-            return @(ConvertFrom-VdWingetTable $r.Output)
-        })
-        [void]$ps.AddParameter("SH", $syncHash)
-        [void]$ps.AddParameter("Lib", $script:VdNativeLib)
-        $handle = $ps.BeginInvoke()
-        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-            param($result)
-            $results = @($result)
-            $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-            Set-WingetBusy $null
-            Render-WingetCards $results
-            Write-AppLog "Winget Scan complete: $($results.Count) packages found." "SUCCESS"
-        }
-    })
+    } else {
+        Write-AppLog "Searching online Winget repository for: $Query..." "ACTION"
+        Set-WingetBusy "Searching the Winget repository for '$Query'..."
+    }
+    $onDone = if ($Kind -eq 'list') {
+        { param($result) $results = @($result); $window.Cursor = [System.Windows.Input.Cursors]::Arrow; Set-WingetBusy $null; Show-WingetPackageList $results; Write-AppLog "Winget Scan complete: $($results.Count) packages found." "SUCCESS" }
+    } else {
+        { param($result) $results = @($result); $window.Cursor = [System.Windows.Input.Cursors]::Arrow; Set-WingetBusy $null; Show-WingetPackageList $results; Write-AppLog "Winget Online Search complete: $($results.Count) matching packages found." "SUCCESS" }
+    }
+    Start-VdTask 'Invoke-VdWingetQuery' @{ Kind = $Kind; Query = $Query } -OnComplete $onDone
 }
 
-# Search Online Repository
-if ($btnSearchWingetRepo) {
-    $btnSearchWingetRepo.Add_Click({
-        if (-not (Test-WingetAvailable)) { return }
+if ($btnScanWingetInstalled) { $btnScanWingetInstalled.Add_Click({ Start-WingetQuery 'list' }) }
+
+if ($btnWingetSearch) {
+    $btnWingetSearch.Add_Click({
         $query = $wingetSearchBox.Text.Trim()
         if ($query.Length -eq 0) {
             [System.Windows.MessageBox]::Show("Please enter a keyword to search online repo.", "Info", "OK", "Information")
             return
         }
-
-        $window.Cursor = [System.Windows.Input.Cursors]::Wait
-        Write-AppLog "Searching online Winget repository for: $query..." "ACTION"
-        Set-WingetBusy "Searching the Winget repository for '$query'..."
-
-        $runspace = [runspacefactory]::CreateRunspace()
-        $runspace.Open()
-        $ps = [powershell]::Create()
-        $ps.Runspace = $runspace
-
-        [void]$ps.AddScript({
-            param($Q, $Lib)
-            . ([scriptblock]::Create($Lib))
-            $r = Invoke-VdNative 'winget.exe' @('search', $Q, '--accept-source-agreements', '--disable-interactivity') 'UTF8'
-            return @(ConvertFrom-VdWingetTable $r.Output)
-        })
-        [void]$ps.AddParameter("Q", $query)
-        [void]$ps.AddParameter("Lib", $script:VdNativeLib)
-        $handle = $ps.BeginInvoke()
-        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-            param($result)
-            $results = @($result)
-            $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-            Set-WingetBusy $null
-            Render-WingetCards $results
-            Write-AppLog "Winget Online Search complete: $($results.Count) matching packages found." "SUCCESS"
-        }
+        Start-WingetQuery 'search' $query
     })
 }
 
@@ -1950,7 +2133,7 @@ if ($btnWingetUpgradeAll) {
 # =============================================================================
 function Add-TweakGroup {
     param([string]$Title, [array]$Tweaks, [string]$Color = "#58A6FF")
-    
+
     $group = New-Object System.Windows.Controls.Border
     $group.CornerRadius = [System.Windows.CornerRadius]::new(10)
     $group.Background = $surfaceBrush
@@ -1960,9 +2143,9 @@ function Add-TweakGroup {
     $group.Margin = [System.Windows.Thickness]::new(5)
     $group.MinWidth = 320
     $group.MaxWidth = 420
-    
+
     $innerStack = New-Object System.Windows.Controls.StackPanel
-    
+
     $headerText = New-Object System.Windows.Controls.TextBlock
     $headerText.Text = $Title
     $headerText.FontSize = 16
@@ -1970,13 +2153,13 @@ function Add-TweakGroup {
     $headerText.Foreground = $converter.ConvertFrom($Color)
     $headerText.Margin = [System.Windows.Thickness]::new(0, 0, 0, 12)
     [void]$innerStack.Children.Add($headerText)
-    
+
     $sep = New-Object System.Windows.Controls.Border
     $sep.Height = 1
     $sep.Background = $borderBrush
     $sep.Margin = [System.Windows.Thickness]::new(0, 0, 0, 10)
     [void]$innerStack.Children.Add($sep)
-    
+
     foreach ($t in $Tweaks) {
         $cb = New-Object System.Windows.Controls.CheckBox
         $cb.Content = $t.Name
@@ -1987,10 +2170,9 @@ function Add-TweakGroup {
         [void]$innerStack.Children.Add($cb)
         [void]$script:TweakList.Add(@{Check=$cb; Do=$t.Do; Undo=$t.Undo; Name=$t.Name; Tag=$t.Tag; State=$t.State})
     }
-    
+
     $group.Child = $innerStack
-        $targetTweakBox = if ($script:tweakContainer) { $script:tweakContainer } elseif ($tweaksContainer) { $tweaksContainer } else { $script:tweaksContainer }
-    if ($targetTweakBox) { [void]$targetTweakBox.Children.Add($group) }
+    if ($tweakContainer) { [void]$tweakContainer.Children.Add($group) }
 }
 
 # Tweak state library: loaded into the apply/revert runspaces. Before a tweak runs for the
@@ -2081,248 +2263,113 @@ function Restore-VdTweakState([string]$TweakName) {
 
 # The OO ShutUp10 binary only runs if Windows reports a valid Authenticode signature from O&O Software.
 $essentialTweaks = @(
-    @{Name="Create Restore Point"; Tag="Essential"; 
-      Do={ Checkpoint-Computer -Description "VDOWNSPrimeRestore" -RestorePointType "MODIFY_SETTINGS" }; 
+    @{Name="Create Restore Point"; Tag="Essential";
+      Do={ Checkpoint-Computer -Description "VDOWNSPrimeRestore" -RestorePointType "MODIFY_SETTINGS" };
       Undo={ throw "Restore points are not removed automatically; use System Protection to manage them." } },
-    @{Name="Run OO ShutUp10"; Tag="Essential"; 
-      Do={ $url = "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe"; $dir = Join-Path $env:TEMP ("VDOWNS_OOSU_" + [guid]::NewGuid().ToString("N")); New-Item -ItemType Directory -Path $dir -Force | Out-Null; $exe = Join-Path $dir "OOSU10.exe"; Invoke-WebRequest -Uri $url -OutFile $exe -UseBasicParsing -ErrorAction Stop; $sig = Get-AuthenticodeSignature -FilePath $exe; if ($sig.Status -ne "Valid" -or $sig.SignerCertificate.Subject -notmatch "O&O Software") { Remove-Item $dir -Recurse -Force -ErrorAction SilentlyContinue; throw "OOSU10.exe signature check failed ($($sig.Status)); file deleted, not executed." }; Start-Process -FilePath $exe }; 
+    @{Name="Run OO ShutUp10"; Tag="Essential";
+      Do={ $url = "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe"; $dir = Join-Path $env:TEMP ("VDOWNS_OOSU_" + [guid]::NewGuid().ToString("N")); New-Item -ItemType Directory -Path $dir -Force | Out-Null; $exe = Join-Path $dir "OOSU10.exe"; Invoke-WebRequest -Uri $url -OutFile $exe -UseBasicParsing -ErrorAction Stop; $sig = Get-AuthenticodeSignature -FilePath $exe; if ($sig.Status -ne "Valid" -or $sig.SignerCertificate.Subject -notmatch "O&O Software") { Remove-Item $dir -Recurse -Force -ErrorAction SilentlyContinue; throw "OOSU10.exe signature check failed ($($sig.Status)); file deleted, not executed." }; Start-Process -FilePath $exe };
       Undo={ throw "Open O&O ShutUp10 and use its own undo to revert its settings." } },
     @{Name="Disable Telemetry"; Tag="Essential"; State=@(@{Svc="DiagTrack"});
-      Do={ Set-Service DiagTrack -StartupType Disabled -EA SilentlyContinue; Stop-Service DiagTrack -EA SilentlyContinue }; 
+      Do={ Set-Service DiagTrack -StartupType Disabled -EA SilentlyContinue; Stop-Service DiagTrack -EA SilentlyContinue };
       Undo={ Set-Service DiagTrack -StartupType Automatic; Start-Service DiagTrack } },
     @{Name="Disable Ad ID"; Tag="Essential"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo"; Name="Enabled"});
-      Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" "Enabled" 0 }; 
-      Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" "Enabled" 1 } }
+      Do={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Value 0 };
+      Undo={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Value 1 } }
 )
 
 $uiTweaks = @(
     @{Name="Dark Mode (System)"; Tag="UI"; State=@(@{Reg="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize"; Name="SystemUsesLightTheme"});
-      Do={ Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" "SystemUsesLightTheme" 0 }; 
-      Undo={ Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" "SystemUsesLightTheme" 1 } },
+      Do={ Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0 };
+      Undo={ Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 1 } },
     @{Name="Dark Mode (Apps)"; Tag="UI"; State=@(@{Reg="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize"; Name="AppsUseLightTheme"});
-      Do={ Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" "AppsUseLightTheme" 0 }; 
-      Undo={ Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" "AppsUseLightTheme" 1 } },
+      Do={ Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0 };
+      Undo={ Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 1 } },
     @{Name="Show Hidden Files"; Tag="UI"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="Hidden"});
-      Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Hidden" 1 }; 
-      Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Hidden" 2 } },
+      Do={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Hidden" -Value 1 };
+      Undo={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Hidden" -Value 2 } },
     @{Name="Show File Extensions"; Tag="UI"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="HideFileExt"});
-      Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HideFileExt" 0 }; 
-      Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HideFileExt" 1 } },
+      Do={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -Value 0 };
+      Undo={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -Value 1 } },
     @{Name="Launch to 'This PC'"; Tag="UI"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="LaunchTo"});
-      Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "LaunchTo" 1 }; 
-      Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "LaunchTo" 2 } },
+      Do={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -Value 1 };
+      Undo={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -Value 2 } },
     @{Name="Classic Context Menu"; Tag="UI"; State=@(@{Key="HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}"});
-      Do={ $k = "HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32"; New-Item -Path $k -Force | Out-Null; Set-Item -Path $k -Value "" }; 
+      Do={ $k = "HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32"; New-Item -Path $k -Force | Out-Null; Set-Item -Path $k -Value "" };
       Undo={ Remove-Item -Path "HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}" -Recurse -Force -ErrorAction SilentlyContinue } },
     @{Name="Align Taskbar Left"; Tag="UI"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"; Name="TaskbarAl"});
-      Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarAl" 0 }; 
-      Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarAl" 1 } },
+      Do={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Value 0 };
+      Undo={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Value 1 } },
     @{Name="Hide Search Icon"; Tag="UI"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\Search"; Name="SearchboxTaskbarMode"});
-      Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarMode" 0 }; 
-      Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarMode" 1 } },
+      Do={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -Value 0 };
+      Undo={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -Value 1 } },
     @{Name="Clipboard History"; Tag="UI"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\Clipboard"; Name="EnableClipboardHistory"});
-      Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Clipboard" "EnableClipboardHistory" 1 }; 
-      Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Clipboard" "EnableClipboardHistory" 0 } }
+      Do={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Clipboard" -Name "EnableClipboardHistory" -Value 1 };
+      Undo={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Clipboard" -Name "EnableClipboardHistory" -Value 0 } }
 )
 
 $perfTweaks = @(
     @{Name="Disable Sticky Keys"; Tag="Power"; State=@(@{Reg="HKCU:\Control Panel\Accessibility\StickyKeys"; Name="Flags"});
-      Do={ Set-ItemProperty "HKCU:\Control Panel\Accessibility\StickyKeys" "Flags" "506" }; 
-      Undo={ Set-ItemProperty "HKCU:\Control Panel\Accessibility\StickyKeys" "Flags" "510" } },
+      Do={ Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\StickyKeys" -Name "Flags" -Value "506" };
+      Undo={ Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\StickyKeys" -Name "Flags" -Value "510" } },
     @{Name="Enable Hibernate"; Tag="Power"; State=@(@{Hibernate=$true});
-      Do={ powercfg /hibernate on }; 
+      Do={ powercfg /hibernate on };
       Undo={ powercfg /hibernate off } },
     @{Name="Storage Sense"; Tag="Power"; State=@(@{Reg="HKCU:\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy"; Name="01"});
-      Do={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy" "01" 1 }; 
-      Undo={ Set-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy" "01" 0 } },
+      Do={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy" -Name "01" -Value 1 };
+      Undo={ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy" -Name "01" -Value 0 } },
     @{Name="Ultimate Performance"; Tag="Power"; State=@(@{PowerPlan=$true});
-      Do={ $g = "c4e0702f-b217-4220-b268-5cbd645bac82"; if ((powercfg /list | Out-String) -notmatch $g) { powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 $g | Out-Null }; powercfg /setactive $g }; 
+      Do={ $g = "c4e0702f-b217-4220-b268-5cbd645bac82"; if ((powercfg /list | Out-String) -notmatch $g) { powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 $g | Out-Null }; powercfg /setactive $g };
       Undo={ powercfg /setactive 381b4222-f694-41f0-9685-ff5bb260df2e; powercfg /delete c4e0702f-b217-4220-b268-5cbd645bac82 } },
     @{Name="Disable SysMain"; Tag="Power"; State=@(@{Svc="SysMain"});
-      Do={ Set-Service SysMain -StartupType Disabled -EA SilentlyContinue; Stop-Service SysMain -EA SilentlyContinue }; 
+      Do={ Set-Service SysMain -StartupType Disabled -EA SilentlyContinue; Stop-Service SysMain -EA SilentlyContinue };
       Undo={ Set-Service SysMain -StartupType Automatic; Start-Service SysMain } },
     @{Name="Disable Game DVR"; Tag="Power"; State=@(@{Reg="HKCU:\System\GameConfigStore"; Name="GameDVR_Enabled"});
-      Do={ Set-ItemProperty "HKCU:\System\GameConfigStore" "GameDVR_Enabled" 0 }; 
-      Undo={ Set-ItemProperty "HKCU:\System\GameConfigStore" "GameDVR_Enabled" 1 } }
+      Do={ Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Value 0 };
+      Undo={ Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Value 1 } }
 )
 
-Add-TweakGroup "Essential Privacy" $essentialTweaks "#F85149"
-Add-TweakGroup "Interface Explorer" $uiTweaks "#58A6FF"
-Add-TweakGroup "Performance Power" $perfTweaks "#3FB950"
+Add-TweakGroup -Title "Essential Privacy" -Tweaks $essentialTweaks -Color "#F85149"
+Add-TweakGroup -Title "Interface Explorer" -Tweaks $uiTweaks -Color "#58A6FF"
+Add-TweakGroup -Title "Performance Power" -Tweaks $perfTweaks -Color "#3FB950"
 
-# Apply Tweaks (Async Runspace to prevent UI freezing)
-$btnApplyTweaks.Add_Click({
+# Apply / revert the selected tweaks (background task; see Invoke-VdTweakBatch)
+function Start-TweakBatch {
+    param([ValidateSet('Apply', 'Revert')][string]$Mode)
     $selected = @($script:TweakList | Where-Object { $_.Check.IsChecked })
     if ($selected.Count -eq 0) {
-        [System.Windows.MessageBox]::Show("No tweaks selected.", "Info", "OK", "Information")
+        [System.Windows.MessageBox]::Show("No tweaks selected$(if ($Mode -eq 'Revert') { ' to revert' }).", "Info", "OK", "Information")
         return
     }
-
-    Write-AppLog "Applying $($selected.Count) selected tweaks asynchronously..." "ACTION"
+    Write-AppLog "$(if ($Mode -eq 'Apply') { 'Applying' } else { 'Reverting' }) $($selected.Count) selected tweaks asynchronously..." $(if ($Mode -eq 'Apply') { 'ACTION' } else { 'WARN' })
     $window.Cursor = [System.Windows.Input.Cursors]::Wait
-    if ($btnApplyTweaks) { $btnApplyTweaks.IsEnabled = $false }
-    if ($btnRevertTweaks) { $btnRevertTweaks.IsEnabled = $false }
+    $btnApplyTweaks.IsEnabled = $false
+    $btnRevertTweaks.IsEnabled = $false
 
-    $tweakData = @()
-    foreach ($t in $selected) {
-        $tweakData += @{ Name = $t.Name; ScriptStr = $t.Do.ToString(); State = $t.State }
-    }
-
-    $syncHash = [hashtable]::Synchronized(@{
-        Window = $window
-        LogBox = $logBox
-        BtnApply = $btnApplyTweaks
-        BtnRevert = $btnRevertTweaks
+    $tweakData = @(foreach ($t in $selected) {
+        @{ Name = $t.Name; ScriptStr = $(if ($Mode -eq 'Apply') { $t.Do.ToString() } else { $t.Undo.ToString() }); State = $t.State }
     })
-
-    $runspace = [runspacefactory]::CreateRunspace()
-    $runspace.Open()
-    $ps = [powershell]::Create()
-    $ps.Runspace = $runspace
-
-    [void]$ps.AddScript({
-        param($Tweaks, $SH, $Lib)
-        . ([scriptblock]::Create($Lib))
-        # Any error inside a tweak is a failure (it used to be logged as SUCCESS)
-        $ErrorActionPreference = 'Stop'
-        $applied = 0
-        foreach ($item in $Tweaks) {
-            $tName = $item.Name
-            $sBlock = [scriptblock]::Create($item.ScriptStr)
-            try {
-                # Snapshot first; if that fails the tweak is skipped so Revert can always restore
-                Save-VdTweakState $tName $item.State
-                # Registry tweaks write into keys that may not exist yet on a fresh profile
-                foreach ($e in @($item.State)) { if ($e -and $e.Reg -and -not (Test-Path -LiteralPath $e.Reg)) { New-Item -Path $e.Reg -Force | Out-Null } }
-                $global:LASTEXITCODE = 0
-                $null = & $sBlock
-                if ($LASTEXITCODE -ne 0) { throw "command exited with code $LASTEXITCODE" }
-                $applied++
-                try { $SH.Window.Dispatcher.Invoke([action]{
-                    $ts = Get-Date -Format 'HH:mm:ss'
-                    $SH.LogBox.AppendText("[$ts] [SUCCESS] Applied: $tName`r`n")
-                    $SH.LogBox.ScrollToEnd()
-                }) } catch {}
-            } catch {
-                $err = $_.Exception.Message
-                try { $SH.Window.Dispatcher.Invoke([action]{
-                    $ts = Get-Date -Format 'HH:mm:ss'
-                    $SH.LogBox.AppendText("[$ts] [ERROR] Failed: $tName - $err`r`n")
-                    $SH.LogBox.ScrollToEnd()
-                }) } catch {}
-            }
-        }
-
-        if ($applied -gt 0) {
-            try { $SH.Window.Dispatcher.Invoke([action]{
-                $ts = Get-Date -Format 'HH:mm:ss'
-                $SH.LogBox.AppendText("[$ts] [INFO] Refreshing Windows Explorer...`r`n")
-                $SH.LogBox.ScrollToEnd()
-            }) } catch {}
-            Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
-        }
-
-        return $applied
-    })
-    [void]$ps.AddParameter("Tweaks", $tweakData)
-    [void]$ps.AddParameter("SH", $syncHash)
-    [void]$ps.AddParameter("Lib", ($script:VdNativeLib + "`r`n" + $script:TweakStateLib))
-    $handle = $ps.BeginInvoke()
-    Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-        param($result)
-        $count = @($result) | Select-Object -Last 1
-        $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-        if ($btnApplyTweaks) { $btnApplyTweaks.IsEnabled = $true }
-        if ($btnRevertTweaks) { $btnRevertTweaks.IsEnabled = $true }
-        Write-AppLog "Tweak deployment completed ($count applied)." "SUCCESS"
+    $onDone = if ($Mode -eq 'Apply') {
+        { param($result) $count = @($result) | Select-Object -Last 1; Complete-TweakBatch; Write-AppLog "Tweak deployment completed ($count applied)." "SUCCESS" }
+    } else {
+        { param($result) $count = @($result) | Select-Object -Last 1; Complete-TweakBatch; Write-AppLog "Tweak reversion completed ($count reverted)." "INFO" }
     }
-})
+    Start-VdTask 'Invoke-VdTweakBatch' @{ Tweaks = $tweakData; Mode = $Mode; SH = (New-VdTaskContext) } -OnComplete $onDone
+}
 
-# Revert Tweaks (Async Runspace to prevent UI freezing)
-$btnRevertTweaks.Add_Click({
-    $selected = @($script:TweakList | Where-Object { $_.Check.IsChecked })
-    if ($selected.Count -eq 0) {
-        [System.Windows.MessageBox]::Show("No tweaks selected to revert.", "Info", "OK", "Information")
-        return
-    }
+function Complete-TweakBatch {
+    $window.Cursor = [System.Windows.Input.Cursors]::Arrow
+    $btnApplyTweaks.IsEnabled = $true
+    $btnRevertTweaks.IsEnabled = $true
+}
 
-    Write-AppLog "Reverting $($selected.Count) selected tweaks asynchronously..." "WARN"
-    $window.Cursor = [System.Windows.Input.Cursors]::Wait
-    if ($btnApplyTweaks) { $btnApplyTweaks.IsEnabled = $false }
-    if ($btnRevertTweaks) { $btnRevertTweaks.IsEnabled = $false }
-
-    $tweakData = @()
-    foreach ($t in $selected) {
-        $tweakData += @{ Name = $t.Name; ScriptStr = $t.Undo.ToString(); State = $t.State }
-    }
-
-    $syncHash = [hashtable]::Synchronized(@{
-        Window = $window
-        LogBox = $logBox
-        BtnApply = $btnApplyTweaks
-        BtnRevert = $btnRevertTweaks
-    })
-
-    $runspace = [runspacefactory]::CreateRunspace()
-    $runspace.Open()
-    $ps = [powershell]::Create()
-    $ps.Runspace = $runspace
-
-    [void]$ps.AddScript({
-        param($Tweaks, $SH, $Lib)
-        . ([scriptblock]::Create($Lib))
-        $ErrorActionPreference = 'Stop'
-        $reverted = 0
-        foreach ($item in $Tweaks) {
-            $tName = $item.Name
-            $sBlock = [scriptblock]::Create($item.ScriptStr)
-            try {
-                # Prefer the exact pre-tweak snapshot; fall back to the generic Undo block
-                $global:LASTEXITCODE = 0
-                $how = if (Restore-VdTweakState $tName) { "original state restored" } else { $null = & $sBlock; "default undo applied (no snapshot)" }
-                if ($LASTEXITCODE -ne 0) { throw "command exited with code $LASTEXITCODE" }
-                $reverted++
-                try { $SH.Window.Dispatcher.Invoke([action]{
-                    $ts = Get-Date -Format 'HH:mm:ss'
-                    $SH.LogBox.AppendText("[$ts] [SUCCESS] Reverted: $tName - $how`r`n")
-                    $SH.LogBox.ScrollToEnd()
-                }) } catch {}
-            } catch {
-                $err = $_.Exception.Message
-                try { $SH.Window.Dispatcher.Invoke([action]{
-                    $ts = Get-Date -Format 'HH:mm:ss'
-                    $SH.LogBox.AppendText("[$ts] [ERROR] Failed to revert: $tName - $err`r`n")
-                    $SH.LogBox.ScrollToEnd()
-                }) } catch {}
-            }
-        }
-
-        if ($reverted -gt 0) {
-            Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
-        }
-
-        return $reverted
-    })
-    [void]$ps.AddParameter("Tweaks", $tweakData)
-    [void]$ps.AddParameter("SH", $syncHash)
-    [void]$ps.AddParameter("Lib", ($script:VdNativeLib + "`r`n" + $script:TweakStateLib))
-    $handle = $ps.BeginInvoke()
-    Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-        param($result)
-        $count = @($result) | Select-Object -Last 1
-        $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-        if ($btnApplyTweaks) { $btnApplyTweaks.IsEnabled = $true }
-        if ($btnRevertTweaks) { $btnRevertTweaks.IsEnabled = $true }
-        Write-AppLog "Tweak reversion completed ($count reverted)." "INFO"
-    }
-})
-
+$btnApplyTweaks.Add_Click({ Start-TweakBatch 'Apply' })
+$btnRevertTweaks.Add_Click({ Start-TweakBatch 'Revert' })
 # =============================================================================
 # 10. FEATURES & CONFIGURATION
 # =============================================================================
 function Add-FeatureCard {
     param([string]$Name, [string]$WinName, [string]$Description)
-    
+
     $card = New-Object System.Windows.Controls.Border
     $card.CornerRadius = [System.Windows.CornerRadius]::new(8)
     $card.Background = $surfaceBrush
@@ -2330,14 +2377,14 @@ function Add-FeatureCard {
     $card.BorderThickness = [System.Windows.Thickness]::new(1)
     $card.Padding = [System.Windows.Thickness]::new(18, 14, 18, 14)
     $card.Margin = [System.Windows.Thickness]::new(0, 5, 0, 5)
-    
+
     $dockPanel = New-Object System.Windows.Controls.DockPanel
-    
+
     $cb = New-Object System.Windows.Controls.CheckBox
     $cb.VerticalAlignment = "Center"
     $cb.Margin = [System.Windows.Thickness]::new(0, 0, 15, 0)
     [System.Windows.Controls.DockPanel]::SetDock($cb, "Right")
-    
+
     $info = New-Object System.Windows.Controls.StackPanel
     $nameText = New-Object System.Windows.Controls.TextBlock
     $nameText.Text = $Name
@@ -2351,18 +2398,16 @@ function Add-FeatureCard {
     $descText.Margin = [System.Windows.Thickness]::new(0, 3, 0, 0)
     [void]$info.Children.Add($nameText)
     [void]$info.Children.Add($descText)
-    
+
     [void]$dockPanel.Children.Add($cb)
     [void]$dockPanel.Children.Add($info)
     $card.Child = $dockPanel
-    
-        $targetConfigBox = if ($script:featureContainer) { $script:featureContainer } elseif ($configContainer) { $configContainer } else { $script:configContainer }
-    if ($targetConfigBox) { [void]$targetConfigBox.Children.Add($card) }
+
+    if ($featureContainer) { [void]$featureContainer.Children.Add($card) }
     [void]$script:FeatureList.Add(@{Check=$cb; WinName=$WinName; Name=$Name})
 }
 
-# Script-scope target for the section headers ($targetConfigBox inside Add-FeatureCard is function-local)
-$targetConfigBox = if ($featureContainer) { $featureContainer } else { Get-UIElement "featureContainer" }
+$targetConfigBox = $featureContainer
 
 $featHeader = New-Object System.Windows.Controls.TextBlock
 $featHeader.Text = "Windows Optional Features"
@@ -2372,10 +2417,10 @@ $featHeader.Foreground = $accentBrush
 $featHeader.Margin = [System.Windows.Thickness]::new(0, 5, 0, 15)
 if ($targetConfigBox) { [void]$targetConfigBox.Children.Add($featHeader) }
 
-Add-FeatureCard "Hyper-V Platform" "Microsoft-Hyper-V-All" "Hardware virtualization for VMs and Docker (Pro/Enterprise/Education)"
-Add-FeatureCard "WSL 2 (Linux)" "Microsoft-Windows-Subsystem-Linux,VirtualMachinePlatform" "Windows Subsystem for Linux + Virtual Machine Platform (required for WSL 2)"
-Add-FeatureCard "Windows Sandbox" "Containers-DisposableClientVM" "Isolated desktop environment for safe testing (Pro/Enterprise/Education)"
-Add-FeatureCard ".NET Framework 3.5" "NetFx3" "Required by legacy applications and games"
+Add-FeatureCard -Name "Hyper-V Platform" -WinName "Microsoft-Hyper-V-All" -Description "Hardware virtualization for VMs and Docker (Pro/Enterprise/Education)"
+Add-FeatureCard -Name "WSL 2 (Linux)" -WinName "Microsoft-Windows-Subsystem-Linux,VirtualMachinePlatform" -Description "Windows Subsystem for Linux + Virtual Machine Platform (required for WSL 2)"
+Add-FeatureCard -Name "Windows Sandbox" -WinName "Containers-DisposableClientVM" -Description "Isolated desktop environment for safe testing (Pro/Enterprise/Education)"
+Add-FeatureCard -Name ".NET Framework 3.5" -WinName "NetFx3" -Description "Required by legacy applications and games"
 
 # Maintenance header
 $maintHeader = New-Object System.Windows.Controls.TextBlock
@@ -2394,7 +2439,7 @@ $maintDesc.TextWrapping = "Wrap"
 $maintDesc.Margin = [System.Windows.Thickness]::new(0, 0, 0, 5)
 if ($targetConfigBox) { [void]$targetConfigBox.Children.Add($maintDesc) }
 
-if ($btnEnableFeatures) { $btnEnableFeatures.Add_Click({
+if ($btnInstallFeatures) { $btnInstallFeatures.Add_Click({
     # DISM can take minutes: run it in a separate process and stream the output instead of freezing the UI
     $names = @($script:FeatureList | Where-Object { $_.Check.IsChecked } | ForEach-Object { $_.WinName -split ',' } | Where-Object { $_ -match '^[A-Za-z0-9\-\.]+$' })
     if ($names.Count -eq 0) { [System.Windows.MessageBox]::Show("No features selected.", "Info", "OK", "Information"); return }
@@ -2488,7 +2533,7 @@ $bloatItems = [ordered]@{
 foreach ($k in $bloatItems.Keys) {
     $data = $bloatItems[$k]
     $patterns = $data[0]; $desc = $data[1]; $defaultChecked = $data[2]
-    
+
     $card = New-Object System.Windows.Controls.Border
     $card.CornerRadius = [System.Windows.CornerRadius]::new(8)
     $card.Background = $surfaceBrush
@@ -2498,13 +2543,13 @@ foreach ($k in $bloatItems.Keys) {
     $card.Margin = [System.Windows.Thickness]::new(4)
     $card.Width = 280
     $card.Cursor = [System.Windows.Input.Cursors]::Hand
-    
+
     $cb = New-Object System.Windows.Controls.CheckBox
     $cb.IsChecked = $defaultChecked
     $cb.Foreground = $textBrush
     $cb.FontSize = 13
     $cb.VerticalContentAlignment = "Top"
-    
+
     $cbContent = New-Object System.Windows.Controls.StackPanel
     $nameText = New-Object System.Windows.Controls.TextBlock
     $nameText.Text = $k
@@ -2519,18 +2564,18 @@ foreach ($k in $bloatItems.Keys) {
     [void]$cbContent.Children.Add($descText)
     $cb.Content = $cbContent
     $card.Child = $cb
-    
+
     $card.Add_MouseEnter({ $this.Background = $hoverBrush })
     $card.Add_MouseLeave({ $this.Background = $surfaceBrush })
-    
+
     [void]$debloatContainer.Children.Add($card)
     [void]$script:DebloatList.Add(@{Check=$cb; Pat=$patterns; Name=$k; Recommended=[bool]$defaultChecked})
 }
 
-if ($btnSelectAll) { $btnSelectAll.Add_Click({ foreach ($i in $script:DebloatList) { $i.Check.IsChecked = $i.Recommended } }) }
-if ($btnDeselectAll) { $btnDeselectAll.Add_Click({ foreach ($i in $script:DebloatList) { $i.Check.IsChecked = $false } }) }
+if ($btnDebloatSelectAll) { $btnDebloatSelectAll.Add_Click({ foreach ($i in $script:DebloatList) { $i.Check.IsChecked = $i.Recommended } }) }
+if ($btnDebloatClear) { $btnDebloatClear.Add_Click({ foreach ($i in $script:DebloatList) { $i.Check.IsChecked = $false } }) }
 
-if ($btnDebloat) { $btnDebloat.Add_Click({
+if ($btnRemoveBloat) { $btnRemoveBloat.Add_Click({
     $selected = @($script:DebloatList | Where-Object { $_.Check.IsChecked -eq $true })
     if ($selected.Count -eq 0) {
         [System.Windows.MessageBox]::Show("No items selected.", "Info", "OK", "Information"); return
@@ -2538,11 +2583,11 @@ if ($btnDebloat) { $btnDebloat.Add_Click({
     $result = [System.Windows.MessageBox]::Show(
         "Selected apps will be PERMANENTLY removed from your user profile.`nSome system apps cannot be easily restored without PowerShell.`n`nAre you sure?",
         "Confirm Debloat", "YesNo", "Warning")
-    if ($result -ne "Yes") { return }
+    if ($result -ne [System.Windows.MessageBoxResult]::Yes) { return }
 
     Write-AppLog "Starting Debloat Process asynchronously..." "ACTION"
     $window.Cursor = [System.Windows.Input.Cursors]::Wait
-    if ($btnDebloat) { $btnDebloat.IsEnabled = $false }
+    if ($btnRemoveBloat) { $btnRemoveBloat.IsEnabled = $false }
 
     $debloatData = @()
     foreach ($item in $selected) {
@@ -2551,82 +2596,11 @@ if ($btnDebloat) { $btnDebloat.Add_Click({
     $chkProv = Get-UIElement "chkDebloatProvisioned"
     $alsoProvisioned = [bool]($chkProv -and $chkProv.IsChecked)
 
-    $syncHash = [hashtable]::Synchronized(@{
-        Window = $window
-        LogBox = $logBox
-        BtnDebloat = $btnDebloat
-        Provisioned = $alsoProvisioned
-    })
-
-    $runspace = [runspacefactory]::CreateRunspace()
-    $runspace.Open()
-    $ps = [powershell]::Create()
-    $ps.Runspace = $runspace
-
-    [void]$ps.AddScript({
-        param($Items, $SH)
-        $removedCount = 0
-        # Enumerate once instead of once per pattern
-        $allPkgs = @(Get-AppxPackage)
-        $allProv = if ($SH.Provisioned) { @(Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue) } else { @() }
-        foreach ($item in $Items) {
-            foreach ($p in $item.Patterns) {
-                try {
-                    $pkgs = $allPkgs | Where-Object { $_.Name -like $p }
-                    foreach ($pkg in $pkgs) {
-                        $pName = $pkg.Name
-                        try {
-                            Remove-AppxPackage -Package $pkg.PackageFullName -ErrorAction Stop
-                            $removedCount++
-                            try { $SH.Window.Dispatcher.Invoke([action]{
-                                $ts = Get-Date -Format 'HH:mm:ss'
-                                $SH.LogBox.AppendText("[$ts] [SUCCESS] Removed Bloatware: $pName`r`n")
-                                $SH.LogBox.ScrollToEnd()
-                            }) } catch {}
-                        } catch {
-                            $m = $_.Exception.Message
-                            try { $SH.Window.Dispatcher.Invoke([action]{
-                                $ts = Get-Date -Format 'HH:mm:ss'
-                                $SH.LogBox.AppendText("[$ts] [WARN] Could not remove $pName : $m`r`n")
-                                $SH.LogBox.ScrollToEnd()
-                            }) } catch {}
-                        }
-                    }
-                } catch {
-                    $m = $_.Exception.Message
-                    try { $SH.Window.Dispatcher.Invoke([action]{
-                        $ts = Get-Date -Format 'HH:mm:ss'
-                        $SH.LogBox.AppendText("[$ts] [ERROR] Scan error for $p : $m`r`n")
-                        $SH.LogBox.ScrollToEnd()
-                    }) } catch {}
-                }
-                if ($SH.Provisioned) {
-                    try {
-                        foreach ($prov in @($allProv | Where-Object { $_.DisplayName -like $p })) {
-                            $pvName = $prov.DisplayName
-                            try {
-                                Remove-AppxProvisionedPackage -Online -PackageName $prov.PackageName -ErrorAction Stop | Out-Null
-                                $removedCount++
-                                $msg = "[SUCCESS] Removed provisioned package (new users): $pvName"
-                            } catch { $msg = "[WARN] Could not remove provisioned $pvName : $($_.Exception.Message)" }
-                            try { $SH.Window.Dispatcher.Invoke([action]{
-                                $SH.LogBox.AppendText("[$(Get-Date -Format 'HH:mm:ss')] $msg`r`n"); $SH.LogBox.ScrollToEnd()
-                            }) } catch {}
-                        }
-                    } catch {}
-                }
-            }
-        }
-        return $removedCount
-    })
-    [void]$ps.AddParameter("Items", $debloatData)
-    [void]$ps.AddParameter("SH", $syncHash)
-    $handle = $ps.BeginInvoke()
-    Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
+    Start-VdTask 'Invoke-VdDebloat' @{ Items = $debloatData; Provisioned = $alsoProvisioned; SH = (New-VdTaskContext) } -OnComplete {
         param($result)
         $totalRemoved = @($result) | Select-Object -Last 1
         $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-        if ($btnDebloat) { $btnDebloat.IsEnabled = $true }
+        $btnRemoveBloat.IsEnabled = $true
         Write-AppLog "Debloat sequence completed ($totalRemoved packages removed)!" "SUCCESS"
         [System.Windows.MessageBox]::Show("Cleanup operation complete! Total removed: $totalRemoved packages.", "Done", "OK", "Information")
     }
@@ -2685,29 +2659,29 @@ if ($btnUpdateStore) {
     })
 }
 
-if ($btnSfc) {
-    $btnSfc.Add_Click({
+if ($btnRepairSfc) {
+    $btnRepairSfc.Add_Click({
         Write-AppLog "Starting: SFC Scan..." "ACTION"
         Start-StreamingCommand "sfc" "/scannow"
     })
 }
 
-if ($btnDism) {
-    $btnDism.Add_Click({
+if ($btnRepairDism) {
+    $btnRepairDism.Add_Click({
         Write-AppLog "Starting: DISM Repair..." "ACTION"
         Start-StreamingCommand "dism" "/Online /Cleanup-Image /RestoreHealth"
     })
 }
 
-if ($btnNetReset) {
-    $btnNetReset.Add_Click({
+if ($btnResetNetwork) {
+    $btnResetNetwork.Add_Click({
         Write-AppLog "Starting: Network Reset..." "ACTION"
         Start-PSStreamingCommand 'ipconfig /flushdns; netsh winsock reset; netsh int ip reset; Write-Host "Network stack reset complete. Please reboot."'
     })
 }
 
-if ($btnFixWU) {
-    $btnFixWU.Add_Click({
+if ($btnFixUpdates) {
+    $btnFixUpdates.Add_Click({
         $result = [System.Windows.MessageBox]::Show("This will forcibly reset Windows Update components.`nContinue?", "Emergency Fix", "YesNo", "Warning")
         if ($result -ne "Yes") { return }
         Write-AppLog "Starting: Emergency WU Fix..." "WARN"
@@ -2753,7 +2727,7 @@ if ($btnImportProfile) {
         if ($ofd.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
             try {
                 $rawJson = Get-Content -Path $ofd.FileName -Raw -Encoding UTF8 | ConvertFrom-Json
-                
+
                 # Check matching apps (support both raw ID list and object list)
                 $importedApps = @($rawJson.SelectedApps | ForEach-Object { if ($_.Id) { $_.Id } else { $_ } })
                 $appCount = 0
@@ -2906,127 +2880,7 @@ if ($btnBackupConfig) {
         Write-AppLog "Starting AppData Configuration Backup in background..." "ACTION"
         $btnBackupConfig.IsEnabled = $false
 
-        $runspace = [runspacefactory]::CreateRunspace()
-        $runspace.Open()
-        $runspace.SessionStateProxy.SetVariable("window", $script:window)
-        $runspace.SessionStateProxy.SetVariable("logBox", $script:logBox)
-        $runspace.SessionStateProxy.SetVariable("destZip", $destZip)
-        $runspace.SessionStateProxy.SetVariable("btnBackupConfig", $btnBackupConfig)
-
-        $runspace.SessionStateProxy.SetVariable("VdNativeLib", $script:VdNativeLib)
-        $ps = [powershell]::Create()
-        $ps.Runspace = $runspace
-        $ps.AddScript({
-            . ([scriptblock]::Create($VdNativeLib))
-            function Log-Msg($txt, $type="INFO") {
-                if ($window -and $logBox) {
-                    $window.Dispatcher.Invoke([Action]{
-                        $ts = Get-Date -Format 'HH:mm:ss'
-                        $logBox.AppendText("[$ts] [$type] $txt`r`n")
-                        $logBox.ScrollToEnd()
-                    })
-                }
-            }
-
-            try {
-                $tempDir = Join-Path $env:TEMP "VDOWNS_Backup_Temp"
-                if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue }
-                New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
-
-                # 1. VS Code Settings & Extensions Manifest
-                $vscodePath = Join-Path $env:APPDATA "Code\User"
-                if (Test-Path $vscodePath) {
-                    $vsTarget = Join-Path $tempDir "VSCode_User"
-                    New-Item -ItemType Directory -Path $vsTarget -Force | Out-Null
-                    Get-ChildItem -Path $vscodePath -Exclude "workspaceStorage", "globalStorage", "History" | Copy-Item -Destination $vsTarget -Recurse -Force -EA SilentlyContinue
-                    Log-Msg "Backed up VS Code user configurations." "INFO"
-                }
-                try {
-                    $codeCmd = Get-Command code -ErrorAction SilentlyContinue
-                    if ($codeCmd) {
-                        $r = Invoke-VdNative 'cmd.exe' @('/d', '/c', 'code', '--list-extensions') 'UTF8'
-                        Set-Content -Path (Join-Path $tempDir "vscode_extensions.txt") -Value $r.Output -Encoding UTF8
-                        Log-Msg "Exported VS Code extensions manifest." "INFO"
-                    }
-                } catch {}
-
-                # 2. Cursor Settings
-                $cursorPath = Join-Path $env:APPDATA "Cursor\User"
-                if (Test-Path $cursorPath) {
-                    $curTarget = Join-Path $tempDir "Cursor_User"
-                    New-Item -ItemType Directory -Path $curTarget -Force | Out-Null
-                    Get-ChildItem -Path $cursorPath -Exclude "workspaceStorage", "globalStorage", "History" | Copy-Item -Destination $curTarget -Recurse -Force -EA SilentlyContinue
-                    Log-Msg "Backed up Cursor user configurations." "INFO"
-                }
-
-                # 3. Git Config
-                $gitConfig = Join-Path $env:USERPROFILE ".gitconfig"
-                if (Test-Path $gitConfig) {
-                    Copy-Item $gitConfig -Destination (Join-Path $tempDir ".gitconfig") -Force -EA SilentlyContinue
-                    Log-Msg "Backed up Git configuration (.gitconfig)." "INFO"
-                }
-
-                # 4. PowerShell Profiles ($PROFILE is not set inside a background runspace)
-                $docsDir = [Environment]::GetFolderPath('MyDocuments')
-                $winPsProfile = Join-Path $docsDir "WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
-                $pwshProfile  = Join-Path $docsDir "PowerShell\Microsoft.PowerShell_profile.ps1"
-                if (Test-Path $winPsProfile) {
-                    Copy-Item $winPsProfile -Destination (Join-Path $tempDir "Microsoft.PowerShell_profile.ps1") -Force -EA SilentlyContinue
-                    Log-Msg "Backed up Windows PowerShell profile." "INFO"
-                }
-                if (Test-Path $pwshProfile) {
-                    Copy-Item $pwshProfile -Destination (Join-Path $tempDir "PowerShell7_profile.ps1") -Force -EA SilentlyContinue
-                    Log-Msg "Backed up PowerShell 7 profile." "INFO"
-                }
-
-                # 5. Windows Terminal
-                $wtPath = Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
-                if (Test-Path $wtPath) {
-                    Copy-Item $wtPath -Destination (Join-Path $tempDir "Terminal_settings.json") -Force -EA SilentlyContinue
-                    Log-Msg "Backed up Windows Terminal settings." "INFO"
-                }
-
-                # 6. Notepad++
-                $nppPath = Join-Path $env:APPDATA "Notepad++"
-                if (Test-Path $nppPath) {
-                    Copy-Item $nppPath -Destination (Join-Path $tempDir "NotepadPlusPlus") -Recurse -Force -EA SilentlyContinue
-                    Log-Msg "Backed up Notepad++ settings." "INFO"
-                }
-
-                # 7. SSH Config (host mappings only, keys excluded for safety)
-                $sshConfig = Join-Path $env:USERPROFILE ".ssh\config"
-                if (Test-Path $sshConfig) {
-                    $sshTarget = Join-Path $tempDir "SSH_Config"
-                    New-Item -ItemType Directory -Path $sshTarget -Force | Out-Null
-                    Copy-Item $sshConfig -Destination (Join-Path $sshTarget "config") -Force -EA SilentlyContinue
-                    Log-Msg "Backed up SSH host mappings." "INFO"
-                }
-
-                # Compress
-                Log-Msg "Compressing developer backup snapshot into ZIP..." "ACTION"
-                if (Test-Path $destZip) { Remove-Item $destZip -Force }
-                Compress-Archive -Path "$tempDir\*" -DestinationPath $destZip -Force
-                Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
-
-                Log-Msg "AppData Developer Backup completed successfully: $destZip" "SUCCESS"
-                $window.Dispatcher.Invoke([Action]{
-                    [System.Windows.MessageBox]::Show("AppData configurations backup complete!`nFile: $destZip", "Backup Complete", "OK", "Information")
-                })
-            } catch {
-                Log-Msg "Backup failed: $($_.Exception.Message)" "ERROR"
-            } finally {
-                if ($window -and $btnBackupConfig) {
-                    $window.Dispatcher.Invoke([Action]{
-                        $btnBackupConfig.IsEnabled = $true
-                    })
-                }
-            }
-        })
-
-        $handle = $ps.BeginInvoke()
-        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-            param($result)
-        }
+        Start-VdTask 'Invoke-VdConfigBackup' @{ DestZip = $destZip; SH = (New-VdTaskContext) } -OnComplete { $btnBackupConfig.IsEnabled = $true }
     })
 }
 
@@ -3071,176 +2925,7 @@ if ($btnRestoreConfig) {
         Write-AppLog "Restoring AppData Configuration Backup in background..." "WARN"
         $btnRestoreConfig.IsEnabled = $false
 
-        $runspace = [runspacefactory]::CreateRunspace()
-        $runspace.Open()
-        $runspace.SessionStateProxy.SetVariable("window", $script:window)
-        $runspace.SessionStateProxy.SetVariable("logBox", $script:logBox)
-        $runspace.SessionStateProxy.SetVariable("srcZip", $srcZip)
-        $runspace.SessionStateProxy.SetVariable("btnRestoreConfig", $btnRestoreConfig)
-
-        $runspace.SessionStateProxy.SetVariable("VdNativeLib", $script:VdNativeLib)
-        $ps = [powershell]::Create()
-        $ps.Runspace = $runspace
-        $ps.AddScript({
-            . ([scriptblock]::Create($VdNativeLib))
-            function Log-Msg($txt, $type="INFO") {
-                if ($window -and $logBox) {
-                    $window.Dispatcher.Invoke([Action]{
-                        $ts = Get-Date -Format 'HH:mm:ss'
-                        $logBox.AppendText("[$ts] [$type] $txt`r`n")
-                        $logBox.ScrollToEnd()
-                    })
-                }
-            }
-
-            try {
-                $tempDir = Join-Path $env:TEMP "VDOWNS_Restore_Temp"
-                if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue }
-                # Extract manually so no entry can escape the temp folder (zip-slip)
-                Add-Type -AssemblyName System.IO.Compression.FileSystem
-                New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
-                $rootFull = [System.IO.Path]::GetFullPath($tempDir).TrimEnd('\') + '\'
-                $zip = [System.IO.Compression.ZipFile]::OpenRead($srcZip)
-                try {
-                    foreach ($entry in $zip.Entries) {
-                        $target = [System.IO.Path]::GetFullPath((Join-Path $tempDir $entry.FullName))
-                        if (-not $target.StartsWith($rootFull, [System.StringComparison]::OrdinalIgnoreCase)) {
-                            throw "Unsafe path in archive, restore aborted: $($entry.FullName)"
-                        }
-                        if ($entry.FullName.EndsWith('/') -or $entry.FullName.EndsWith('\')) {
-                            New-Item -ItemType Directory -Path $target -Force | Out-Null
-                            continue
-                        }
-                        New-Item -ItemType Directory -Path (Split-Path $target -Parent) -Force | Out-Null
-                        [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $target, $true)
-                    }
-                } finally { $zip.Dispose() }
-
-                # Save everything that is about to be overwritten; abort if that fails
-                $docsDirSafe = [Environment]::GetFolderPath('MyDocuments')
-                $safetyDir = Join-Path $env:LOCALAPPDATA ("VDOWNS\PreRestore_" + (Get-Date -Format 'yyyyMMdd_HHmmss'))
-                $currentItems = @(
-                    @{ Zip = "VSCode_User";                      Path = (Join-Path $env:APPDATA "Code\User"); Dir = $true },
-                    @{ Zip = "Cursor_User";                      Path = (Join-Path $env:APPDATA "Cursor\User"); Dir = $true },
-                    @{ Zip = ".gitconfig";                       Path = (Join-Path $env:USERPROFILE ".gitconfig") },
-                    @{ Zip = "Microsoft.PowerShell_profile.ps1"; Path = (Join-Path $docsDirSafe "WindowsPowerShell\Microsoft.PowerShell_profile.ps1") },
-                    @{ Zip = "PowerShell7_profile.ps1";          Path = (Join-Path $docsDirSafe "PowerShell\Microsoft.PowerShell_profile.ps1") },
-                    @{ Zip = "Terminal_settings.json";           Path = (Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json") },
-                    @{ Zip = "NotepadPlusPlus";                  Path = (Join-Path $env:APPDATA "Notepad++"); Dir = $true },
-                    @{ Zip = "SSH_Config";                       Path = (Join-Path $env:USERPROFILE ".ssh\config") }
-                )
-                $saved = 0
-                foreach ($ci in $currentItems) {
-                    if (-not (Test-Path (Join-Path $tempDir $ci.Zip)) -or -not (Test-Path $ci.Path)) { continue }
-                    $dest = Join-Path $safetyDir $ci.Zip
-                    if ($ci.Dir) {
-                        New-Item -ItemType Directory -Path $dest -Force -ErrorAction Stop | Out-Null
-                        Get-ChildItem -Path $ci.Path -Exclude "workspaceStorage", "globalStorage", "History" | Copy-Item -Destination $dest -Recurse -Force -ErrorAction Stop
-                    } else {
-                        New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force -ErrorAction Stop | Out-Null
-                        Copy-Item -Path $ci.Path -Destination $dest -Force -ErrorAction Stop
-                    }
-                    $saved++
-                }
-                if ($saved -gt 0) { Log-Msg "Current settings saved before restore: $safetyDir" "INFO" }
-
-                # Restore VS Code
-                if (Test-Path "$tempDir\VSCode_User") {
-                    $vscodeDest = Join-Path $env:APPDATA "Code\User"
-                    New-Item -ItemType Directory -Path $vscodeDest -Force | Out-Null
-                    Copy-Item "$tempDir\VSCode_User\*" -Destination $vscodeDest -Recurse -Force
-                    Log-Msg "Restored VS Code configurations." "SUCCESS"
-                }
-
-                # Restore Git Config
-                if (Test-Path "$tempDir\.gitconfig") {
-                    Copy-Item "$tempDir\.gitconfig" -Destination (Join-Path $env:USERPROFILE ".gitconfig") -Force
-                    Log-Msg "Restored Git configuration." "SUCCESS"
-                }
-
-                # Restore Cursor
-                if (Test-Path "$tempDir\Cursor_User") {
-                    $cursorDest = Join-Path $env:APPDATA "Cursor\User"
-                    New-Item -ItemType Directory -Path $cursorDest -Force | Out-Null
-                    Copy-Item "$tempDir\Cursor_User\*" -Destination $cursorDest -Recurse -Force
-                    Log-Msg "Restored Cursor configurations." "SUCCESS"
-                }
-
-                # Restore PowerShell Profiles ($PROFILE is not set inside a background runspace)
-                $docsDir = [Environment]::GetFolderPath('MyDocuments')
-                $profileMap = @(
-                    @{ Src = "Microsoft.PowerShell_profile.ps1"; Dest = Join-Path $docsDir "WindowsPowerShell\Microsoft.PowerShell_profile.ps1"; Label = "Windows PowerShell" },
-                    @{ Src = "PowerShell7_profile.ps1";          Dest = Join-Path $docsDir "PowerShell\Microsoft.PowerShell_profile.ps1";        Label = "PowerShell 7" }
-                )
-                foreach ($pm in $profileMap) {
-                    $srcFile = Join-Path $tempDir $pm.Src
-                    if (Test-Path $srcFile) {
-                        New-Item -ItemType Directory -Path (Split-Path $pm.Dest -Parent) -Force | Out-Null
-                        Copy-Item $srcFile -Destination $pm.Dest -Force
-                        Log-Msg "Restored $($pm.Label) profile." "SUCCESS"
-                    }
-                }
-
-                # Restore Windows Terminal
-                if (Test-Path "$tempDir\Terminal_settings.json") {
-                    $wtDest = Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState"
-                    if (Test-Path $wtDest) {
-                        Copy-Item "$tempDir\Terminal_settings.json" -Destination (Join-Path $wtDest "settings.json") -Force
-                        Log-Msg "Restored Windows Terminal settings." "SUCCESS"
-                    }
-                }
-
-                # Restore Notepad++
-                if (Test-Path "$tempDir\NotepadPlusPlus") {
-                    $nppDest = Join-Path $env:APPDATA "Notepad++"
-                    New-Item -ItemType Directory -Path $nppDest -Force | Out-Null
-                    Copy-Item "$tempDir\NotepadPlusPlus\*" -Destination $nppDest -Recurse -Force
-                    Log-Msg "Restored Notepad++ settings." "SUCCESS"
-                }
-
-                # Restore SSH Config
-                if (Test-Path "$tempDir\SSH_Config\config") {
-                    $sshDir = Join-Path $env:USERPROFILE ".ssh"
-                    New-Item -ItemType Directory -Path $sshDir -Force | Out-Null
-                    Copy-Item "$tempDir\SSH_Config\config" -Destination (Join-Path $sshDir "config") -Force
-                    Log-Msg "Restored SSH host configurations." "SUCCESS"
-                }
-
-                # Optional VS Code Extension Reinstall
-                $extFile = Join-Path $tempDir "vscode_extensions.txt"
-                if (Test-Path $extFile) {
-                    $codeCmd = Get-Command code -ErrorAction SilentlyContinue
-                    if ($codeCmd) {
-                        Log-Msg "Reinstalling backed up VS Code extensions..." "ACTION"
-                        $exts = Get-Content $extFile | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
-                        foreach ($ext in $exts) {
-                            Log-Msg "Installing extension: $ext" "INFO"
-                            if ($ext -notmatch '^[A-Za-z0-9][\w\-]*\.[\w\-\.]+$') { Log-Msg "Skipped invalid extension id: $ext" "WARN"; continue }
-                            $null = Invoke-VdNative 'cmd.exe' @('/d', '/c', 'code', '--install-extension', $ext, '--force') 'UTF8'
-                        }
-                    }
-                }
-
-                Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
-                Log-Msg "AppData Developer Restore completed successfully!" "SUCCESS"
-                $window.Dispatcher.Invoke([Action]{
-                    [System.Windows.MessageBox]::Show("Developer configurations restored successfully!", "Restore Complete", "OK", "Information")
-                })
-            } catch {
-                Log-Msg "Restore failed: $($_.Exception.Message)" "ERROR"
-            } finally {
-                if ($window -and $btnRestoreConfig) {
-                    $window.Dispatcher.Invoke([Action]{
-                        $btnRestoreConfig.IsEnabled = $true
-                    })
-                }
-            }
-        })
-
-        $handle = $ps.BeginInvoke()
-        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-            param($result)
-        }
+        Start-VdTask 'Invoke-VdConfigRestore' @{ SrcZip = $srcZip; SH = (New-VdTaskContext) } -OnComplete { $btnRestoreConfig.IsEnabled = $true }
     })
 }
 
@@ -3277,7 +2962,7 @@ if ($btnWingetImport) {
 function Get-SystemHealthScore {
     $score = 100
     $deductions = [System.Collections.ArrayList]::new()
-    
+
     # 1. Telemetry DiagTrack service
     try {
         $svc = Get-Service -Name "DiagTrack" -ErrorAction SilentlyContinue
@@ -3285,7 +2970,7 @@ function Get-SystemHealthScore {
             $score -= 15
             [void]$deductions.Add("Telemetry service active (-15)")
         }
-    } catch {}
+    } catch { Write-Verbose "Health check skipped: $($_.Exception.Message)" }
 
     # 2. AllowTelemetry registry
     try {
@@ -3294,7 +2979,7 @@ function Get-SystemHealthScore {
             $score -= 15
             [void]$deductions.Add("Telemetry policies enabled (-15)")
         }
-    } catch {}
+    } catch { Write-Verbose "Health check skipped: $($_.Exception.Message)" }
 
     # 3. GameDVR
     try {
@@ -3303,7 +2988,7 @@ function Get-SystemHealthScore {
             $score -= 10
             [void]$deductions.Add("Xbox GameDVR background recorder active (-10)")
         }
-    } catch {}
+    } catch { Write-Verbose "Health check skipped: $($_.Exception.Message)" }
 
     # 4. SysMain
     try {
@@ -3312,7 +2997,7 @@ function Get-SystemHealthScore {
             $score -= 10
             [void]$deductions.Add("SysMain Superfetch active (-10)")
         }
-    } catch {}
+    } catch { Write-Verbose "Health check skipped: $($_.Exception.Message)" }
 
     # 5. Restore Point Check (Instant Registry Lookup)
     try {
@@ -3322,7 +3007,7 @@ function Get-SystemHealthScore {
             $score -= 10
             [void]$deductions.Add("No recent System Restore Point found (-10)")
         }
-    } catch {}
+    } catch { Write-Verbose "Health check skipped: $($_.Exception.Message)" }
 
     # 6. File extensions hidden
     try {
@@ -3331,7 +3016,7 @@ function Get-SystemHealthScore {
             $score -= 10
             [void]$deductions.Add("Known file extensions hidden (-10)")
         }
-    } catch {}
+    } catch { Write-Verbose "Health check skipped: $($_.Exception.Message)" }
 
     $finalScore = [math]::Max(0, [math]::Min(100, $score))
     return @{ Score = $finalScore; Deductions = $deductions }
@@ -3342,11 +3027,11 @@ function Update-HealthScoreUI {
     if ($lblHealthScore) {
         $lblHealthScore.Text = "$($res.Score)/100"
         if ($res.Score -ge 80) {
-            $lblHealthScore.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#3FB950")
+            $lblHealthScore.Foreground = (Get-VdBrush "#3FB950")
         } elseif ($res.Score -ge 50) {
-            $lblHealthScore.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#D29922")
+            $lblHealthScore.Foreground = (Get-VdBrush "#D29922")
         } else {
-            $lblHealthScore.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#F85149")
+            $lblHealthScore.Foreground = (Get-VdBrush "#F85149")
         }
     }
 }
@@ -3367,75 +3052,8 @@ if ($btnPrimeBoost) {
         Write-AppLog "Executing 1-Click Prime Optimization pipeline..." "ACTION"
         $btnPrimeBoost.IsEnabled = $false
 
-        $runspace = [runspacefactory]::CreateRunspace()
-        $runspace.Open()
-        $runspace.SessionStateProxy.SetVariable("window", $script:window)
-        $runspace.SessionStateProxy.SetVariable("logBox", $script:logBox)
-        $runspace.SessionStateProxy.SetVariable("btnPrimeBoost", $btnPrimeBoost)
-
-        $runspace.SessionStateProxy.SetVariable("VdNativeLib", $script:VdNativeLib)
-        $ps = [powershell]::Create()
-        $ps.Runspace = $runspace
-        $ps.AddScript({
-            . ([scriptblock]::Create($VdNativeLib))
-            function Log-Msg($txt, $type="INFO") {
-                if ($window -and $logBox) {
-                    $window.Dispatcher.Invoke([Action]{
-                        $ts = Get-Date -Format 'HH:mm:ss'
-                        $logBox.AppendText("[$ts] [$type] $txt`r`n")
-                        $logBox.ScrollToEnd()
-                    })
-                }
-            }
-
-            try {
-                Log-Msg "[1/6] Creating System Restore Point..." "ACTION"
-                try {
-                    Enable-ComputerRestore -Drive "C:\" -EA SilentlyContinue
-                    Checkpoint-Computer -Description "VDOWNS_PrimeBoost" -RestorePointType "MODIFY_SETTINGS" -EA SilentlyContinue
-                    Log-Msg "System Restore Point created." "SUCCESS"
-                } catch { Log-Msg "Restore Point skipped: $($_.Exception.Message)" "WARN" }
-
-                Log-Msg "[2/6] Disabling Windows Telemetry & Advertising ID..." "ACTION"
-                foreach ($k in @("HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection", "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR", "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo")) {
-                    if (-not (Test-Path $k)) { New-Item -Path $k -Force -EA SilentlyContinue | Out-Null }
-                }
-                Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Value 0 -Type DWord -Force -EA SilentlyContinue
-                Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Value 0 -Type DWord -Force -EA SilentlyContinue
-                Stop-Service -Name "DiagTrack" -Force -EA SilentlyContinue
-                Set-Service -Name "DiagTrack" -StartupType Disabled -EA SilentlyContinue
-
-                Log-Msg "[3/6] Disabling Xbox GameDVR background recording..." "ACTION"
-                Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Value 0 -Type DWord -Force -EA SilentlyContinue
-                Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" -Name "AllowGameDVR" -Value 0 -Type DWord -Force -EA SilentlyContinue
-
-                Log-Msg "[4/6] Disabling SysMain Superfetch..." "ACTION"
-                Stop-Service -Name "SysMain" -Force -EA SilentlyContinue
-                Set-Service -Name "SysMain" -StartupType Disabled -EA SilentlyContinue
-
-                Log-Msg "[5/6] Applying Dark Mode & Showing File Extensions..." "ACTION"
-                Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0 -Type DWord -Force -EA SilentlyContinue
-                Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0 -Type DWord -Force -EA SilentlyContinue
-                Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -Value 0 -Type DWord -Force -EA SilentlyContinue
-
-                Log-Msg "[6/6] Purging Temporary File Caches..." "ACTION"
-                Remove-Item "$env:TEMP\*" -Recurse -Force -EA SilentlyContinue
-
-                Log-Msg "Prime 1-Click Optimization finished. Review the log above for any skipped steps." "SUCCESS"
-            } catch {
-                Log-Msg "Optimization error: $($_.Exception.Message)" "ERROR"
-            } finally {
-                if ($window -and $btnPrimeBoost) {
-                    $window.Dispatcher.Invoke([Action]{
-                        $btnPrimeBoost.IsEnabled = $true
-                    })
-                }
-            }
-        })
-
-        $handle = $ps.BeginInvoke()
-        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-            param($result)
+        Start-VdTask 'Invoke-VdPrimeBoost' @{ SH = (New-VdTaskContext) } -OnComplete {
+            $btnPrimeBoost.IsEnabled = $true
             Update-HealthScoreUI
             Write-AppLog "Health score refreshed after Prime Optimization." "INFO"
         }
@@ -3445,7 +3063,7 @@ if ($btnPrimeBoost) {
 # =============================================================================
 # 13C. DNS OPTIMIZER & LATENCY BENCHMARK
 # =============================================================================
-function Get-ActivePhysicalAdapters {
+function Get-ActivePhysicalAdapter {
     @(Get-NetAdapter | Where-Object { $_.Status -eq "Up" -and $_.InterfaceDescription -notmatch "Virtual|Hyper-V|Loopback|WSL|VPN|TAP|PANGP|WireGuard|Tailscale|ZeroTier" })
 }
 
@@ -3464,15 +3082,15 @@ if ($cbDnsProvider) {
 }
 
 try {
-    $actAdapters = Get-ActivePhysicalAdapters
+    $actAdapters = Get-ActivePhysicalAdapter
     if ($actAdapters.Count -gt 0 -and $lblActiveDnsAdapter) {
         $lblActiveDnsAdapter.Text = "Active: " + (($actAdapters | ForEach-Object { $_.Name }) -join ", ")
     }
-} catch {}
+} catch { Write-Verbose "Active adapter label not updated: $($_.Exception.Message)" }
 
 if ($btnApplyDns) {
     $btnApplyDns.Add_Click({
-        $adapters = Get-ActivePhysicalAdapters
+        $adapters = Get-ActivePhysicalAdapter
         if ($adapters.Count -eq 0) {
             Write-AppLog "No active physical network adapter detected." "ERROR"
             return
@@ -3489,7 +3107,7 @@ if ($btnApplyDns) {
                 $failed += "$($a.Name): $($_.Exception.Message)"
             }
         }
-        try { Clear-DnsClientCache -ErrorAction Stop } catch {}
+        try { Clear-DnsClientCache -ErrorAction Stop } catch { Write-AppLog "Could not flush the DNS cache: $($_.Exception.Message)" "WARN" }
         if ($ok.Count -gt 0) { Write-AppLog "DNS set to $selectedKey on: $($ok -join ', ') (IPv4 + IPv6)." "SUCCESS" }
         foreach ($f in $failed) { Write-AppLog "DNS change failed on $f" "ERROR" }
         $summary = if ($failed.Count -eq 0) { "DNS updated on: $($ok -join ', ')" } else { "Updated: $($ok -join ', ')`nFailed: $($failed.Count) adapter(s) - see the log." }
@@ -3499,7 +3117,7 @@ if ($btnApplyDns) {
 
 if ($btnResetDns) {
     $btnResetDns.Add_Click({
-        $adapters = Get-ActivePhysicalAdapters
+        $adapters = Get-ActivePhysicalAdapter
         if ($adapters.Count -eq 0) { Write-AppLog "No active physical network adapter detected." "ERROR"; return }
         foreach ($a in $adapters) {
             try {
@@ -3509,7 +3127,7 @@ if ($btnResetDns) {
                 Write-AppLog "DNS reset failed on '$($a.Name)': $($_.Exception.Message)" "ERROR"
             }
         }
-        try { Clear-DnsClientCache -ErrorAction Stop } catch {}
+        try { Clear-DnsClientCache -ErrorAction Stop } catch { Write-AppLog "Could not flush the DNS cache: $($_.Exception.Message)" "WARN" }
     })
 }
 
@@ -3528,7 +3146,7 @@ $rows = foreach ($k in $targets.Keys) {
             $sw = [Diagnostics.Stopwatch]::StartNew()
             $null = Resolve-DnsName -Name $n -Server $ip -Type A -DnsOnly -NoHostsFile -QuickTimeout -ErrorAction Stop
             $sw.Stop(); $times += $sw.Elapsed.TotalMilliseconds
-        } catch {}
+        } catch { Write-Verbose "Lookup of $n via $ip failed: $($_.Exception.Message)" }
     }
     if ($times.Count -gt 0) {
         $avg = [math]::Round(($times | Measure-Object -Average).Average, 1)
@@ -3551,12 +3169,12 @@ $script:StartupItemsList = [System.Collections.ArrayList]::new()
 $script:StartupStoreV2 = "HKCU:\Software\VDOWNS\DisabledStartupV2"
 $script:StartupStoreLegacy = "HKCU:\Software\VDOWNS\DisabledStartup"
 
-function Scan-StartupPrograms {
+function Update-StartupList {
     if (-not $startupContainer) { return }
     $startupContainer.Children.Clear()
     $script:StartupItemsList.Clear()
     Write-AppLog "Scanning Windows startup entries..." "INFO"
-    
+
     $runSources = @(
         @{ Label = "HKCU";       Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" },
         @{ Label = "HKLM";       Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run" },
@@ -3600,8 +3218,8 @@ function Scan-StartupPrograms {
                 $prop = $entry.Name
                 $val = "$($entry.Raw)"
                 $card = New-Object System.Windows.Controls.Border
-                $card.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#161B22")
-                $card.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#21262D")
+                $card.Background = (Get-VdBrush "#161B22")
+                $card.BorderBrush = (Get-VdBrush "#21262D")
                 $card.BorderThickness = [System.Windows.Thickness]::new(1)
                 $card.CornerRadius = [System.Windows.CornerRadius]::new(6)
                 $card.Padding = [System.Windows.Thickness]::new(10, 8, 10, 8)
@@ -3623,12 +3241,12 @@ function Scan-StartupPrograms {
                 $lblN = New-Object System.Windows.Controls.TextBlock
                 $lblN.Text = "$prop  ($($entry.Source))"
                 $lblN.FontWeight = "Bold"
-                $lblN.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3")
+                $lblN.Foreground = (Get-VdBrush "#E6EDF3")
                 $lblN.FontSize = 12.5
 
                 $lblC = New-Object System.Windows.Controls.TextBlock
                 $lblC.Text = $val
-                $lblC.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#8B949E")
+                $lblC.Foreground = (Get-VdBrush "#8B949E")
                 $lblC.FontSize = 10.5
                 $lblC.TextTrimming = "CharacterEllipsis"
 
@@ -3646,13 +3264,13 @@ function Scan-StartupPrograms {
                 $statusText.FontWeight = "Bold"
 
                 if ($entry.Disabled) {
-                    $statusBorder.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#3D1F24")
+                    $statusBorder.Background = (Get-VdBrush "#3D1F24")
                     $statusText.Text = "DISABLED"
-                    $statusText.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#F85149")
+                    $statusText.Foreground = (Get-VdBrush "#F85149")
                 } else {
-                    $statusBorder.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#1F3D2A")
+                    $statusBorder.Background = (Get-VdBrush "#1F3D2A")
                     $statusText.Text = "ENABLED"
-                    $statusText.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#3FB950")
+                    $statusText.Foreground = (Get-VdBrush "#3FB950")
                 }
                 $statusBorder.Child = $statusText
                 [System.Windows.Controls.Grid]::SetColumn($statusBorder, 2)
@@ -3666,7 +3284,7 @@ function Scan-StartupPrograms {
     Write-AppLog "Found $($script:StartupItemsList.Count) startup programs." "SUCCESS"
 }
 
-if ($btnScanStartup) { $btnScanStartup.Add_Click({ Scan-StartupPrograms }) }
+if ($btnScanStartup) { $btnScanStartup.Add_Click({ Update-StartupList }) }
 
 if ($btnDisableStartup) {
     $btnDisableStartup.Add_Click({
@@ -3692,7 +3310,7 @@ if ($btnDisableStartup) {
             }
         }
         Write-AppLog "Disabled $count startup program(s); originals preserved in the VDOWNS store." "SUCCESS"
-        Scan-StartupPrograms
+        Update-StartupList
     })
 }
 
@@ -3721,7 +3339,7 @@ if ($btnEnableStartup) {
             }
         }
         Write-AppLog "Re-enabled $count startup program(s) at their original location." "SUCCESS"
-        Scan-StartupPrograms
+        Update-StartupList
     })
 }
 
@@ -3734,10 +3352,10 @@ if ($btnAddCustomApp) {
         $dlg.Title = "Add Custom Software to Catalog"
         $dlg.Width = 480
         $dlg.Height = 440
-        $dlg.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#0D1117")
-        $dlg.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3")
+        $dlg.Background = (Get-VdBrush "#0D1117")
+        $dlg.Foreground = (Get-VdBrush "#E6EDF3")
         $dlg.WindowStartupLocation = "CenterOwner"
-        $dlg.Owner = $script:window
+        $dlg.Owner = $window
         $dlg.ResizeMode = "NoResize"
 
         $mainStack = New-Object System.Windows.Controls.StackPanel
@@ -3747,28 +3365,28 @@ if ($btnAddCustomApp) {
         $t.Text = "➕ Add Application to Catalog"
         $t.FontSize = 18
         $t.FontWeight = "Bold"
-        $t.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#58A6FF")
+        $t.Foreground = (Get-VdBrush "#58A6FF")
         $t.Margin = [System.Windows.Thickness]::new(0, 0, 0, 15)
         [void]$mainStack.Children.Add($t)
 
-        $lbl1 = New-Object System.Windows.Controls.TextBlock; $lbl1.Text = "Application Name (e.g. Spotify)"; $lbl1.FontSize = 12; $lbl1.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#8B949E"); $lbl1.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
-        $txtName = New-Object System.Windows.Controls.TextBox; $txtName.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#161B22"); $txtName.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3"); $txtName.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#30363D"); $txtName.Padding = [System.Windows.Thickness]::new(8, 6, 8, 6); $txtName.Margin = [System.Windows.Thickness]::new(0, 0, 0, 10)
+        $lbl1 = New-Object System.Windows.Controls.TextBlock; $lbl1.Text = "Application Name (e.g. Spotify)"; $lbl1.FontSize = 12; $lbl1.Foreground = (Get-VdBrush "#8B949E"); $lbl1.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
+        $txtName = New-Object System.Windows.Controls.TextBox; $txtName.Background = (Get-VdBrush "#161B22"); $txtName.Foreground = (Get-VdBrush "#E6EDF3"); $txtName.BorderBrush = (Get-VdBrush "#30363D"); $txtName.Padding = [System.Windows.Thickness]::new(8, 6, 8, 6); $txtName.Margin = [System.Windows.Thickness]::new(0, 0, 0, 10)
         [void]$mainStack.Children.Add($lbl1); [void]$mainStack.Children.Add($txtName)
 
-        $lbl2 = New-Object System.Windows.Controls.TextBlock; $lbl2.Text = "Winget Package ID (e.g. Spotify.Spotify)"; $lbl2.FontSize = 12; $lbl2.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#8B949E"); $lbl2.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
-        $txtId = New-Object System.Windows.Controls.TextBox; $txtId.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#161B22"); $txtId.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3"); $txtId.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#30363D"); $txtId.Padding = [System.Windows.Thickness]::new(8, 6, 8, 6); $txtId.Margin = [System.Windows.Thickness]::new(0, 0, 0, 10)
+        $lbl2 = New-Object System.Windows.Controls.TextBlock; $lbl2.Text = "Winget Package ID (e.g. Spotify.Spotify)"; $lbl2.FontSize = 12; $lbl2.Foreground = (Get-VdBrush "#8B949E"); $lbl2.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
+        $txtId = New-Object System.Windows.Controls.TextBox; $txtId.Background = (Get-VdBrush "#161B22"); $txtId.Foreground = (Get-VdBrush "#E6EDF3"); $txtId.BorderBrush = (Get-VdBrush "#30363D"); $txtId.Padding = [System.Windows.Thickness]::new(8, 6, 8, 6); $txtId.Margin = [System.Windows.Thickness]::new(0, 0, 0, 10)
         [void]$mainStack.Children.Add($lbl2); [void]$mainStack.Children.Add($txtId)
 
-        $lbl3 = New-Object System.Windows.Controls.TextBlock; $lbl3.Text = "Category"; $lbl3.FontSize = 12; $lbl3.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#8B949E"); $lbl3.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
-        $cbCat = New-Object System.Windows.Controls.ComboBox; $cbCat.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#161B22"); $cbCat.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3"); $cbCat.Padding = [System.Windows.Thickness]::new(8, 6, 8, 6); $cbCat.Margin = [System.Windows.Thickness]::new(0, 0, 0, 10)
+        $lbl3 = New-Object System.Windows.Controls.TextBlock; $lbl3.Text = "Category"; $lbl3.FontSize = 12; $lbl3.Foreground = (Get-VdBrush "#8B949E"); $lbl3.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
+        $cbCat = New-Object System.Windows.Controls.ComboBox; $cbCat.Background = (Get-VdBrush "#161B22"); $cbCat.Foreground = (Get-VdBrush "#E6EDF3"); $cbCat.Padding = [System.Windows.Thickness]::new(8, 6, 8, 6); $cbCat.Margin = [System.Windows.Thickness]::new(0, 0, 0, 10)
         $catNames = @($script:CatalogCategories)
         if ($catNames.Count -eq 0) { $catNames = @(($script:DefaultAppsJson | ConvertFrom-Json).PSObject.Properties.Name) }
         foreach ($catName in $catNames) { [void]$cbCat.Items.Add($catName) }
         $cbCat.SelectedIndex = 0
         [void]$mainStack.Children.Add($lbl3); [void]$mainStack.Children.Add($cbCat)
 
-        $lbl4 = New-Object System.Windows.Controls.TextBlock; $lbl4.Text = "Official Web / GitHub URL (Optional)"; $lbl4.FontSize = 12; $lbl4.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#8B949E"); $lbl4.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
-        $txtUrl = New-Object System.Windows.Controls.TextBox; $txtUrl.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#161B22"); $txtUrl.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3"); $txtUrl.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#30363D"); $txtUrl.Padding = [System.Windows.Thickness]::new(8, 6, 8, 6); $txtUrl.Margin = [System.Windows.Thickness]::new(0, 0, 0, 15)
+        $lbl4 = New-Object System.Windows.Controls.TextBlock; $lbl4.Text = "Official Web / GitHub URL (Optional)"; $lbl4.FontSize = 12; $lbl4.Foreground = (Get-VdBrush "#8B949E"); $lbl4.Margin = [System.Windows.Thickness]::new(0, 0, 0, 4)
+        $txtUrl = New-Object System.Windows.Controls.TextBox; $txtUrl.Background = (Get-VdBrush "#161B22"); $txtUrl.Foreground = (Get-VdBrush "#E6EDF3"); $txtUrl.BorderBrush = (Get-VdBrush "#30363D"); $txtUrl.Padding = [System.Windows.Thickness]::new(8, 6, 8, 6); $txtUrl.Margin = [System.Windows.Thickness]::new(0, 0, 0, 15)
         [void]$mainStack.Children.Add($lbl4); [void]$mainStack.Children.Add($txtUrl)
 
         $btnGrid = New-Object System.Windows.Controls.Grid
@@ -3777,8 +3395,8 @@ if ($btnAddCustomApp) {
         $bc2 = New-Object System.Windows.Controls.ColumnDefinition; $bc2.Width = [System.Windows.GridLength]::new(1, [System.Windows.GridUnitType]::Star)
         $btnGrid.ColumnDefinitions.Add($bc0); $btnGrid.ColumnDefinitions.Add($bc1); $btnGrid.ColumnDefinitions.Add($bc2)
 
-        $btnSave = New-Object System.Windows.Controls.Button; $btnSave.Content = "SAVE TO CATALOG"; $btnSave.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#238636"); $btnSave.Foreground = [System.Windows.Media.Brushes]::White; $btnSave.FontWeight = "Bold"; $btnSave.Padding = [System.Windows.Thickness]::new(0, 10, 0, 10); $btnSave.Style = $window.Resources["RoundedBtn"]
-        $btnCancel = New-Object System.Windows.Controls.Button; $btnCancel.Content = "CANCEL"; $btnCancel.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#21262D"); $btnCancel.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3"); $btnCancel.Padding = [System.Windows.Thickness]::new(0, 10, 0, 10); $btnCancel.Style = $window.Resources["RoundedBtn"]
+        $btnSave = New-Object System.Windows.Controls.Button; $btnSave.Content = "SAVE TO CATALOG"; $btnSave.Background = (Get-VdBrush "#238636"); $btnSave.Foreground = [System.Windows.Media.Brushes]::White; $btnSave.FontWeight = "Bold"; $btnSave.Padding = [System.Windows.Thickness]::new(0, 10, 0, 10); $btnSave.Style = $window.Resources["RoundedBtn"]
+        $btnCancel = New-Object System.Windows.Controls.Button; $btnCancel.Content = "CANCEL"; $btnCancel.Background = (Get-VdBrush "#21262D"); $btnCancel.Foreground = (Get-VdBrush "#E6EDF3"); $btnCancel.Padding = [System.Windows.Thickness]::new(0, 10, 0, 10); $btnCancel.Style = $window.Resources["RoundedBtn"]
 
         [System.Windows.Controls.Grid]::SetColumn($btnSave, 0); [void]$btnGrid.Children.Add($btnSave)
         [System.Windows.Controls.Grid]::SetColumn($btnCancel, 2); [void]$btnGrid.Children.Add($btnCancel)
@@ -3905,7 +3523,7 @@ if ($btnCopyLog -and $logBox) {
                 [System.Windows.Clipboard]::SetText($logBox.Text)
                 Write-AppLog "Activity logs copied to clipboard." "SUCCESS"
             }
-        } catch {}
+        } catch { Write-AppLog "Could not copy the log to the clipboard: $($_.Exception.Message)" "WARN" }
     })
 }
 
@@ -3957,7 +3575,7 @@ $script:telemetryTimer.Add_Tick({
         $load = [NativeSysInfo]::GetCpuLoad()
         if ($lblCpuPct) { $lblCpuPct.Text = "${load} %" }
         if ($pbCpu) { $pbCpu.Value = $load }
-    } catch {}
+    } catch { Write-Verbose "Telemetry tick skipped: $($_.Exception.Message)" }   # runs every 3.5 s: never log
 })
 $script:telemetryTimer.Start()
 
@@ -3979,14 +3597,14 @@ try {
         Write-AppLog "Running as '$runAsUser' but the signed-in user is '$desktopUser'. Per-user settings will apply to '$runAsUser'." "WARN"
         if (-not $script:SmokeTest) { [System.Windows.MessageBox]::Show("VDOWNS PRIME is running as '$runAsUser', but the signed-in desktop user is '$desktopUser'.`n`nPer-user changes (dark mode, Explorer options, startup items, developer backups) will apply to '$runAsUser', not to '$desktopUser'.", "Different User Account", "OK", "Warning") | Out-Null }
     }
-} catch {}
+} catch { Write-Verbose "Signed-in user check skipped: $($_.Exception.Message)" }
 Write-AppLog "System Architect is ready. Select a category from the sidebar to begin." "SUCCESS"
 
 # 15. SHOW WINDOW
 # =============================================================================
 if ($window) {
     $window.Add_Closed({
-        try { if ($script:telemetryTimer) { $script:telemetryTimer.Stop() } } catch {}
+        if ($script:telemetryTimer) { $script:telemetryTimer.Stop() }
     })
 }
 if ($script:SmokeTest) {

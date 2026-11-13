@@ -26,7 +26,7 @@ if ($btnCopyLog -and $logBox) {
                 [System.Windows.Clipboard]::SetText($logBox.Text)
                 Write-AppLog "Activity logs copied to clipboard." "SUCCESS"
             }
-        } catch {}
+        } catch { Write-AppLog "Could not copy the log to the clipboard: $($_.Exception.Message)" "WARN" }
     })
 }
 
@@ -78,7 +78,7 @@ $script:telemetryTimer.Add_Tick({
         $load = [NativeSysInfo]::GetCpuLoad()
         if ($lblCpuPct) { $lblCpuPct.Text = "${load} %" }
         if ($pbCpu) { $pbCpu.Value = $load }
-    } catch {}
+    } catch { Write-Verbose "Telemetry tick skipped: $($_.Exception.Message)" }   # runs every 3.5 s: never log
 })
 $script:telemetryTimer.Start()
 
@@ -100,14 +100,14 @@ try {
         Write-AppLog "Running as '$runAsUser' but the signed-in user is '$desktopUser'. Per-user settings will apply to '$runAsUser'." "WARN"
         if (-not $script:SmokeTest) { [System.Windows.MessageBox]::Show("VDOWNS PRIME is running as '$runAsUser', but the signed-in desktop user is '$desktopUser'.`n`nPer-user changes (dark mode, Explorer options, startup items, developer backups) will apply to '$runAsUser', not to '$desktopUser'.", "Different User Account", "OK", "Warning") | Out-Null }
     }
-} catch {}
+} catch { Write-Verbose "Signed-in user check skipped: $($_.Exception.Message)" }
 Write-AppLog "System Architect is ready. Select a category from the sidebar to begin." "SUCCESS"
 
 # 15. SHOW WINDOW
 # =============================================================================
 if ($window) {
     $window.Add_Closed({
-        try { if ($script:telemetryTimer) { $script:telemetryTimer.Stop() } } catch {}
+        if ($script:telemetryTimer) { $script:telemetryTimer.Stop() }
     })
 }
 if ($script:SmokeTest) {

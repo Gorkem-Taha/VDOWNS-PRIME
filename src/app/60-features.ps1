@@ -3,7 +3,7 @@
 # =============================================================================
 function Add-FeatureCard {
     param([string]$Name, [string]$WinName, [string]$Description)
-    
+
     $card = New-Object System.Windows.Controls.Border
     $card.CornerRadius = [System.Windows.CornerRadius]::new(8)
     $card.Background = $surfaceBrush
@@ -11,14 +11,14 @@ function Add-FeatureCard {
     $card.BorderThickness = [System.Windows.Thickness]::new(1)
     $card.Padding = [System.Windows.Thickness]::new(18, 14, 18, 14)
     $card.Margin = [System.Windows.Thickness]::new(0, 5, 0, 5)
-    
+
     $dockPanel = New-Object System.Windows.Controls.DockPanel
-    
+
     $cb = New-Object System.Windows.Controls.CheckBox
     $cb.VerticalAlignment = "Center"
     $cb.Margin = [System.Windows.Thickness]::new(0, 0, 15, 0)
     [System.Windows.Controls.DockPanel]::SetDock($cb, "Right")
-    
+
     $info = New-Object System.Windows.Controls.StackPanel
     $nameText = New-Object System.Windows.Controls.TextBlock
     $nameText.Text = $Name
@@ -32,18 +32,16 @@ function Add-FeatureCard {
     $descText.Margin = [System.Windows.Thickness]::new(0, 3, 0, 0)
     [void]$info.Children.Add($nameText)
     [void]$info.Children.Add($descText)
-    
+
     [void]$dockPanel.Children.Add($cb)
     [void]$dockPanel.Children.Add($info)
     $card.Child = $dockPanel
-    
-        $targetConfigBox = if ($script:featureContainer) { $script:featureContainer } elseif ($configContainer) { $configContainer } else { $script:configContainer }
-    if ($targetConfigBox) { [void]$targetConfigBox.Children.Add($card) }
+
+    if ($featureContainer) { [void]$featureContainer.Children.Add($card) }
     [void]$script:FeatureList.Add(@{Check=$cb; WinName=$WinName; Name=$Name})
 }
 
-# Script-scope target for the section headers ($targetConfigBox inside Add-FeatureCard is function-local)
-$targetConfigBox = if ($featureContainer) { $featureContainer } else { Get-UIElement "featureContainer" }
+$targetConfigBox = $featureContainer
 
 $featHeader = New-Object System.Windows.Controls.TextBlock
 $featHeader.Text = "Windows Optional Features"
@@ -53,10 +51,10 @@ $featHeader.Foreground = $accentBrush
 $featHeader.Margin = [System.Windows.Thickness]::new(0, 5, 0, 15)
 if ($targetConfigBox) { [void]$targetConfigBox.Children.Add($featHeader) }
 
-Add-FeatureCard "Hyper-V Platform" "Microsoft-Hyper-V-All" "Hardware virtualization for VMs and Docker (Pro/Enterprise/Education)"
-Add-FeatureCard "WSL 2 (Linux)" "Microsoft-Windows-Subsystem-Linux,VirtualMachinePlatform" "Windows Subsystem for Linux + Virtual Machine Platform (required for WSL 2)"
-Add-FeatureCard "Windows Sandbox" "Containers-DisposableClientVM" "Isolated desktop environment for safe testing (Pro/Enterprise/Education)"
-Add-FeatureCard ".NET Framework 3.5" "NetFx3" "Required by legacy applications and games"
+Add-FeatureCard -Name "Hyper-V Platform" -WinName "Microsoft-Hyper-V-All" -Description "Hardware virtualization for VMs and Docker (Pro/Enterprise/Education)"
+Add-FeatureCard -Name "WSL 2 (Linux)" -WinName "Microsoft-Windows-Subsystem-Linux,VirtualMachinePlatform" -Description "Windows Subsystem for Linux + Virtual Machine Platform (required for WSL 2)"
+Add-FeatureCard -Name "Windows Sandbox" -WinName "Containers-DisposableClientVM" -Description "Isolated desktop environment for safe testing (Pro/Enterprise/Education)"
+Add-FeatureCard -Name ".NET Framework 3.5" -WinName "NetFx3" -Description "Required by legacy applications and games"
 
 # Maintenance header
 $maintHeader = New-Object System.Windows.Controls.TextBlock
@@ -75,7 +73,7 @@ $maintDesc.TextWrapping = "Wrap"
 $maintDesc.Margin = [System.Windows.Thickness]::new(0, 0, 0, 5)
 if ($targetConfigBox) { [void]$targetConfigBox.Children.Add($maintDesc) }
 
-if ($btnEnableFeatures) { $btnEnableFeatures.Add_Click({
+if ($btnInstallFeatures) { $btnInstallFeatures.Add_Click({
     # DISM can take minutes: run it in a separate process and stream the output instead of freezing the UI
     $names = @($script:FeatureList | Where-Object { $_.Check.IsChecked } | ForEach-Object { $_.WinName -split ',' } | Where-Object { $_ -match '^[A-Za-z0-9\-\.]+$' })
     if ($names.Count -eq 0) { [System.Windows.MessageBox]::Show("No features selected.", "Info", "OK", "Information"); return }

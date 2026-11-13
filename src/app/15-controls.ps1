@@ -3,69 +3,44 @@
 # =============================================================================
 $reader = [System.Xml.XmlNodeReader]::new($xaml)
 $window = [System.Windows.Markup.XamlReader]::Load($reader)
-$script:window = $window
 $window.Title = "VDOWNS PRIME v$($script:VdownsVersion) | Fluent System Architect"
 
-# Auto-discover all named elements and register globally across scopes
-$global:window = $window
-$script:window = $window
-$global:Controls = @{}
+# Every x:Name becomes a script-scope variable ($btnInstall, $logBox, ...) and an entry in
+# $script:Controls. Event handlers run in this scope, so nothing needs to be global.
 $script:Controls = @{}
-
 $nsmgr = New-Object System.Xml.XmlNamespaceManager($xaml.NameTable)
 $nsmgr.AddNamespace('x', 'http://schemas.microsoft.com/winfx/2006/xaml')
-$nodes = $xaml.SelectNodes('//*[@x:Name]', $nsmgr)
-foreach ($node in $nodes) {
+foreach ($node in $xaml.SelectNodes('//*[@x:Name]', $nsmgr)) {
     $elName = $node.GetAttribute('Name', 'http://schemas.microsoft.com/winfx/2006/xaml')
-    if ($elName) {
-        $el = $window.FindName($elName)
-        if ($el) {
-            Set-Variable -Name $elName -Value $el -Scope Script -Force
-            Set-Variable -Name $elName -Value $el -Scope Global -Force
-            Set-Variable -Name $elName -Value $el -Force
-            $global:Controls[$elName] = $el
-            $script:Controls[$elName] = $el
-        }
+    $el = if ($elName) { $window.FindName($elName) }
+    if ($el) {
+        Set-Variable -Name $elName -Value $el -Scope Script -Force
+        $script:Controls[$elName] = $el
     }
 }
 
 function Get-UIElement {
     param([string]$Name)
-    if ($global:Controls -and $global:Controls.ContainsKey($Name) -and $global:Controls[$Name]) { return $global:Controls[$Name] }
-    if ($script:Controls -and $script:Controls.ContainsKey($Name) -and $script:Controls[$Name]) { return $script:Controls[$Name] }
-    if ($window) { $c = $window.FindName($Name); if ($c) { return $c } }
-    if ($script:window) { $c = $script:window.FindName($Name); if ($c) { return $c } }
-    if ($global:window) { $c = $global:window.FindName($Name); if ($c) { return $c } }
-    $v = Get-Variable -Name $Name -Scope Script -ErrorAction SilentlyContinue
-    if ($v -and $v.Value) { return $v.Value }
-    $v = Get-Variable -Name $Name -Scope Global -ErrorAction SilentlyContinue
-    if ($v -and $v.Value) { return $v.Value }
-    return $null
+    if ($script:Controls.ContainsKey($Name)) { return $script:Controls[$Name] }
+    return $window.FindName($Name)
 }
 
 if ($lblVersionBadge) { $lblVersionBadge.Text = "v$($script:VdownsVersion)" }
 
-# Explicit aliases for XAML to script element compatibility
-$script:tweaksContainer = $script:tweakContainer; $tweaksContainer = $tweakContainer; $global:tweaksContainer = $tweakContainer
-$script:configContainer = $script:featureContainer; $configContainer = $featureContainer; $global:configContainer = $featureContainer
-$script:wingetItemsContainer = $script:wingetResultsContainer; $wingetItemsContainer = $wingetResultsContainer; $global:wingetItemsContainer = $wingetResultsContainer
-$script:btnDebloat = $script:btnRemoveBloat; $btnDebloat = $btnRemoveBloat; $global:btnDebloat = $btnRemoveBloat
-$script:btnSelectAll = $script:btnDebloatSelectAll; $btnSelectAll = $btnDebloatSelectAll; $global:btnSelectAll = $btnDebloatSelectAll
-$script:btnDeselectAll = $script:btnDebloatClear; $btnDeselectAll = $btnDebloatClear; $global:btnDeselectAll = $btnDebloatClear
-$script:btnEnableFeatures = $script:btnInstallFeatures; $btnEnableFeatures = $btnInstallFeatures; $global:btnEnableFeatures = $btnInstallFeatures
-$script:btnSfc = $script:btnRepairSfc; $btnSfc = $btnRepairSfc; $global:btnSfc = $btnRepairSfc
-$script:btnDism = $script:btnRepairDism; $btnDism = $btnRepairDism; $global:btnDism = $btnRepairDism
-$script:btnNetReset = $script:btnResetNetwork; $btnNetReset = $btnResetNetwork; $global:btnNetReset = $btnResetNetwork
-$script:btnFixWU = $script:btnFixUpdates; $btnFixWU = $btnFixUpdates; $global:btnFixWU = $btnFixUpdates
-$script:btnSearchWingetRepo = $script:btnWingetSearch; $btnSearchWingetRepo = $btnWingetSearch; $global:btnSearchWingetRepo = $btnWingetSearch
-$script:outputBox = $script:logBox; $outputBox = $logBox; $global:outputBox = $logBox
-
-# Brush references
+# Brushes: one frozen instance per colour, shared by every card and dialog
 $converter = New-Object System.Windows.Media.BrushConverter
+$script:BrushCache = @{}
+function Get-VdBrush([string]$Hex) {
+    if (-not $script:BrushCache.ContainsKey($Hex)) {
+        $b = $converter.ConvertFrom($Hex)
+        if ($b.CanFreeze) { $b.Freeze() }
+        $script:BrushCache[$Hex] = $b
+    }
+    $script:BrushCache[$Hex]
+}
 $accentBrush  = $converter.ConvertFrom("#58A6FF")
 $successBrush = $converter.ConvertFrom("#3FB950")
 $dangerBrush  = $converter.ConvertFrom("#F85149")
-$warningBrush = $converter.ConvertFrom("#D29922")
 $textBrush    = $converter.ConvertFrom("#E6EDF3")
 $textDimBrush = $converter.ConvertFrom("#8B949E")
 $surfaceBrush = $converter.ConvertFrom("#161B22")

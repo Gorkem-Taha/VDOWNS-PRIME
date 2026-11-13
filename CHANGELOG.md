@@ -59,6 +59,14 @@ did not work; they are fixed here.
   generators, UI filter, WPF load) and a CI workflow on Linux + Windows PowerShell 5.1 with a real
   registry round trip and smoke tests of the `.ps1` and the compiled exe; releases require CI.
 - `VDOWNS_SMOKE_TEST=1` startup mode for automated testing (no dialogs, writes a report, exits).
+- Code quality pass: every background job (install/uninstall, winget scan/search, tweaks, debloat,
+  backup, restore, Quick Boost, live console) runs through one `Start-VdTask` launcher and a
+  unit-tested task library (`src/lib/Tasks.ps1`) instead of 11 hand-rolled runspaces and 26
+  inline `Dispatcher.Invoke` blocks; controls live in script scope only (no globals, no alias
+  table); cached frozen brushes; named parameters; PSScriptAnalyzer clean (208 -> 0 findings) and
+  enforced in CI; a Windows test proves background-to-UI logging on a real WPF window.
+- `apps.json` fallback write no longer reports success when it failed; link/clipboard/DNS-cache
+  failures are logged instead of silently ignored.
 
 ### Removed
 - Compiled exe and duplicate `Source/` copies from the repository (the exe is a release asset).

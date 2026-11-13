@@ -10,10 +10,10 @@ function Set-WingetBusy([string]$Message) {
     } elseif ($panel) { $panel.Visibility = "Collapsed" }
 }
 
-function Render-WingetCards {
+function Show-WingetPackageList {
     param([array]$Items)
-    if (-not $wingetItemsContainer) { return }
-    $wingetItemsContainer.Children.Clear()
+    if (-not $wingetResultsContainer) { return }
+    $wingetResultsContainer.Children.Clear()
     [void]$script:WingetList.Clear()
 
     $wrapPanel = New-Object System.Windows.Controls.WrapPanel
@@ -30,7 +30,7 @@ function Render-WingetCards {
         $card.Cursor = [System.Windows.Input.Cursors]::Hand
 
         $cbContent = New-Object System.Windows.Controls.StackPanel
-        
+
         $nameText = New-Object System.Windows.Controls.TextBlock
         $nameText.Text = $item.Name
         $nameText.FontWeight = "SemiBold"
@@ -121,7 +121,7 @@ function Render-WingetCards {
         [void]$wrapPanel.Children.Add($card)
         [void]$script:WingetList.Add(@{Id=$item.Id; Name=$item.Name; Card=$card})
     }
-    [void]$wingetItemsContainer.Children.Add($wrapPanel)
+    [void]$wingetResultsContainer.Children.Add($wrapPanel)
 }
 
 # Search Installed Filter
@@ -138,80 +138,36 @@ if ($wingetSearchBox) {
     })
 }
 
-# Scan Installed Packages
-if ($btnScanWingetInstalled) {
-    $btnScanWingetInstalled.Add_Click({
-        if (-not (Test-WingetAvailable)) { return }
-        $window.Cursor = [System.Windows.Input.Cursors]::Wait
+# Scan installed packages / search the repository (background task, results rendered as cards)
+function Start-WingetQuery {
+    param([ValidateSet('list', 'search')][string]$Kind, [string]$Query)
+    if (-not (Test-WingetAvailable)) { return }
+    $window.Cursor = [System.Windows.Input.Cursors]::Wait
+    if ($Kind -eq 'list') {
         Write-AppLog "Scanning installed packages via Winget..." "ACTION"
         Set-WingetBusy "Scanning installed packages..."
-        
-        $syncHash = [hashtable]::Synchronized(@{
-            Window = $window
-            LogBox = $logBox
-        })
-
-        $runspace = [runspacefactory]::CreateRunspace()
-        $runspace.Open()
-        $ps = [powershell]::Create()
-        $ps.Runspace = $runspace
-
-        [void]$ps.AddScript({
-            param($SH, $Lib)
-            . ([scriptblock]::Create($Lib))
-            $r = Invoke-VdNative 'winget.exe' @('list', '--accept-source-agreements', '--disable-interactivity') 'UTF8'
-            return @(ConvertFrom-VdWingetTable $r.Output)
-        })
-        [void]$ps.AddParameter("SH", $syncHash)
-        [void]$ps.AddParameter("Lib", $script:VdNativeLib)
-        $handle = $ps.BeginInvoke()
-        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-            param($result)
-            $results = @($result)
-            $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-            Set-WingetBusy $null
-            Render-WingetCards $results
-            Write-AppLog "Winget Scan complete: $($results.Count) packages found." "SUCCESS"
-        }
-    })
+    } else {
+        Write-AppLog "Searching online Winget repository for: $Query..." "ACTION"
+        Set-WingetBusy "Searching the Winget repository for '$Query'..."
+    }
+    $onDone = if ($Kind -eq 'list') {
+        { param($result) $results = @($result); $window.Cursor = [System.Windows.Input.Cursors]::Arrow; Set-WingetBusy $null; Show-WingetPackageList $results; Write-AppLog "Winget Scan complete: $($results.Count) packages found." "SUCCESS" }
+    } else {
+        { param($result) $results = @($result); $window.Cursor = [System.Windows.Input.Cursors]::Arrow; Set-WingetBusy $null; Show-WingetPackageList $results; Write-AppLog "Winget Online Search complete: $($results.Count) matching packages found." "SUCCESS" }
+    }
+    Start-VdTask 'Invoke-VdWingetQuery' @{ Kind = $Kind; Query = $Query } -OnComplete $onDone
 }
 
-# Search Online Repository
-if ($btnSearchWingetRepo) {
-    $btnSearchWingetRepo.Add_Click({
-        if (-not (Test-WingetAvailable)) { return }
+if ($btnScanWingetInstalled) { $btnScanWingetInstalled.Add_Click({ Start-WingetQuery 'list' }) }
+
+if ($btnWingetSearch) {
+    $btnWingetSearch.Add_Click({
         $query = $wingetSearchBox.Text.Trim()
         if ($query.Length -eq 0) {
             [System.Windows.MessageBox]::Show("Please enter a keyword to search online repo.", "Info", "OK", "Information")
             return
         }
-
-        $window.Cursor = [System.Windows.Input.Cursors]::Wait
-        Write-AppLog "Searching online Winget repository for: $query..." "ACTION"
-        Set-WingetBusy "Searching the Winget repository for '$query'..."
-
-        $runspace = [runspacefactory]::CreateRunspace()
-        $runspace.Open()
-        $ps = [powershell]::Create()
-        $ps.Runspace = $runspace
-
-        [void]$ps.AddScript({
-            param($Q, $Lib)
-            . ([scriptblock]::Create($Lib))
-            $r = Invoke-VdNative 'winget.exe' @('search', $Q, '--accept-source-agreements', '--disable-interactivity') 'UTF8'
-            return @(ConvertFrom-VdWingetTable $r.Output)
-        })
-        [void]$ps.AddParameter("Q", $query)
-        [void]$ps.AddParameter("Lib", $script:VdNativeLib)
-        $handle = $ps.BeginInvoke()
-        Watch-Runspace -PS $ps -Handle $handle -Runspace $runspace -OnComplete {
-            param($result)
-            $results = @($result)
-            $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-            Set-WingetBusy $null
-            Render-WingetCards $results
-            Write-AppLog "Winget Online Search complete: $($results.Count) matching packages found." "SUCCESS"
-        }
+        Start-WingetQuery 'search' $query
     })
 }
 

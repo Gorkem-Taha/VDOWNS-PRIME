@@ -18,9 +18,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Install Pester 5.7.1
+      - name: Install Pester 5.7.1 and PSScriptAnalyzer 1.25.0
         shell: pwsh
-        run: Install-Module -Name Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force
+        run: |
+          Install-Module -Name Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force
+          Install-Module -Name PSScriptAnalyzer -RequiredVersion 1.25.0 -Scope CurrentUser -Force
+
+      - name: Static analysis (PSScriptAnalyzer)
+        shell: pwsh
+        run: ./tools/Invoke-Lint.ps1
 
       - name: Source in sync + build checks
         shell: pwsh

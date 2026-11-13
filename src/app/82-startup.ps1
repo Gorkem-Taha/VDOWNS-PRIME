@@ -5,12 +5,12 @@ $script:StartupItemsList = [System.Collections.ArrayList]::new()
 $script:StartupStoreV2 = "HKCU:\Software\VDOWNS\DisabledStartupV2"
 $script:StartupStoreLegacy = "HKCU:\Software\VDOWNS\DisabledStartup"
 
-function Scan-StartupPrograms {
+function Update-StartupList {
     if (-not $startupContainer) { return }
     $startupContainer.Children.Clear()
     $script:StartupItemsList.Clear()
     Write-AppLog "Scanning Windows startup entries..." "INFO"
-    
+
     $runSources = @(
         @{ Label = "HKCU";       Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" },
         @{ Label = "HKLM";       Path = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run" },
@@ -54,8 +54,8 @@ function Scan-StartupPrograms {
                 $prop = $entry.Name
                 $val = "$($entry.Raw)"
                 $card = New-Object System.Windows.Controls.Border
-                $card.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#161B22")
-                $card.BorderBrush = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#21262D")
+                $card.Background = (Get-VdBrush "#161B22")
+                $card.BorderBrush = (Get-VdBrush "#21262D")
                 $card.BorderThickness = [System.Windows.Thickness]::new(1)
                 $card.CornerRadius = [System.Windows.CornerRadius]::new(6)
                 $card.Padding = [System.Windows.Thickness]::new(10, 8, 10, 8)
@@ -77,12 +77,12 @@ function Scan-StartupPrograms {
                 $lblN = New-Object System.Windows.Controls.TextBlock
                 $lblN.Text = "$prop  ($($entry.Source))"
                 $lblN.FontWeight = "Bold"
-                $lblN.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#E6EDF3")
+                $lblN.Foreground = (Get-VdBrush "#E6EDF3")
                 $lblN.FontSize = 12.5
 
                 $lblC = New-Object System.Windows.Controls.TextBlock
                 $lblC.Text = $val
-                $lblC.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#8B949E")
+                $lblC.Foreground = (Get-VdBrush "#8B949E")
                 $lblC.FontSize = 10.5
                 $lblC.TextTrimming = "CharacterEllipsis"
 
@@ -100,13 +100,13 @@ function Scan-StartupPrograms {
                 $statusText.FontWeight = "Bold"
 
                 if ($entry.Disabled) {
-                    $statusBorder.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#3D1F24")
+                    $statusBorder.Background = (Get-VdBrush "#3D1F24")
                     $statusText.Text = "DISABLED"
-                    $statusText.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#F85149")
+                    $statusText.Foreground = (Get-VdBrush "#F85149")
                 } else {
-                    $statusBorder.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#1F3D2A")
+                    $statusBorder.Background = (Get-VdBrush "#1F3D2A")
                     $statusText.Text = "ENABLED"
-                    $statusText.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#3FB950")
+                    $statusText.Foreground = (Get-VdBrush "#3FB950")
                 }
                 $statusBorder.Child = $statusText
                 [System.Windows.Controls.Grid]::SetColumn($statusBorder, 2)
@@ -120,7 +120,7 @@ function Scan-StartupPrograms {
     Write-AppLog "Found $($script:StartupItemsList.Count) startup programs." "SUCCESS"
 }
 
-if ($btnScanStartup) { $btnScanStartup.Add_Click({ Scan-StartupPrograms }) }
+if ($btnScanStartup) { $btnScanStartup.Add_Click({ Update-StartupList }) }
 
 if ($btnDisableStartup) {
     $btnDisableStartup.Add_Click({
@@ -146,7 +146,7 @@ if ($btnDisableStartup) {
             }
         }
         Write-AppLog "Disabled $count startup program(s); originals preserved in the VDOWNS store." "SUCCESS"
-        Scan-StartupPrograms
+        Update-StartupList
     })
 }
 
@@ -175,7 +175,7 @@ if ($btnEnableStartup) {
             }
         }
         Write-AppLog "Re-enabled $count startup program(s) at their original location." "SUCCESS"
-        Scan-StartupPrograms
+        Update-StartupList
     })
 }
 

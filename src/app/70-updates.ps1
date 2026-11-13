@@ -34,29 +34,29 @@ if ($btnUpdateStore) {
     })
 }
 
-if ($btnSfc) {
-    $btnSfc.Add_Click({
+if ($btnRepairSfc) {
+    $btnRepairSfc.Add_Click({
         Write-AppLog "Starting: SFC Scan..." "ACTION"
         Start-StreamingCommand "sfc" "/scannow"
     })
 }
 
-if ($btnDism) {
-    $btnDism.Add_Click({
+if ($btnRepairDism) {
+    $btnRepairDism.Add_Click({
         Write-AppLog "Starting: DISM Repair..." "ACTION"
         Start-StreamingCommand "dism" "/Online /Cleanup-Image /RestoreHealth"
     })
 }
 
-if ($btnNetReset) {
-    $btnNetReset.Add_Click({
+if ($btnResetNetwork) {
+    $btnResetNetwork.Add_Click({
         Write-AppLog "Starting: Network Reset..." "ACTION"
         Start-PSStreamingCommand 'ipconfig /flushdns; netsh winsock reset; netsh int ip reset; Write-Host "Network stack reset complete. Please reboot."'
     })
 }
 
-if ($btnFixWU) {
-    $btnFixWU.Add_Click({
+if ($btnFixUpdates) {
+    $btnFixUpdates.Add_Click({
         $result = [System.Windows.MessageBox]::Show("This will forcibly reset Windows Update components.`nContinue?", "Emergency Fix", "YesNo", "Warning")
         if ($result -ne "Yes") { return }
         Write-AppLog "Starting: Emergency WU Fix..." "WARN"
